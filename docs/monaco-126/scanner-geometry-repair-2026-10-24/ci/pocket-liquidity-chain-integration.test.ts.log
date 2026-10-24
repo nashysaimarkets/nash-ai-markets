@@ -1,0 +1,64 @@
+TAP version 13
+# Subtest: production liquidity is verified only with independent spatial screenshot observations
+ok 1 - production liquidity is verified only with independent spatial screenshot observations
+  ---
+  duration_ms: 4.09446
+  type: 'test'
+  ...
+# Subtest: zone endpoints and prose cannot substitute for missing or duplicate evidence
+ok 2 - zone endpoints and prose cannot substitute for missing or duplicate evidence
+  ---
+  duration_ms: 1.00204
+  type: 'test'
+  ...
+# Subtest: a verified chain on another row, side or outside the zone does not verify this zone
+ok 3 - a verified chain on another row, side or outside the zone does not verify this zone
+  ---
+  duration_ms: 0.648818
+  type: 'test'
+  ...
+# Subtest: malformed and out-of-plot observations fail closed without throwing
+ok 4 - malformed and out-of-plot observations fail closed without throwing
+  ---
+  duration_ms: 0.597794
+  type: 'test'
+  ...
+# Subtest: unclear charts and unverified bounds cannot earn an Evidence Chain verification
+ok 5 - unclear charts and unverified bounds cannot earn an Evidence Chain verification
+  ---
+  duration_ms: 0.482471
+  type: 'test'
+  ...
+# Subtest: the provider schema and prompt request real observations rather than invented endpoint evidence
+ok 6 - the provider schema and prompt request real observations rather than invented endpoint evidence
+  ---
+  duration_ms: 0.775662
+  type: 'test'
+  ...
+# Subtest: Evidence Chain never upgrades a NONE or PARTIAL provider state
+ok 7 - Evidence Chain never upgrades a NONE or PARTIAL provider state
+  ---
+  duration_ms: 0.336782
+  type: 'test'
+  ...
+# Subtest: one corroborated zone cannot verify a second uncorroborated displayed zone
+ok 8 - one corroborated zone cannot verify a second uncorroborated displayed zone
+  ---
+  duration_ms: 0.343464
+  type: 'test'
+  ...
+# Subtest: production interval contract retains exact endpoints and rejects incomplete or uncovered ranges
+ok 9 - production interval contract retains exact endpoints and rejects incomplete or uncovered ranges
+  ---
+  duration_ms: 0.858025
+  type: 'test'
+  ...
+1..9
+# tests 9
+# suites 0
+# pass 9
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 25.18583

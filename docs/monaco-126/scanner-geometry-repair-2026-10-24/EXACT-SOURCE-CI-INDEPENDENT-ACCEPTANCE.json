@@ -1,0 +1,289 @@
+{
+  "kind": "POCKET_SCANNER_GEOMETRY_REPAIR_EXACT_SOURCE_CI_INDEPENDENT_ACCEPTANCE",
+  "reviewedAt": "2026-10-24T13:27:47.207534+00:00",
+  "status": "PASS_EXACT_SOURCE_BOUNDS_CONTAINMENT_ENGINEERING_GATES",
+  "sourceSha": "97925f7620313ba6a6ebc377c9c9340a42889875",
+  "sourceTreeSha": "244d7af95228d619d0b1ebb60e9b93ea764d9255",
+  "sourceParent": "b118c7a38a35514eb4cbd4cc86b3341de91a5ca5",
+  "sourceReviewReceiptSha256": "b66c4cd4ac1c593e5ee9afc163898f7bd93a9240c87bc1cb14ff8a8dde568e10",
+  "reviewedSourceHashes": {
+    "app/api/pocket/analysis-calibration.ts": "50f6b5dde09030422cc9ddbb71660b11bf902a58c0beea92b1b02c190e1360d5",
+    "app/api/pocket/liquidity-chain.ts": "88c222d3f0c788015f8faa9ef8f86c15c08ac585fba998c0d18c795a9256c2f2",
+    "tests/pocket-calibration-plot-bounds.test.ts": "01499ed3f2b953f8a5a0b94f03e5c49e6a6ec49115ebfa56a1b2195cab1bf1ea",
+    "tests/pocket-launch-hardening.test.ts": "6c9a52112610d8081fd83503b2f171ea445da28ef4f931eb6161d9136cdbac78",
+    "vercel.json": "3c5afa97890b0e97e5bf4c23761afc01bec7820a66e4d8055adddc9fa3544b39",
+    ".github/workflows/pocket-scanner-geometry-repair-qa.yml": "7751e6b51f5656ea6cdbbf40cda223bcf809201f1766e5c2b52d8f3ae7b6b8a9",
+    "scripts/verify-pocket-scanner-geometry-repair.mjs": "21f25733510ee182a5bb3c07fa5de3b2cc62de8896e14262c5eb912e81cd3587"
+  },
+  "sourceVerification": {
+    "officialSourceMetadataSha256": "bb367aa4214397cc13deb5c1be253c64a6237ec96e374cd09a6f54f0273528d4",
+    "reviewedSourceConsumerAndPreservedBlobsMatched": 16,
+    "focusedCheckout": "97925f7620313ba6a6ebc377c9c9340a42889875",
+    "imageCheckout": "2143a8f7887db68b7cf0b20b9bef6df06e7a768c",
+    "imageCheckoutMeaning": "Automatic pull-request merge commit, not direct head checkout. Independently fetched merge metadata proves its complete tree equals the reviewed candidate tree.",
+    "imageCheckoutTreeSha": "244d7af95228d619d0b1ebb60e9b93ea764d9255",
+    "completeImageTreeEqualsReviewedCandidate": true,
+    "testFileHashesInArtifactMatchReviewedWorkingBytes": true
+  },
+  "focusedAcceptance": {
+    "runId": 40097778572,
+    "jobId": 120883538258,
+    "event": "push",
+    "attempt": 1,
+    "conclusion": "success",
+    "tests": 68,
+    "passed": 68,
+    "failures": 0,
+    "skipped": 0,
+    "suiteFiles": 10,
+    "newTestsIncluded": 10,
+    "existingTestsIncluded": 58,
+    "counting": "68 distinct tests; the separate local ten-test green run is not added.",
+    "runtime": "v24.19.0",
+    "wholeProjectTypecheck": "PASS",
+    "changedSourceEslint": "PASS",
+    "secretScan": {
+      "status": "PASS",
+      "versionControlCandidates": 1357
+    },
+    "diffCheck": "PASS",
+    "exactSourceAndDeploymentDisabledStep": "PASS",
+    "artifact": {
+      "id": 12561214323,
+      "sizeInBytes": 8384,
+      "sha256": "59eaf37cb97384103cf2ddeae593eb7dbb1d30a02351cdf7934a522248217059",
+      "members": 11,
+      "everyMemberMatchesRetainedFile": true,
+      "everySuiteLogHashMatchesAcceptanceJson": true,
+      "acceptanceJsonSha256": "899eca9c7c0fe0f5c9b7ffc637fa1391d9c9af4df080dad71a565eea320f0c89"
+    },
+    "suites": [
+      {
+        "file": "tests/pocket-calibration-plot-bounds.test.ts",
+        "sourceSha256": "01499ed3f2b953f8a5a0b94f03e5c49e6a6ec49115ebfa56a1b2195cab1bf1ea",
+        "status": "PASS",
+        "tests": 10,
+        "pass": 10,
+        "fail": 0,
+        "skipped": 0,
+        "exitCode": 0,
+        "logSha256": "8977712113b8824585d41f6ce9fbd8acbe98abea6be1c956496d34ac04eb679a"
+      },
+      {
+        "file": "tests/pocket-launch-hardening.test.ts",
+        "sourceSha256": "6c9a52112610d8081fd83503b2f171ea445da28ef4f931eb6161d9136cdbac78",
+        "status": "PASS",
+        "tests": 19,
+        "pass": 19,
+        "fail": 0,
+        "skipped": 0,
+        "exitCode": 0,
+        "logSha256": "b65ae926f732d1d8dde76387ea55aab39c887596b00a44b1dfef0d9a7fb0fb0d"
+      },
+      {
+        "file": "tests/pocket-calibration-observations-contract.test.ts",
+        "sourceSha256": "95ae5e5f754badefffb0458ef77c42ff2585fbad44b0d23cc89b3699ff9da09a",
+        "status": "PASS",
+        "tests": 7,
+        "pass": 7,
+        "fail": 0,
+        "skipped": 0,
+        "exitCode": 0,
+        "logSha256": "39d38a84c0a6e1425997032ba2b2416fe815565cc7ea721e8b99438ce0d58aa8"
+      },
+      {
+        "file": "tests/pocket-liquidity-chain-integration.test.ts",
+        "sourceSha256": "8310dcc24e6dcc4987cd6be595be5adf3dabb681e0ae85fad3d4b48d13824273",
+        "status": "PASS",
+        "tests": 9,
+        "pass": 9,
+        "fail": 0,
+        "skipped": 0,
+        "exitCode": 0,
+        "logSha256": "cbe2424587deffa6efb7466003ac7eab3e16a75fcdc192635351ec4412d2f823"
+      },
+      {
+        "file": "tests/pocket-liquidity-event-evidence.test.ts",
+        "sourceSha256": "ea68a9034497472ba35791a12b50d38951effe8ca6b05907d4b50f4f649da184",
+        "status": "PASS",
+        "tests": 6,
+        "pass": 6,
+        "fail": 0,
+        "skipped": 0,
+        "exitCode": 0,
+        "logSha256": "2a8f3d74186c5ce38ecd5c41548bf2d1486b2af4845942b5892d01e828308db9"
+      },
+      {
+        "file": "tests/pocket-pattern-calibration.test.ts",
+        "sourceSha256": "b7b81e6c3bd7050e763f6f770b17fd91ef072a6608c81d4e748cfd160c30ed7d",
+        "status": "PASS",
+        "tests": 5,
+        "pass": 5,
+        "fail": 0,
+        "skipped": 0,
+        "exitCode": 0,
+        "logSha256": "56810e7a82695cb7abe72c492a71dce3725e364bd77b3d7a04c612064799aff3"
+      },
+      {
+        "file": "tests/pocket-pattern-malformed-geometry.test.ts",
+        "sourceSha256": "1bb8bd0816584c9853df8672c68fd154ed5ab3b851d430a0618089f9b7b55dbe",
+        "status": "PASS",
+        "tests": 2,
+        "pass": 2,
+        "fail": 0,
+        "skipped": 0,
+        "exitCode": 0,
+        "logSha256": "13d76b1e04beed35c487ec83c2f4b6b7d34173a6572063bfe4fbd794b5b0500c"
+      },
+      {
+        "file": "tests/pocket-original-levels.test.ts",
+        "sourceSha256": "186d5b5417dabd055649d272ebd9fffb8d718c6251fb515566e1ad8b6714edb8",
+        "status": "PASS",
+        "tests": 3,
+        "pass": 3,
+        "fail": 0,
+        "skipped": 0,
+        "exitCode": 0,
+        "logSha256": "97ad3a127e360d9f24fc2b4b852b4ace7da8e1a986134bf5f034987f45cabe09"
+      },
+      {
+        "file": "tests/pocket-original-geometry.test.ts",
+        "sourceSha256": "784f42d07da26c68549d73af6709106bf16ae4531c694634a4bd4a5a642a5221",
+        "status": "PASS",
+        "tests": 4,
+        "pass": 4,
+        "fail": 0,
+        "skipped": 0,
+        "exitCode": 0,
+        "logSha256": "605915fc2962e17b35b66c121cdf498b6b05c6504c55d923836d0d2290ad456f"
+      },
+      {
+        "file": "tests/pocket-chart-benchmark.test.ts",
+        "sourceSha256": "8eba8560f2c4fd65fa86d77bd84cf8a9fedbaee20c4db04021c1511ee10c63ce",
+        "status": "PASS",
+        "tests": 3,
+        "pass": 3,
+        "fail": 0,
+        "skipped": 0,
+        "exitCode": 0,
+        "logSha256": "90363b976877ddf0e9193fd7706e97af1c986964a131058ece9ff8376a839c3c"
+      }
+    ],
+    "officialJobLogSha256": "961b24752cd812cb5f60d56341a748ab4674e3dcfbcc5b7a57b79464710c9b39"
+  },
+  "existingImageGate": {
+    "runId": 40097797530,
+    "jobId": 120883593180,
+    "event": "pull_request",
+    "attempt": 1,
+    "conclusion": "success",
+    "manualWorkflowDispatchPerformed": false,
+    "nativeRasterPackaging": {
+      "tests": 11,
+      "pass": 11,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0
+    },
+    "browserRasterCanvasOcr": {
+      "syntheticCases": 6,
+      "readablePositiveCasesVerified": 5,
+      "degradedNoSignalCaseHeld": 1,
+      "caseOutcomes": [
+        {
+          "caseId": "range-clear",
+          "originalAxis": "verified",
+          "canvasCropAxis": "verified",
+          "actualSameOriginOcr": "verified",
+          "actualCropOcr": "verified",
+          "allNegativeControls": "held"
+        },
+        {
+          "caseId": "double-top",
+          "originalAxis": "verified",
+          "canvasCropAxis": "verified",
+          "actualSameOriginOcr": "verified",
+          "actualCropOcr": "verified",
+          "allNegativeControls": "held"
+        },
+        {
+          "caseId": "head-shoulders",
+          "originalAxis": "verified",
+          "canvasCropAxis": "verified",
+          "actualSameOriginOcr": "verified",
+          "actualCropOcr": "verified",
+          "allNegativeControls": "held"
+        },
+        {
+          "caseId": "sweep-reclaim",
+          "originalAxis": "verified",
+          "canvasCropAxis": "verified",
+          "actualSameOriginOcr": "verified",
+          "actualCropOcr": "verified",
+          "allNegativeControls": "held"
+        },
+        {
+          "caseId": "near-miss-chop",
+          "originalAxis": "verified",
+          "canvasCropAxis": "verified",
+          "actualSameOriginOcr": "verified",
+          "actualCropOcr": "verified",
+          "allNegativeControls": "held"
+        },
+        {
+          "caseId": "degraded-no-signal",
+          "originalAxis": "held",
+          "canvasCropAxis": "held",
+          "actualSameOriginOcr": "held",
+          "actualCropOcr": "held",
+          "allNegativeControls": "held"
+        }
+      ],
+      "misalignedBlurredMissingAxisControlsHeld": true,
+      "providerCalls": 0,
+      "externalRequests": 0,
+      "jsErrors": 0
+    },
+    "mobileDecisionChecks": 13,
+    "redesignMobileChecks": 10,
+    "levelLabIsolationChecks": 4,
+    "mobileProviderEndpoints": "MOCKED",
+    "physicalDeviceEvidence": false,
+    "mobileJsErrors": 0,
+    "mobileOverflow": false,
+    "nextProductionCompilation": "PASS",
+    "isolatedProductionSharpTrace": "PASS",
+    "labelledPaidCorpus": "SKIPPED",
+    "skippedStepNames": [
+      "Run labelled image torture corpus"
+    ],
+    "artifactCount": 0,
+    "officialJobLogSha256": "73f5a598bc10fa81654f3538ff305674f6e27b6242b52a766fa78e7c392d15f5"
+  },
+  "sanitizedOfficialEvidenceSha256": "f815111031e789742d7f07ed33153e78e2c6f19244939b7583fee1dbdb8b7a79",
+  "limitations": [
+    "Engineering acceptance for rejecting invalid/missing plotting bounds and preserving truthful HOLD semantics. It does not locate the correct plot or recover candidate levels.",
+    "Synthetic browser/OCR fixtures and mocked endpoint workflows are not a successful real scanner run or physical-device acceptance.",
+    "The paid labelled-corpus step was explicitly skipped; no paid corpus or held-out accuracy acceptance is claimed.",
+    "The completed paid v2-d001 geometry failure and all raw/financial evidence remain unchanged.",
+    "The separate image-derived plot-ROI candidate is outside this source and receipt.",
+    "Production deployment, main merge, store release and later paid cases are not performed by these gates."
+  ],
+  "financialAndExecutionState": {
+    "remainingPaidCases": "HOLD",
+    "frozenEvaluationRuntime": "20783ed5e8eb95a11df86b0d60766ffcbbf4fa79",
+    "firstCaseReservationMicroUsd": 330000,
+    "actualBilledCostKnown": false
+  },
+  "reviewerActions": {
+    "workflowDispatches": 0,
+    "testReruns": 0,
+    "providerCalls": 0,
+    "databaseCalls": 0,
+    "keyReads": 0,
+    "heldOutReads": 0,
+    "remoteMutations": 0,
+    "readOnlyGitHubCalls": "Source/merge metadata, two existing runs/jobs, official completed logs and artifact metadata; bounded status polling only."
+  }
+}

@@ -1,0 +1,52 @@
+TAP version 13
+# Subtest: explicit NONE and empty observations survive calibration so independent geometry remains measurable
+ok 1 - explicit NONE and empty observations survive calibration so independent geometry remains measurable
+  ---
+  duration_ms: 5.151793
+  type: 'test'
+  ...
+# Subtest: each early NONE exit retains explicitly supplied empty observations
+ok 2 - each early NONE exit retains explicitly supplied empty observations
+  ---
+  duration_ms: 1.520919
+  type: 'test'
+  ...
+# Subtest: missing observations are never fabricated as an empty array on early or blocked-chain paths
+ok 3 - missing observations are never fabricated as an empty array on early or blocked-chain paths
+  ---
+  duration_ms: 2.294137
+  type: 'test'
+  ...
+# Subtest: malformed observations retain their malformed meaning through every calibration path
+ok 4 - malformed observations retain their malformed meaning through every calibration path
+  ---
+  duration_ms: 7.086465
+  type: 'test'
+  ...
+# Subtest: discarded zones cannot erase nonempty witnesses and masquerade as a known-empty NONE result
+ok 5 - discarded zones cannot erase nonempty witnesses and masquerade as a known-empty NONE result
+  ---
+  duration_ms: 0.898109
+  type: 'test'
+  ...
+# Subtest: a blocked evidence chain preserves the reported witness without granting verification
+ok 6 - a blocked evidence chain preserves the reported witness without granting verification
+  ---
+  duration_ms: 0.508058
+  type: 'test'
+  ...
+# Subtest: absent liquidity cannot acquire fabricated observations
+ok 7 - absent liquidity cannot acquire fabricated observations
+  ---
+  duration_ms: 0.53594
+  type: 'test'
+  ...
+1..7
+# tests 7
+# suites 0
+# pass 7
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 38.149523

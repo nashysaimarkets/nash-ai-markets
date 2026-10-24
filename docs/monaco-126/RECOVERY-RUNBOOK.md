@@ -1,3 +1,11 @@
+# Current continuation — isolated bounds repair, 24 October 2026
+
+Read [scanner-geometry-repair-2026-10-24/CHECKPOINT.md](scanner-geometry-repair-2026-10-24/CHECKPOINT.md) and the latest Issue126 receipt. The bounds repair passes 68 distinct checks, independent source review and both hosted gates on exact source97925f. The separate image-derived recovery candidate is in progress and not yet accepted. It contains invalid geometry, without claiming recovered chart accuracy.
+
+The first revised paid case completed and failed geometry; [its permanent outcome](https://github.com/nashysaimarkets/nash-ai-markets/blob/b4d5a71c8077f43a83c29e551eb4cce5bb463e19/docs/monaco-126/scanner-evaluation-v2-2026-10-24/execution/FIRST-CASE-OUTCOME.md) supersedes older pending-key/setup instructions. All other revised paid cases are HOLD. The migration and first permit are already used; do not reinstall or replay. Existing keys and approvals remain recorded. Runner NOLOGIN/zero sessions and six temporary branch-rule removals are verified. Root claims6384437116/6384669426 remain active; schedules are OFF.
+
+## Historical recovery records below
+
 # Current continuation: protected runner prepared, secure inference key missing
 
 Read LAUNCH-CHECKLIST-2026-10-21.md, OWNER-LAUNCH-AMENDMENT-2026-10-21.json and the newest Issue #126 receipt. Necessary launch work is authorised; extra purchases still need approval. All schedules remain off. Resume PR #142 from the published commit in the latest receipt, preserving other branches.

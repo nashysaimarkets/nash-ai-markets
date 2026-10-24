@@ -1,0 +1,30 @@
+{
+  "kind": "POCKET_SCANNER_GEOMETRY_REPAIR_REVIEWED_SOURCE",
+  "baseCommit": "b118c7a38a35514eb4cbd4cc86b3341de91a5ca5",
+  "sourceCommitResolution": "Enclosing published source commit, then exact checked-out hosted CI commit. The unchanged base is not the candidate.",
+  "files": {
+    "app/api/pocket/analysis-calibration.ts": "50f6b5dde09030422cc9ddbb71660b11bf902a58c0beea92b1b02c190e1360d5",
+    "app/api/pocket/liquidity-chain.ts": "88c222d3f0c788015f8faa9ef8f86c15c08ac585fba998c0d18c795a9256c2f2",
+    "tests/pocket-calibration-plot-bounds.test.ts": "01499ed3f2b953f8a5a0b94f03e5c49e6a6ec49115ebfa56a1b2195cab1bf1ea",
+    "tests/pocket-launch-hardening.test.ts": "6c9a52112610d8081fd83503b2f171ea445da28ef4f931eb6161d9136cdbac78",
+    "vercel.json": "3c5afa97890b0e97e5bf4c23761afc01bec7820a66e4d8055adddc9fa3544b39",
+    ".github/workflows/pocket-scanner-geometry-repair-qa.yml": "7751e6b51f5656ea6cdbbf40cda223bcf809201f1766e5c2b52d8f3ae7b6b8a9",
+    "scripts/verify-pocket-scanner-geometry-repair.mjs": "21f25733510ee182a5bb3c07fa5de3b2cc62de8896e14262c5eb912e81cd3587"
+  },
+  "unchangedRequestFallbackScorerHashes": {
+    "app/api/pocket/analyse/route.ts": "7b47dcd1d25cc03213a3b0c9052fb24a10418c34f5ed76e5c06953a0c34d4ea7",
+    "app/api/pocket/precision-fallback.ts": "a440dfd6d78aade5bbfb95e5ffdbe8e73d22e5cf72fc39355476e037725db711",
+    "scripts/pocket-monaco-internal-diagnostics.ts": "6a1296448dfd52de25ceedf19c8c5bcae606f762db6c5414f6ac618ea52269f7"
+  },
+  "independentReviewSha256": "b66c4cd4ac1c593e5ee9afc163898f7bd93a9240c87bc1cb14ff8a8dde568e10",
+  "frozenPaidRuntime": "20783ed5e8eb95a11df86b0d60766ffcbbf4fa79",
+  "providerCalls": 0,
+  "hostedDatabaseCalls": 0,
+  "scannerAccuracyAccepted": false,
+  "testedSourceCommit": "97925f7620313ba6a6ebc377c9c9340a42889875",
+  "testedSourceTree": "244d7af95228d619d0b1ebb60e9b93ea764d9255",
+  "hostedAcceptance": "PASS",
+  "focusedRun": 40097778572,
+  "imageRun": 40097797530,
+  "independentCIReceiptSha256": "4ae982c107a31f057b2b653a370a96a7e237f9fb86e970731b7f1686c0554eec"
+}

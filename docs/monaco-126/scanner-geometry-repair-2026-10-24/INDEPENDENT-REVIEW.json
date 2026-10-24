@@ -1,0 +1,117 @@
+{
+  "kind": "POCKET_SCANNER_GEOMETRY_BOUNDS_REPAIR_INDEPENDENT_REVIEW",
+  "reviewedAt": "2026-10-24T13:19:36.451641+00:00",
+  "status": "ACCEPTED_FOR_ISOLATED_SOURCE_PUBLICATION_EXACT_SOURCE_CI_PENDING",
+  "branch": "monaco-scanner-geometry-repair-126-20261024",
+  "baseCommit": "b118c7a38a35514eb4cbd4cc86b3341de91a5ca5",
+  "acceptedAppBeforeRepair": "2812bfbc6e8f62e93d0bc56957fd5ce71cc819dc",
+  "frozenPaidRuntime": "20783ed5e8eb95a11df86b0d60766ffcbbf4fa79",
+  "candidateCommit": null,
+  "candidateIdentityMeaning": "Reviewed current file bytes identified below, not the unchanged base commit. Root must bind these bytes to the actual published commit and CI result.",
+  "reviewedSourceHashes": {
+    "app/api/pocket/analysis-calibration.ts": "50f6b5dde09030422cc9ddbb71660b11bf902a58c0beea92b1b02c190e1360d5",
+    "app/api/pocket/liquidity-chain.ts": "88c222d3f0c788015f8faa9ef8f86c15c08ac585fba998c0d18c795a9256c2f2",
+    "tests/pocket-calibration-plot-bounds.test.ts": "01499ed3f2b953f8a5a0b94f03e5c49e6a6ec49115ebfa56a1b2195cab1bf1ea",
+    "tests/pocket-launch-hardening.test.ts": "6c9a52112610d8081fd83503b2f171ea445da28ef4f931eb6161d9136cdbac78",
+    "vercel.json": "3c5afa97890b0e97e5bf4c23761afc01bec7820a66e4d8055adddc9fa3544b39",
+    ".github/workflows/pocket-scanner-geometry-repair-qa.yml": "7751e6b51f5656ea6cdbbf40cda223bcf809201f1766e5c2b52d8f3ae7b6b8a9",
+    "scripts/verify-pocket-scanner-geometry-repair.mjs": "21f25733510ee182a5bb3c07fa5de3b2cc62de8896e14262c5eb912e81cd3587"
+  },
+  "readOnlyConsumerHashes": {
+    "app/pocket/original-pixel-levels.ts": "8d32737a4f9168d6a6290370116a1fc0f9dbae40fe0d121981015d3f08337d17",
+    "app/pocket/original-pixel-geometry.ts": "c517c9e42c4323de5f5faaebedcbdacac46273c05511bb08fb6911a4da2b0dd1",
+    "app/pocket/use-original-chart-measurement.ts": "f72c41f181f6b167210e8edc4ea0f8eec07b2cdafaa14836d298a6a1989431f7",
+    "app/pocket/source-placement.ts": "85ba9feee2edc823af74fbfaf50d186e682015b34de710dd1dc4bd95af1cb419",
+    "app/pocket/OriginalChartEvidence.tsx": "5c19c5c5c92869f8cb5b91c34801128e5c458be1608debaf6094256a0e97f1c4",
+    "app/pocket/PocketBullseye.tsx": "8b83bd304517be9778c1ce779db8e26824b1a3cd4e1d711e09b360d2c040f488"
+  },
+  "unchangedRequestFallbackScorerHashes": {
+    "app/api/pocket/analyse/route.ts": "7b47dcd1d25cc03213a3b0c9052fb24a10418c34f5ed76e5c06953a0c34d4ea7",
+    "app/api/pocket/precision-fallback.ts": "a440dfd6d78aade5bbfb95e5ffdbe8e73d22e5cf72fc39355476e037725db711",
+    "scripts/pocket-monaco-internal-diagnostics.ts": "6a1296448dfd52de25ceedf19c8c5bcae606f762db6c5414f6ac618ea52269f7"
+  },
+  "controls": {
+    "bounds": "Shared validator requires all four finite numeric percentages in [0,100], ordered left<right and top<bottom; null, arrays, missing edges, numeric strings, infinities and inverted/degenerate rectangles reject. No default/clamp/synthetic 101 edge remains for plot bounds.",
+    "rawPreservation": "Invalid/missing plotBounds and original anchors are retained without mutation; omitted properties remain omitted. Calibrated output is a separate object.",
+    "dependentGeometry": "Invalid bounds withhold levels/fibs and liquidity zones, suppress scale-readable promotion, and preserve PARTIAL/BLOCKED status for existing candidate claims.",
+    "witnessSemantics": "Explicit empty, missing, malformed and rejected nonempty observations retain their original value. NONE remains a model report, while the actual chain rejects invalid bounds; no verified absence or true-negative credit is introduced.",
+    "validBehavior": "Ordinary valid percentage bounds, consistent anchors, level output and verified witness-chain behavior retain their existing positive path. Narrow literal percentages are no longer expanded; no fractional unit guess or multiplication is performed.",
+    "originalImageOverlays": "Invalid bounds force scaleReadable false, preventing a new source measurement. Binding identity suppresses stale measurements; original-pixel level/pattern/liquidity selectors additionally hold invalid bounds. Raw API pattern candidates/prose remain, but do not gain measured drawable overlay or semantic acceptance.",
+    "retainedCase": "Before replay reproduces stored bottom101/readable-scale result. Candidate keeps top100/bottom20 invalid, sets scaleReadable false, keeps witnesses and PARTIAL/BLOCKED liquidity, and emits no numeric level/fib/zone. Raw four NONCONFORMANT levels and 1px oracle are unchanged.",
+    "testDesign": "Ten new public-behavior regressions exercise exact retained malformed bounds, 15 invalid shape variants, omitted properties, malformed levels, witness states, explicit NONE, an actual originalPixelLevels positive/negative consumer, valid behavior, literal fraction-sized inputs and non-object robustness. Existing test change strengthens missing-bounds containment instead of accepting a drawable empty-price level.",
+    "ciBoundary": "Exact-commit checkout on one isolated push branch, read-only contents permission, no protected environment or secret references, nonfunctional public placeholders, inference flags false, unchanged lockfile install, strict TAP verifier, typecheck/lint/security scan, retained receipts, and automatic deployment disabled for the exact branch."
+  },
+  "localEvidence": {
+    "authorReceiptSha256": "ac3dd0491e76fa28d6ad9a8e17488b30456cab60ca74f55207e86a2f15b06bea",
+    "logs": {
+      "RED.tap": {
+        "sha256": "94c92e7f6f02c0e740874af3a84819b2cdf8f9ebd4fdbdb0ff2c11aebd143cc1",
+        "counts": {
+          "tests": 10,
+          "pass": 2,
+          "fail": 8,
+          "cancelled": 0,
+          "skipped": 0,
+          "todo": 0
+        }
+      },
+      "GREEN.tap": {
+        "sha256": "b9b8b52fc50e9cf597e98fb3c85de6376bd5dcd9485cba9700078cd26394e639",
+        "counts": {
+          "tests": 10,
+          "pass": 10,
+          "fail": 0,
+          "cancelled": 0,
+          "skipped": 0,
+          "todo": 0
+        }
+      },
+      "AFFECTED.tap": {
+        "sha256": "5f59788f92bb60517050a5f5bd91a3a5bd38bb898b65a62d98fa5cb2848ac3a8",
+        "counts": {
+          "tests": 68,
+          "pass": 68,
+          "fail": 0,
+          "cancelled": 0,
+          "skipped": 0,
+          "todo": 0
+        }
+      }
+    },
+    "distinctTests": 68,
+    "newTestsIncluded": 10,
+    "existingTestsIncluded": 58,
+    "counting": "GREEN is a repeated subset of AFFECTED, not ten additional tests. Total distinct tests is 68, not 78.",
+    "testsRerunByReviewer": 0,
+    "localHarnessLimitation": {
+      "command": "node --test tests/pocket-calibration-plot-bounds.test.ts",
+      "observed": "Default process isolation returned one test-file harness failure with no underlying diagnostic and did not report the10 actual test cases. It is not counted as a product regression.",
+      "fallback": "Same suite with --test-isolation=none produced the real assertions recorded in RED/GREEN. Hosted CI retains normal isolation.",
+      "log": "RED-HARNESS-REFUSAL.txt",
+      "logSha256": "7fa47ad954a7a9e99bde3bbca243c86706ee291da62d68ef62967afc43d55799"
+    },
+    "retainedReplaySha256": "97b7516f1128585ac884e99daf56650a682833100401ad4db74901c400fe5c34",
+    "retainedReplayCommandSha256": "ff6d6721ea54f035adaccaad907b110ba82b98b0831630626672394151158aa8"
+  },
+  "findings": {
+    "blocking": [],
+    "materialLimits": [
+      "This is strict invalid-bound containment, not correct plot detection or coordinate recovery.",
+      "Pattern candidate prose and semantics are not newly accepted by this patch.",
+      "Existing mounted OCR still depends on model bounds/ticks and API-surviving candidates; the separate pixel-derived plot-ROI candidate is not reviewed or accepted here.",
+      "Raw first-case geometry remains failed; suppressed assertions are not improved accuracy.",
+      "Hosted exact-source CI has not run for this reviewed candidate at receipt creation.",
+      "No production deployment or paid re-execution is authorized by this review."
+    ]
+  },
+  "publicationRecommendation": "Root may publish these exact reviewed bytes to the isolated disabled-deployment branch and run the prepared free CI. Keep all remaining paid cases HOLD and preserve the frozen evaluation result/runtime.",
+  "reviewerSideEffects": {
+    "productionOrTestEdits": 0,
+    "testsRerun": 0,
+    "providerCalls": 0,
+    "hostedDatabaseCalls": 0,
+    "privateKeyReads": 0,
+    "heldOutReads": 0,
+    "remoteMutations": 0
+  }
+}

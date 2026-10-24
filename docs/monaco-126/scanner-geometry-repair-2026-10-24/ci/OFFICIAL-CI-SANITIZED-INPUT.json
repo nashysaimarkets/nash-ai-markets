@@ -1,0 +1,1417 @@
+{
+  "retrievedAt": "2026-10-24T13:26:59.888Z",
+  "sourceCommit": {
+    "sha": "97925f7620313ba6a6ebc377c9c9340a42889875",
+    "node_id": "C_kwDOTWGF-doAKDk3OTI1Zjc2MjAzMTNiYTZhNmViYzM3N2M5YzkzNDBhNDI4ODk4NzU",
+    "url": "https://api.github.com/repos/nashysaimarkets/nash-ai-markets/git/commits/97925f7620313ba6a6ebc377c9c9340a42889875",
+    "html_url": "https://github.com/nashysaimarkets/nash-ai-markets/commit/97925f7620313ba6a6ebc377c9c9340a42889875",
+    "author": {
+      "name": "nashysaimarkets",
+      "email": "hello@nashaimarkets.com",
+      "date": "2026-10-24T13:21:18Z"
+    },
+    "committer": {
+      "name": "nashysaimarkets",
+      "email": "hello@nashaimarkets.com",
+      "date": "2026-10-24T13:21:18Z"
+    },
+    "tree": {
+      "sha": "244d7af95228d619d0b1ebb60e9b93ea764d9255",
+      "url": "https://api.github.com/repos/nashysaimarkets/nash-ai-markets/git/trees/244d7af95228d619d0b1ebb60e9b93ea764d9255"
+    },
+    "message": "fix(pocket): reject invalid plot bounds without inventing geometry",
+    "parents": [
+      {
+        "sha": "b118c7a38a35514eb4cbd4cc86b3341de91a5ca5",
+        "url": "https://api.github.com/repos/nashysaimarkets/nash-ai-markets/git/commits/b118c7a38a35514eb4cbd4cc86b3341de91a5ca5",
+        "html_url": "https://github.com/nashysaimarkets/nash-ai-markets/commit/b118c7a38a35514eb4cbd4cc86b3341de91a5ca5"
+      }
+    ],
+    "verification": {
+      "verified": false,
+      "reason": "unsigned",
+      "signature": null,
+      "payload": null,
+      "verified_at": null
+    }
+  },
+  "sourceTreeSha": "244d7af95228d619d0b1ebb60e9b93ea764d9255",
+  "imageActualMergeCommit": {
+    "sha": "2143a8f7887db68b7cf0b20b9bef6df06e7a768c",
+    "node_id": "C_kwDOTWGF-doAKDIxNDNhOGY3ODg3ZGI2OGI3Y2YwYjIwYjliZWY2ZGYwNmU3YTc2OGM",
+    "url": "https://api.github.com/repos/nashysaimarkets/nash-ai-markets/git/commits/2143a8f7887db68b7cf0b20b9bef6df06e7a768c",
+    "html_url": "https://github.com/nashysaimarkets/nash-ai-markets/commit/2143a8f7887db68b7cf0b20b9bef6df06e7a768c",
+    "author": {
+      "name": "nashysaimarkets",
+      "email": "hello@nashaimarkets.com",
+      "date": "2026-10-24T13:21:37Z"
+    },
+    "committer": {
+      "name": "GitHub",
+      "email": "noreply@github.com",
+      "date": "2026-10-24T13:21:37Z"
+    },
+    "tree": {
+      "sha": "244d7af95228d619d0b1ebb60e9b93ea764d9255",
+      "url": "https://api.github.com/repos/nashysaimarkets/nash-ai-markets/git/trees/244d7af95228d619d0b1ebb60e9b93ea764d9255"
+    },
+    "message": "Merge 97925f7620313ba6a6ebc377c9c9340a42889875 into b118c7a38a35514eb4cbd4cc86b3341de91a5ca5",
+    "parents": [
+      {
+        "sha": "b118c7a38a35514eb4cbd4cc86b3341de91a5ca5",
+        "url": "https://api.github.com/repos/nashysaimarkets/nash-ai-markets/git/commits/b118c7a38a35514eb4cbd4cc86b3341de91a5ca5",
+        "html_url": "https://github.com/nashysaimarkets/nash-ai-markets/commit/b118c7a38a35514eb4cbd4cc86b3341de91a5ca5"
+      },
+      {
+        "sha": "97925f7620313ba6a6ebc377c9c9340a42889875",
+        "url": "https://api.github.com/repos/nashysaimarkets/nash-ai-markets/git/commits/97925f7620313ba6a6ebc377c9c9340a42889875",
+        "html_url": "https://github.com/nashysaimarkets/nash-ai-markets/commit/97925f7620313ba6a6ebc377c9c9340a42889875"
+      }
+    ],
+    "verification": {
+      "verified": true,
+      "reason": "valid",
+      "signature": "-----BEGIN PGP SIGNATURE-----\n\nwsFcBAABCAAQBQJq3LDhCRC1aQ7uu5UhlAAAka4QABWNWTZfI8k4iaw+UoSlS2kR\nOv/2BmzJ7FpASH3q8cK+W7f1DWzzPSGQgYbo34lPJQMCFR8cVaDmC50dgOF+tVZF\n9/Y4EcFUNV/BxcVT5kW0D41kzcyjKwDAs1ygfRjE9rZ6J6GbA0Uj90AWrXkBHrHV\n65RLE6b8DizrEGHP5BOvAR7CcPewRlA1eZFFYO/qf1EF2anbaT5u04x63S6wSp4M\nmO+uwkC0kso0HYxqwe3tacOnxZMtNnEKe8kaJRnyVeQk5kEBWiuVyEIuWg2lvRuZ\nm5qRyroA7LwBriJJukxGqijmNyr5yzLXhV1vRfTLcxJTczjkFl+Ilbh1pZYeJuVg\nWcExxKhPT+4N/+YJhUPX/et1TQF1kHmOQnuLGjwzr8q8JDbcAHREgmC4Zzb6kBNA\nokhBFMPTr7bNHmgd5BFmo/CAUZwOTpUBQbADWabT+6QkgrUDOvE4asmRSN+aaKPU\nfFhCaDwsPQzewwmV6Ktbu7pu8R7yLPx3V8S9A/d3gb9KfcZYnu2fwaY9BLFdIHMs\nZshzomcVkPy5r/HKXDLvMLfronvxDyGYTQrTMoCCgVqLApCRLb0u2mB90B80WQ6x\ncvHhHKYxyDNHTBomuboAqrDP8IePvf/iyM0MAKP6gHqq06KXXPGFIRcpvIE7zRM1\nqFYstYJD/H3SXgj3bWcl\n=i0l7\n-----END PGP SIGNATURE-----\n",
+      "payload": "tree 244d7af95228d619d0b1ebb60e9b93ea764d9255\nparent b118c7a38a35514eb4cbd4cc86b3341de91a5ca5\nparent 97925f7620313ba6a6ebc377c9c9340a42889875\nauthor nashysaimarkets <hello@nashaimarkets.com> 1792848097 +0100\ncommitter GitHub <noreply@github.com> 1792848097 +0100\n\nMerge 97925f7620313ba6a6ebc377c9c9340a42889875 into b118c7a38a35514eb4cbd4cc86b3341de91a5ca5\n",
+      "verified_at": "2026-10-24T13:21:37Z"
+    }
+  },
+  "runs": [
+    {
+      "id": 40097778572,
+      "name": "Pocket scanner geometry repair affected acceptance",
+      "headSha": "97925f7620313ba6a6ebc377c9c9340a42889875",
+      "headBranch": "monaco-scanner-geometry-repair-126-20261024",
+      "path": ".github/workflows/pocket-scanner-geometry-repair-qa.yml",
+      "event": "push",
+      "runAttempt": 1,
+      "status": "completed",
+      "conclusion": "success",
+      "createdAt": "2026-10-24T13:21:23Z",
+      "updatedAt": "2026-10-24T13:22:23Z",
+      "jobs": [
+        {
+          "id": 120883538258,
+          "runId": 40097778572,
+          "headSha": "97925f7620313ba6a6ebc377c9c9340a42889875",
+          "runAttempt": 1,
+          "name": "geometry-repair",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-10-24T13:21:26Z",
+          "completedAt": "2026-10-24T13:22:23Z",
+          "steps": [
+            {
+              "name": "Set up job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 1,
+              "started_at": "2026-10-24T13:21:27Z",
+              "completed_at": "2026-10-24T13:21:28Z"
+            },
+            {
+              "name": "Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 2,
+              "started_at": "2026-10-24T13:21:28Z",
+              "completed_at": "2026-10-24T13:21:29Z"
+            },
+            {
+              "name": "Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 3,
+              "started_at": "2026-10-24T13:21:29Z",
+              "completed_at": "2026-10-24T13:21:35Z"
+            },
+            {
+              "name": "Confirm exact source and disabled automatic deployment",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 4,
+              "started_at": "2026-10-24T13:21:35Z",
+              "completed_at": "2026-10-24T13:21:35Z"
+            },
+            {
+              "name": "Install unchanged locked dependencies",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 5,
+              "started_at": "2026-10-24T13:21:35Z",
+              "completed_at": "2026-10-24T13:21:56Z"
+            },
+            {
+              "name": "Verify affected calibration and original-coordinate regressions",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 6,
+              "started_at": "2026-10-24T13:21:56Z",
+              "completed_at": "2026-10-24T13:21:57Z"
+            },
+            {
+              "name": "Check affected source integration",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 7,
+              "started_at": "2026-10-24T13:21:57Z",
+              "completed_at": "2026-10-24T13:22:15Z"
+            },
+            {
+              "name": "Retain exact-source acceptance receipts",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 8,
+              "started_at": "2026-10-24T13:22:15Z",
+              "completed_at": "2026-10-24T13:22:17Z"
+            },
+            {
+              "name": "Post Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 15,
+              "started_at": "2026-10-24T13:22:17Z",
+              "completed_at": "2026-10-24T13:22:20Z"
+            },
+            {
+              "name": "Post Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 16,
+              "started_at": "2026-10-24T13:22:20Z",
+              "completed_at": "2026-10-24T13:22:20Z"
+            },
+            {
+              "name": "Complete job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 17,
+              "started_at": "2026-10-24T13:22:20Z",
+              "completed_at": "2026-10-24T13:22:20Z"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 40097797530,
+      "name": "Bullseye image torture",
+      "headSha": "97925f7620313ba6a6ebc377c9c9340a42889875",
+      "headBranch": "monaco-scanner-geometry-repair-126-20261024",
+      "path": ".github/workflows/bullseye-image-torture.yml",
+      "event": "pull_request",
+      "runAttempt": 1,
+      "status": "completed",
+      "conclusion": "success",
+      "createdAt": "2026-10-24T13:21:39Z",
+      "updatedAt": "2026-10-24T13:23:55Z",
+      "jobs": [
+        {
+          "id": 120883593180,
+          "runId": 40097797530,
+          "headSha": "97925f7620313ba6a6ebc377c9c9340a42889875",
+          "runAttempt": 1,
+          "name": "image-torture",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-10-24T13:21:42Z",
+          "completedAt": "2026-10-24T13:23:54Z",
+          "steps": [
+            {
+              "name": "Set up job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 1,
+              "started_at": "2026-10-24T13:21:43Z",
+              "completed_at": "2026-10-24T13:21:43Z"
+            },
+            {
+              "name": "Run actions/checkout@v4",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 2,
+              "started_at": "2026-10-24T13:21:43Z",
+              "completed_at": "2026-10-24T13:21:45Z"
+            },
+            {
+              "name": "Run actions/setup-node@v4",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 3,
+              "started_at": "2026-10-24T13:21:45Z",
+              "completed_at": "2026-10-24T13:21:48Z"
+            },
+            {
+              "name": "Run chmod +x scripts/sites-env.sh scripts/install-ci.sh",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 4,
+              "started_at": "2026-10-24T13:21:48Z",
+              "completed_at": "2026-10-24T13:21:48Z"
+            },
+            {
+              "name": "Run npm run install:ci",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 5,
+              "started_at": "2026-10-24T13:21:48Z",
+              "completed_at": "2026-10-24T13:22:15Z"
+            },
+            {
+              "name": "Verify native rasterization without provider calls",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 6,
+              "started_at": "2026-10-24T13:22:15Z",
+              "completed_at": "2026-10-24T13:22:17Z"
+            },
+            {
+              "name": "Install free browser test runtime",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 7,
+              "started_at": "2026-10-24T13:22:17Z",
+              "completed_at": "2026-10-24T13:22:53Z"
+            },
+            {
+              "name": "Verify real browser pixels, customer Canvas crop and same-origin OCR",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 8,
+              "started_at": "2026-10-24T13:22:53Z",
+              "completed_at": "2026-10-24T13:23:04Z"
+            },
+            {
+              "name": "Verify mobile decision workflows without providers",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 9,
+              "started_at": "2026-10-24T13:23:04Z",
+              "completed_at": "2026-10-24T13:23:08Z"
+            },
+            {
+              "name": "Verify actual redesign mobile intake and successful mocked report",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 10,
+              "started_at": "2026-10-24T13:23:08Z",
+              "completed_at": "2026-10-24T13:23:15Z"
+            },
+            {
+              "name": "Verify customer Level Lab source isolation without providers",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 11,
+              "started_at": "2026-10-24T13:23:15Z",
+              "completed_at": "2026-10-24T13:23:18Z"
+            },
+            {
+              "name": "Build the Vercel Next.js function traces",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 12,
+              "started_at": "2026-10-24T13:23:18Z",
+              "completed_at": "2026-10-24T13:23:51Z"
+            },
+            {
+              "name": "Rasterize from isolated production trace",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 13,
+              "started_at": "2026-10-24T13:23:51Z",
+              "completed_at": "2026-10-24T13:23:52Z"
+            },
+            {
+              "name": "Report live-scan execution path",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 14,
+              "started_at": "2026-10-24T13:23:52Z",
+              "completed_at": "2026-10-24T13:23:52Z"
+            },
+            {
+              "name": "Run labelled image torture corpus",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 15,
+              "started_at": "2026-10-24T13:23:52Z",
+              "completed_at": "2026-10-24T13:23:52Z"
+            },
+            {
+              "name": "Post Run actions/setup-node@v4",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 29,
+              "started_at": "2026-10-24T13:23:52Z",
+              "completed_at": "2026-10-24T13:23:52Z"
+            },
+            {
+              "name": "Post Run actions/checkout@v4",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 30,
+              "started_at": "2026-10-24T13:23:52Z",
+              "completed_at": "2026-10-24T13:23:52Z"
+            },
+            {
+              "name": "Complete job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 31,
+              "started_at": "2026-10-24T13:23:52Z",
+              "completed_at": "2026-10-24T13:23:52Z"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "focusedLogSummary": {
+    "suites": [
+      {
+        "file": "tests/pocket-calibration-plot-bounds.test.ts",
+        "sourceSha256": "01499ed3f2b953f8a5a0b94f03e5c49e6a6ec49115ebfa56a1b2195cab1bf1ea",
+        "status": "PASS",
+        "tests": 10,
+        "pass": 10,
+        "fail": 0,
+        "skipped": 0,
+        "exitCode": 0,
+        "logSha256": "8977712113b8824585d41f6ce9fbd8acbe98abea6be1c956496d34ac04eb679a"
+      },
+      {
+        "file": "tests/pocket-launch-hardening.test.ts",
+        "sourceSha256": "6c9a52112610d8081fd83503b2f171ea445da28ef4f931eb6161d9136cdbac78",
+        "status": "PASS",
+        "tests": 19,
+        "pass": 19,
+        "fail": 0,
+        "skipped": 0,
+        "exitCode": 0,
+        "logSha256": "b65ae926f732d1d8dde76387ea55aab39c887596b00a44b1dfef0d9a7fb0fb0d"
+      },
+      {
+        "file": "tests/pocket-calibration-observations-contract.test.ts",
+        "sourceSha256": "95ae5e5f754badefffb0458ef77c42ff2585fbad44b0d23cc89b3699ff9da09a",
+        "status": "PASS",
+        "tests": 7,
+        "pass": 7,
+        "fail": 0,
+        "skipped": 0,
+        "exitCode": 0,
+        "logSha256": "39d38a84c0a6e1425997032ba2b2416fe815565cc7ea721e8b99438ce0d58aa8"
+      },
+      {
+        "file": "tests/pocket-liquidity-chain-integration.test.ts",
+        "sourceSha256": "8310dcc24e6dcc4987cd6be595be5adf3dabb681e0ae85fad3d4b48d13824273",
+        "status": "PASS",
+        "tests": 9,
+        "pass": 9,
+        "fail": 0,
+        "skipped": 0,
+        "exitCode": 0,
+        "logSha256": "cbe2424587deffa6efb7466003ac7eab3e16a75fcdc192635351ec4412d2f823"
+      },
+      {
+        "file": "tests/pocket-liquidity-event-evidence.test.ts",
+        "sourceSha256": "ea68a9034497472ba35791a12b50d38951effe8ca6b05907d4b50f4f649da184",
+        "status": "PASS",
+        "tests": 6,
+        "pass": 6,
+        "fail": 0,
+        "skipped": 0,
+        "exitCode": 0,
+        "logSha256": "2a8f3d74186c5ce38ecd5c41548bf2d1486b2af4845942b5892d01e828308db9"
+      },
+      {
+        "file": "tests/pocket-pattern-calibration.test.ts",
+        "sourceSha256": "b7b81e6c3bd7050e763f6f770b17fd91ef072a6608c81d4e748cfd160c30ed7d",
+        "status": "PASS",
+        "tests": 5,
+        "pass": 5,
+        "fail": 0,
+        "skipped": 0,
+        "exitCode": 0,
+        "logSha256": "56810e7a82695cb7abe72c492a71dce3725e364bd77b3d7a04c612064799aff3"
+      },
+      {
+        "file": "tests/pocket-pattern-malformed-geometry.test.ts",
+        "sourceSha256": "1bb8bd0816584c9853df8672c68fd154ed5ab3b851d430a0618089f9b7b55dbe",
+        "status": "PASS",
+        "tests": 2,
+        "pass": 2,
+        "fail": 0,
+        "skipped": 0,
+        "exitCode": 0,
+        "logSha256": "13d76b1e04beed35c487ec83c2f4b6b7d34173a6572063bfe4fbd794b5b0500c"
+      },
+      {
+        "file": "tests/pocket-original-levels.test.ts",
+        "sourceSha256": "186d5b5417dabd055649d272ebd9fffb8d718c6251fb515566e1ad8b6714edb8",
+        "status": "PASS",
+        "tests": 3,
+        "pass": 3,
+        "fail": 0,
+        "skipped": 0,
+        "exitCode": 0,
+        "logSha256": "97ad3a127e360d9f24fc2b4b852b4ace7da8e1a986134bf5f034987f45cabe09"
+      },
+      {
+        "file": "tests/pocket-original-geometry.test.ts",
+        "sourceSha256": "784f42d07da26c68549d73af6709106bf16ae4531c694634a4bd4a5a642a5221",
+        "status": "PASS",
+        "tests": 4,
+        "pass": 4,
+        "fail": 0,
+        "skipped": 0,
+        "exitCode": 0,
+        "logSha256": "605915fc2962e17b35b66c121cdf498b6b05c6504c55d923836d0d2290ad456f"
+      },
+      {
+        "file": "tests/pocket-chart-benchmark.test.ts",
+        "sourceSha256": "8eba8560f2c4fd65fa86d77bd84cf8a9fedbaee20c4db04021c1511ee10c63ce",
+        "status": "PASS",
+        "tests": 3,
+        "pass": 3,
+        "fail": 0,
+        "skipped": 0,
+        "exitCode": 0,
+        "logSha256": "90363b976877ddf0e9193fd7706e97af1c986964a131058ece9ff8376a839c3c"
+      }
+    ],
+    "total": {
+      "status": "PASS",
+      "totals": {
+        "tests": 68,
+        "pass": 68,
+        "fail": 0,
+        "skipped": 0
+      },
+      "suites": 10
+    },
+    "selected": [
+      "Secret source: Actions",
+      "  ref: 97925f7620313ba6a6ebc377c9c9340a42889875",
+      "  persist-credentials: false",
+      "  GIT_COMMIT_SHA: 97925f7620313ba6a6ebc377c9c9340a42889875",
+      "[command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin 97925f7620313ba6a6ebc377c9c9340a42889875",
+      " * branch            97925f7620313ba6a6ebc377c9c9340a42889875 -> FETCH_HEAD",
+      "[command]/usr/bin/git checkout --progress --force 97925f7620313ba6a6ebc377c9c9340a42889875",
+      "Note: switching to '97925f7620313ba6a6ebc377c9c9340a42889875'.",
+      "97925f7620313ba6a6ebc377c9c9340a42889875",
+      "  GIT_COMMIT_SHA: 97925f7620313ba6a6ebc377c9c9340a42889875",
+      "  GIT_COMMIT_SHA: 97925f7620313ba6a6ebc377c9c9340a42889875",
+      "  GIT_COMMIT_SHA: 97925f7620313ba6a6ebc377c9c9340a42889875",
+      "  GIT_COMMIT_SHA: 97925f7620313ba6a6ebc377c9c9340a42889875",
+      "  GIT_COMMIT_SHA: 97925f7620313ba6a6ebc377c9c9340a42889875",
+      "> nash-ai-markets-bullseye@1.0.0-rc.2 typecheck",
+      "> tsc --noEmit --incremental false",
+      "> node scripts/check-secrets.mjs",
+      "Secret-pattern scan passed across 1357 version-control candidates.",
+      "  name: pocket-scanner-geometry-repair-97925f7620313ba6a6ebc377c9c9340a42889875",
+      "  GIT_COMMIT_SHA: 97925f7620313ba6a6ebc377c9c9340a42889875",
+      "Artifact pocket-scanner-geometry-repair-97925f7620313ba6a6ebc377c9c9340a42889875.zip successfully finalized. Artifact ID 12561214323",
+      "Artifact pocket-scanner-geometry-repair-97925f7620313ba6a6ebc377c9c9340a42889875 has been successfully uploaded! Final size is 8384 bytes. Artifact ID is 12561214323"
+    ]
+  },
+  "imageScenarioResults": [
+    {
+      "cases": [
+        {
+          "id": "range-clear",
+          "results": {
+            "verified": {
+              "status": "verified",
+              "anchors": [
+                {
+                  "price": 110,
+                  "y": 13.25
+                },
+                {
+                  "price": 105,
+                  "y": 30.75
+                },
+                {
+                  "price": 100,
+                  "y": 48.25
+                },
+                {
+                  "price": 95,
+                  "y": 65.75
+                },
+                {
+                  "price": 90,
+                  "y": 83.25
+                }
+              ],
+              "matchedModelTicks": 5,
+              "axisLeft": 832
+            },
+            "cropVerified": {
+              "status": "verified",
+              "anchors": [
+                {
+                  "price": 110,
+                  "y": 8.88888888888889
+                },
+                {
+                  "price": 105,
+                  "y": 30.19607843137255
+                },
+                {
+                  "price": 100,
+                  "y": 51.503267973856204
+                },
+                {
+                  "price": 95,
+                  "y": 72.94117647058823
+                },
+                {
+                  "price": 90,
+                  "y": 94.24836601307189
+                }
+              ],
+              "matchedModelTicks": 5,
+              "axisLeft": 1294.2222222222222
+            },
+            "misaligned": {
+              "status": "held",
+              "reason": "Independent price labels need a clearer axis."
+            },
+            "blurred": {
+              "status": "held",
+              "reason": "Price grid could not be independently verified."
+            },
+            "missing": {
+              "status": "held",
+              "reason": "Independent price labels need a clearer axis."
+            },
+            "ocr": {
+              "status": "verified",
+              "anchors": [
+                {
+                  "price": 110,
+                  "y": 13.25
+                },
+                {
+                  "price": 105,
+                  "y": 30.75
+                },
+                {
+                  "price": 100,
+                  "y": 48.25
+                },
+                {
+                  "price": 95,
+                  "y": 65.75
+                },
+                {
+                  "price": 90,
+                  "y": 83.25
+                }
+              ],
+              "matchedModelTicks": 5,
+              "axisLeft": 833
+            },
+            "cropOcr": {
+              "status": "verified",
+              "anchors": [
+                {
+                  "price": 110,
+                  "y": 8.88888888888889
+                },
+                {
+                  "price": 105,
+                  "y": 30.19607843137255
+                },
+                {
+                  "price": 100,
+                  "y": 51.503267973856204
+                },
+                {
+                  "price": 95,
+                  "y": 72.94117647058823
+                },
+                {
+                  "price": 90,
+                  "y": 94.24836601307189
+                }
+              ],
+              "matchedModelTicks": 5,
+              "axisLeft": 1295.5
+            },
+            "missingOcr": {
+              "status": "held",
+              "reason": "Independent price labels need a clearer axis."
+            },
+            "grid": [
+              59.5,
+              79.5,
+              184.5,
+              289.5,
+              394.5,
+              499.5,
+              519.5
+            ],
+            "cropGrid": [
+              37.00000000000001,
+              68,
+              231,
+              393.99999999999994,
+              558,
+              721,
+              752
+            ],
+            "cropDimensions": [
+              1400,
+              765
+            ]
+          }
+        },
+        {
+          "id": "double-top",
+          "results": {
+            "verified": {
+              "status": "verified",
+              "anchors": [
+                {
+                  "price": 110,
+                  "y": 13.25
+                },
+                {
+                  "price": 105,
+                  "y": 30.75
+                },
+                {
+                  "price": 100,
+                  "y": 48.25
+                },
+                {
+                  "price": 95,
+                  "y": 65.75
+                },
+                {
+                  "price": 90,
+                  "y": 83.25
+                }
+              ],
+              "matchedModelTicks": 5,
+              "axisLeft": 832
+            },
+            "cropVerified": {
+              "status": "verified",
+              "anchors": [
+                {
+                  "price": 110,
+                  "y": 8.88888888888889
+                },
+                {
+                  "price": 105,
+                  "y": 30.19607843137255
+                },
+                {
+                  "price": 100,
+                  "y": 51.503267973856204
+                },
+                {
+                  "price": 95,
+                  "y": 72.94117647058823
+                },
+                {
+                  "price": 90,
+                  "y": 94.24836601307189
+                }
+              ],
+              "matchedModelTicks": 5,
+              "axisLeft": 1294.2222222222222
+            },
+            "misaligned": {
+              "status": "held",
+              "reason": "Independent price labels need a clearer axis."
+            },
+            "blurred": {
+              "status": "held",
+              "reason": "Price grid could not be independently verified."
+            },
+            "missing": {
+              "status": "held",
+              "reason": "Independent price labels need a clearer axis."
+            },
+            "ocr": {
+              "status": "verified",
+              "anchors": [
+                {
+                  "price": 110,
+                  "y": 13.25
+                },
+                {
+                  "price": 105,
+                  "y": 30.75
+                },
+                {
+                  "price": 100,
+                  "y": 48.25
+                },
+                {
+                  "price": 95,
+                  "y": 65.75
+                },
+                {
+                  "price": 90,
+                  "y": 83.25
+                }
+              ],
+              "matchedModelTicks": 5,
+              "axisLeft": 833
+            },
+            "cropOcr": {
+              "status": "verified",
+              "anchors": [
+                {
+                  "price": 110,
+                  "y": 8.88888888888889
+                },
+                {
+                  "price": 105,
+                  "y": 30.19607843137255
+                },
+                {
+                  "price": 100,
+                  "y": 51.503267973856204
+                },
+                {
+                  "price": 95,
+                  "y": 72.94117647058823
+                },
+                {
+                  "price": 90,
+                  "y": 94.24836601307189
+                }
+              ],
+              "matchedModelTicks": 5,
+              "axisLeft": 1295.5
+            },
+            "missingOcr": {
+              "status": "held",
+              "reason": "Independent price labels need a clearer axis."
+            },
+            "grid": [
+              59.5,
+              79.5,
+              184.5,
+              289.5,
+              394.5,
+              499.5,
+              519.5
+            ],
+            "cropGrid": [
+              37.00000000000001,
+              68,
+              231,
+              393.99999999999994,
+              558,
+              721,
+              752
+            ],
+            "cropDimensions": [
+              1400,
+              765
+            ]
+          }
+        },
+        {
+          "id": "head-shoulders",
+          "results": {
+            "verified": {
+              "status": "verified",
+              "anchors": [
+                {
+                  "price": 110,
+                  "y": 13.25
+                },
+                {
+                  "price": 105,
+                  "y": 30.75
+                },
+                {
+                  "price": 100,
+                  "y": 48.25
+                },
+                {
+                  "price": 95,
+                  "y": 65.75
+                },
+                {
+                  "price": 90,
+                  "y": 83.25
+                }
+              ],
+              "matchedModelTicks": 5,
+              "axisLeft": 832
+            },
+            "cropVerified": {
+              "status": "verified",
+              "anchors": [
+                {
+                  "price": 110,
+                  "y": 8.88888888888889
+                },
+                {
+                  "price": 105,
+                  "y": 30.19607843137255
+                },
+                {
+                  "price": 100,
+                  "y": 51.503267973856204
+                },
+                {
+                  "price": 95,
+                  "y": 72.94117647058823
+                },
+                {
+                  "price": 90,
+                  "y": 94.24836601307189
+                }
+              ],
+              "matchedModelTicks": 5,
+              "axisLeft": 1294.2222222222222
+            },
+            "misaligned": {
+              "status": "held",
+              "reason": "Independent price labels need a clearer axis."
+            },
+            "blurred": {
+              "status": "held",
+              "reason": "Price grid could not be independently verified."
+            },
+            "missing": {
+              "status": "held",
+              "reason": "Independent price labels need a clearer axis."
+            },
+            "ocr": {
+              "status": "verified",
+              "anchors": [
+                {
+                  "price": 110,
+                  "y": 13.25
+                },
+                {
+                  "price": 105,
+                  "y": 30.75
+                },
+                {
+                  "price": 100,
+                  "y": 48.25
+                },
+                {
+                  "price": 95,
+                  "y": 65.75
+                },
+                {
+                  "price": 90,
+                  "y": 83.25
+                }
+              ],
+              "matchedModelTicks": 5,
+              "axisLeft": 833
+            },
+            "cropOcr": {
+              "status": "verified",
+              "anchors": [
+                {
+                  "price": 110,
+                  "y": 8.88888888888889
+                },
+                {
+                  "price": 105,
+                  "y": 30.19607843137255
+                },
+                {
+                  "price": 100,
+                  "y": 51.503267973856204
+                },
+                {
+                  "price": 95,
+                  "y": 72.94117647058823
+                },
+                {
+                  "price": 90,
+                  "y": 94.24836601307189
+                }
+              ],
+              "matchedModelTicks": 5,
+              "axisLeft": 1295.5
+            },
+            "missingOcr": {
+              "status": "held",
+              "reason": "Independent price labels need a clearer axis."
+            },
+            "grid": [
+              59.5,
+              79.5,
+              184.5,
+              289.5,
+              394.5,
+              499.5,
+              519.5
+            ],
+            "cropGrid": [
+              37.00000000000001,
+              68,
+              231,
+              393.99999999999994,
+              558,
+              721,
+              752
+            ],
+            "cropDimensions": [
+              1400,
+              765
+            ]
+          }
+        },
+        {
+          "id": "sweep-reclaim",
+          "results": {
+            "verified": {
+              "status": "verified",
+              "anchors": [
+                {
+                  "price": 110,
+                  "y": 13.25
+                },
+                {
+                  "price": 105,
+                  "y": 30.75
+                },
+                {
+                  "price": 100,
+                  "y": 48.25
+                },
+                {
+                  "price": 95,
+                  "y": 65.75
+                },
+                {
+                  "price": 90,
+                  "y": 83.25
+                }
+              ],
+              "matchedModelTicks": 5,
+              "axisLeft": 832
+            },
+            "cropVerified": {
+              "status": "verified",
+              "anchors": [
+                {
+                  "price": 110,
+                  "y": 8.88888888888889
+                },
+                {
+                  "price": 105,
+                  "y": 30.19607843137255
+                },
+                {
+                  "price": 100,
+                  "y": 51.503267973856204
+                },
+                {
+                  "price": 95,
+                  "y": 72.94117647058823
+                },
+                {
+                  "price": 90,
+                  "y": 94.24836601307189
+                }
+              ],
+              "matchedModelTicks": 5,
+              "axisLeft": 1294.2222222222222
+            },
+            "misaligned": {
+              "status": "held",
+              "reason": "Independent price labels need a clearer axis."
+            },
+            "blurred": {
+              "status": "held",
+              "reason": "Price grid could not be independently verified."
+            },
+            "missing": {
+              "status": "held",
+              "reason": "Independent price labels need a clearer axis."
+            },
+            "ocr": {
+              "status": "verified",
+              "anchors": [
+                {
+                  "price": 110,
+                  "y": 13.25
+                },
+                {
+                  "price": 105,
+                  "y": 30.75
+                },
+                {
+                  "price": 100,
+                  "y": 48.25
+                },
+                {
+                  "price": 95,
+                  "y": 65.75
+                },
+                {
+                  "price": 90,
+                  "y": 83.25
+                }
+              ],
+              "matchedModelTicks": 5,
+              "axisLeft": 833
+            },
+            "cropOcr": {
+              "status": "verified",
+              "anchors": [
+                {
+                  "price": 110,
+                  "y": 8.88888888888889
+                },
+                {
+                  "price": 105,
+                  "y": 30.19607843137255
+                },
+                {
+                  "price": 100,
+                  "y": 51.503267973856204
+                },
+                {
+                  "price": 95,
+                  "y": 72.94117647058823
+                },
+                {
+                  "price": 90,
+                  "y": 94.24836601307189
+                }
+              ],
+              "matchedModelTicks": 5,
+              "axisLeft": 1295.5
+            },
+            "missingOcr": {
+              "status": "held",
+              "reason": "Independent price labels need a clearer axis."
+            },
+            "grid": [
+              59.5,
+              79.5,
+              184.5,
+              289.5,
+              394.5,
+              499.5,
+              519.5
+            ],
+            "cropGrid": [
+              37.00000000000001,
+              68,
+              231,
+              393.99999999999994,
+              558,
+              721,
+              752
+            ],
+            "cropDimensions": [
+              1400,
+              765
+            ]
+          }
+        },
+        {
+          "id": "near-miss-chop",
+          "results": {
+            "verified": {
+              "status": "verified",
+              "anchors": [
+                {
+                  "price": 110,
+                  "y": 13.25
+                },
+                {
+                  "price": 105,
+                  "y": 30.75
+                },
+                {
+                  "price": 100,
+                  "y": 48.25
+                },
+                {
+                  "price": 95,
+                  "y": 65.75
+                },
+                {
+                  "price": 90,
+                  "y": 83.25
+                }
+              ],
+              "matchedModelTicks": 5,
+              "axisLeft": 832
+            },
+            "cropVerified": {
+              "status": "verified",
+              "anchors": [
+                {
+                  "price": 110,
+                  "y": 8.88888888888889
+                },
+                {
+                  "price": 105,
+                  "y": 30.19607843137255
+                },
+                {
+                  "price": 100,
+                  "y": 51.503267973856204
+                },
+                {
+                  "price": 95,
+                  "y": 72.94117647058823
+                },
+                {
+                  "price": 90,
+                  "y": 94.24836601307189
+                }
+              ],
+              "matchedModelTicks": 5,
+              "axisLeft": 1294.2222222222222
+            },
+            "misaligned": {
+              "status": "held",
+              "reason": "Independent price labels need a clearer axis."
+            },
+            "blurred": {
+              "status": "held",
+              "reason": "Price grid could not be independently verified."
+            },
+            "missing": {
+              "status": "held",
+              "reason": "Independent price labels need a clearer axis."
+            },
+            "ocr": {
+              "status": "verified",
+              "anchors": [
+                {
+                  "price": 110,
+                  "y": 13.25
+                },
+                {
+                  "price": 105,
+                  "y": 30.75
+                },
+                {
+                  "price": 100,
+                  "y": 48.25
+                },
+                {
+                  "price": 95,
+                  "y": 65.75
+                },
+                {
+                  "price": 90,
+                  "y": 83.25
+                }
+              ],
+              "matchedModelTicks": 5,
+              "axisLeft": 833
+            },
+            "cropOcr": {
+              "status": "verified",
+              "anchors": [
+                {
+                  "price": 110,
+                  "y": 8.88888888888889
+                },
+                {
+                  "price": 105,
+                  "y": 30.19607843137255
+                },
+                {
+                  "price": 100,
+                  "y": 51.503267973856204
+                },
+                {
+                  "price": 95,
+                  "y": 72.94117647058823
+                },
+                {
+                  "price": 90,
+                  "y": 94.24836601307189
+                }
+              ],
+              "matchedModelTicks": 5,
+              "axisLeft": 1295.5
+            },
+            "missingOcr": {
+              "status": "held",
+              "reason": "Independent price labels need a clearer axis."
+            },
+            "grid": [
+              59.5,
+              79.5,
+              184.5,
+              289.5,
+              394.5,
+              499.5,
+              519.5
+            ],
+            "cropGrid": [
+              37.00000000000001,
+              68,
+              231,
+              393.99999999999994,
+              558,
+              721,
+              752
+            ],
+            "cropDimensions": [
+              1400,
+              765
+            ]
+          }
+        },
+        {
+          "id": "degraded-no-signal",
+          "results": {
+            "verified": {
+              "status": "held",
+              "reason": "Price grid could not be independently verified."
+            },
+            "cropVerified": {
+              "status": "held",
+              "reason": "Price grid could not be independently verified."
+            },
+            "misaligned": {
+              "status": "held",
+              "reason": "Price grid could not be independently verified."
+            },
+            "blurred": {
+              "status": "held",
+              "reason": "Price grid could not be independently verified."
+            },
+            "missing": {
+              "status": "held",
+              "reason": "Price grid could not be independently verified."
+            },
+            "ocr": {
+              "status": "held",
+              "reason": "Price grid could not be independently verified."
+            },
+            "cropOcr": {
+              "status": "held",
+              "reason": "Price grid could not be independently verified."
+            },
+            "missingOcr": {
+              "status": "held",
+              "reason": "Price grid could not be independently verified."
+            },
+            "grid": [],
+            "cropGrid": [],
+            "cropDimensions": [
+              1400,
+              765
+            ]
+          }
+        }
+      ],
+      "externalRequests": [],
+      "jsErrors": [],
+      "providerCalls": 0
+    },
+    {
+      "checks": [
+        "no automatic billed requests",
+        "user-defined plan calculation and actual text download",
+        "shared existing IndexedDB vault preserves exact original image",
+        "follow-up transports exact selected report through existing endpoint",
+        "chart/report remount aborts delayed reply and suppresses stale answer",
+        "process review requires after-image privacy and original saved decision",
+        "Level Lab requires its own explicit privacy confirmation after source facts are locked",
+        "mismatched Level Lab identity holds original drawing",
+        "matched separate Level Lab source passes actual original-pixel local OCR and draws its own overlay",
+        "standalone Level Lab uses locked separate source and actual Canvas JPEG crop",
+        "unavailable official calendar does not assert no event risk",
+        "saved decision deletion completes transaction and refreshes history",
+        "company calendar requires identified company and explicit symbol-matched request"
+      ],
+      "interceptedRequests": [
+        "/api/pocket/follow-up",
+        "/api/pocket/follow-up",
+        "/api/pocket/review",
+        "/api/pocket/preflight",
+        "/api/pocket/levels",
+        "/api/pocket/levels",
+        "/api/pocket/events"
+      ],
+      "providerCalls": 0,
+      "jsErrors": [],
+      "blockedExternalRequests": [],
+      "overflow": {
+        "viewport": 390,
+        "body": 390
+      },
+      "browser": "Chromium emulated mobile 390x844; mocked endpoints; not physical iPhone or scanner accuracy"
+    },
+    {
+      "results": [
+        "image-bound preflight, confirmation and fresh-image privacy PASS",
+        "confirmed payload and safe mock failure PASS",
+        "in-flight cancellation preserves confirmation PASS",
+        "replacement clears lock and rejects stale failure PASS",
+        "successful mocked analysis preserves locked source and exposes workflows PASS",
+        "fact edits remove cached report; reconfirmation and cancelled late response cannot restore it PASS",
+        "editing one slot preserves independent report while the edited slot remains invalidated PASS",
+        "clear workspace removes real reports and images PASS",
+        "synthetic demo tabs and mobile layout PASS",
+        "leaving demo restores the cleared workspace without granting privacy consent PASS"
+      ],
+      "analysisCalls": 7,
+      "preflightCalls": 4,
+      "providerCalls": 0,
+      "jsErrors": [],
+      "overflow": {
+        "viewport": 390,
+        "body": 390
+      },
+      "browser": "Chromium emulated mobile; no physical iPhone or paid scanner evidence"
+    },
+    {
+      "checks": [
+        "actual customer primary upload/fact lock/mocked analysis",
+        "separate Lab photo needs its own fact lock",
+        "Lab request uses its own original bytes and source identity",
+        "separate low-quality Lab result holds drawing and preserves main verdict/report"
+      ],
+      "interceptedRequests": [
+        "/api/pocket/subscription-access",
+        "/api/pocket/preflight",
+        "/api/pocket/analyse",
+        "/api/pocket/preflight",
+        "/api/pocket/levels"
+      ],
+      "providerCalls": 0,
+      "jsErrors": [],
+      "blockedExternalRequests": [],
+      "browser": "Chromium mobile 390x844; mocked providers; no physical-device or scanner accuracy evidence"
+    }
+  ],
+  "focusedArtifacts": [
+    {
+      "id": 12561214323,
+      "name": "pocket-scanner-geometry-repair-97925f7620313ba6a6ebc377c9c9340a42889875",
+      "sizeInBytes": 8384,
+      "digest": "sha256:59eaf37cb97384103cf2ddeae593eb7dbb1d30a02351cdf7934a522248217059",
+      "expired": false,
+      "workflowRun": {
+        "id": 40097778572,
+        "repository_id": 1298236921,
+        "head_repository_id": 1298236921,
+        "head_branch": "monaco-scanner-geometry-repair-126-20261024",
+        "head_sha": "97925f7620313ba6a6ebc377c9c9340a42889875"
+      }
+    }
+  ],
+  "imageArtifactCount": 0
+}

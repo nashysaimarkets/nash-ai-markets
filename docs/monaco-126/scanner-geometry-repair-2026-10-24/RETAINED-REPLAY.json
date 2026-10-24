@@ -1,0 +1,157 @@
+{
+  "kind": "POCKET_SCANNER_GEOMETRY_REPAIR_RETAINED_REPLAY",
+  "baseCommit": "b118c7a38a35514eb4cbd4cc86b3341de91a5ca5",
+  "acceptedAppSource": "2812bfbc6e8f62e93d0bc56957fd5ce71cc819dc",
+  "frozenEvaluationRuntime": "20783ed5e8eb95a11df86b0d60766ffcbbf4fa79",
+  "caseId": "v2-d001",
+  "sourceCaseId": "d001",
+  "providerRunId": "40095819408",
+  "rawArtifactSha256": {
+    "provider-response-main.json": "6a271af7026e5b6c6447437d32ce4c67a262965a1df9c962439d892575468f06",
+    "provider-response-primary_precision.json": "cdaaf844e6c51ab0f33d0f3c9d12392c7d97c45ad95b7a5385cc2fe276c29803",
+    "provider-response-rescue_precision.json": "5575ffbe4d18e9fe4ca42a0637e43388590b99ed79cdc63966dc00b66090ab58",
+    "diagnostic-output-final.json": "4db39e031c3ed48b09f9a49e3b1cd79039b32922eec109709d076bbf17464250"
+  },
+  "baselineMatchesRetainedPostprocessedDiagnostic": true,
+  "before": {
+    "plotBounds": {
+      "left": 70,
+      "top": 100,
+      "right": 100,
+      "bottom": 101
+    },
+    "scaleReadable": true,
+    "anchorCount": 2,
+    "emittedLevels": 0,
+    "emittedFibLevels": 0,
+    "liquidityState": "NONE",
+    "observations": [],
+    "evidenceChain": null,
+    "finalLiquidityChain": {
+      "status": "BLOCKED",
+      "zones": [],
+      "reasons": [
+        "PLOT_BOUNDS_UNVERIFIED"
+      ]
+    },
+    "axis": [
+      {
+        "id": "priceScaleAnchors[0]",
+        "projection": {
+          "status": "NONCONFORMANT",
+          "reason": "SOURCE_SCALE_PRICE_ROW_AGREEMENT_ONLY",
+          "pixelError": 39.999999999985086,
+          "priceError": 2.2758095238086753,
+          "suppliedPrice": 7757.31,
+          "sourcePriceAtRow": 7759.585809523809
+        }
+      },
+      {
+        "id": "priceScaleAnchors[1]",
+        "projection": {
+          "status": "NONCONFORMANT",
+          "reason": "SOURCE_SCALE_PRICE_ROW_AGREEMENT_ONLY",
+          "pixelError": 52.50058587210442,
+          "priceError": 2.9870333333328745,
+          "suppliedPrice": 7732.4183,
+          "sourcePriceAtRow": 7735.405333333333
+        }
+      }
+    ],
+    "levelSummary": {
+      "assertions": 0,
+      "conformant": 0,
+      "nonconformant": 0,
+      "unscored": 0,
+      "emptyOutput": true,
+      "trueNegatives": null,
+      "semanticTp": null,
+      "semanticFp": null,
+      "semanticFn": null
+    },
+    "absence": "UNSCORED_NO_SEMANTIC_NEGATIVE_REFERENCE",
+    "status": "DIAGNOSTIC_RECORDED"
+  },
+  "after": {
+    "plotBounds": {
+      "left": 70,
+      "top": 100,
+      "right": 100,
+      "bottom": 20
+    },
+    "scaleReadable": false,
+    "anchorCount": 2,
+    "emittedLevels": 0,
+    "emittedFibLevels": 0,
+    "liquidityState": "PARTIAL",
+    "observations": [],
+    "evidenceChain": {
+      "status": "BLOCKED",
+      "reasons": [
+        "PLOT_BOUNDS_UNVERIFIED"
+      ]
+    },
+    "finalLiquidityChain": {
+      "status": "BLOCKED",
+      "zones": [],
+      "reasons": [
+        "PLOT_BOUNDS_UNVERIFIED"
+      ]
+    },
+    "axis": [
+      {
+        "id": "priceScaleAnchors[0]",
+        "projection": {
+          "status": "UNSCORED",
+          "reason": "SCANNER_PRICE_SCALE_UNREADABLE"
+        }
+      },
+      {
+        "id": "priceScaleAnchors[1]",
+        "projection": {
+          "status": "UNSCORED",
+          "reason": "SCANNER_PRICE_SCALE_UNREADABLE"
+        }
+      }
+    ],
+    "levelSummary": {
+      "assertions": 0,
+      "conformant": 0,
+      "nonconformant": 0,
+      "unscored": 0,
+      "emptyOutput": true,
+      "trueNegatives": null,
+      "semanticTp": null,
+      "semanticFp": null,
+      "semanticFn": null
+    },
+    "absence": "UNSCORED_NO_SEMANTIC_NEGATIVE_REFERENCE",
+    "status": "DIAGNOSTIC_RECORDED"
+  },
+  "originalPixelTolerance": 1,
+  "unchangedRawMainLevelSummary": {
+    "assertions": 4,
+    "conformant": 0,
+    "nonconformant": 4,
+    "unscored": 0,
+    "emptyOutput": false,
+    "trueNegatives": null,
+    "semanticTp": null,
+    "semanticFp": null,
+    "semanticFn": null
+  },
+  "sourceFiles": {
+    "app/api/pocket/analysis-calibration.ts": "50f6b5dde09030422cc9ddbb71660b11bf902a58c0beea92b1b02c190e1360d5",
+    "app/api/pocket/liquidity-chain.ts": "88c222d3f0c788015f8faa9ef8f86c15c08ac585fba998c0d18c795a9256c2f2",
+    "app/api/pocket/analyse/route.ts": "7b47dcd1d25cc03213a3b0c9052fb24a10418c34f5ed76e5c06953a0c34d4ea7",
+    "scripts/pocket-monaco-internal-diagnostics.ts": "6a1296448dfd52de25ceedf19c8c5bcae606f762db6c5414f6ac618ea52269f7"
+  },
+  "rawArtifactsUnchanged": true,
+  "promptsModelScorerToleranceUnchanged": true,
+  "providerCalls": 0,
+  "hostedDatabaseCalls": 0,
+  "heldoutReads": 0,
+  "privateKeyReads": 0,
+  "accuracyAccepted": false,
+  "meaning": "Reject impossible model plotting bounds without repairing units or claiming geometric accuracy. Suppressed assertions and unreadable scale earn no accuracy/absence credit."
+}

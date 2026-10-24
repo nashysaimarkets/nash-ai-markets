@@ -1,0 +1,1598 @@
+﻿2026-10-24T13:21:43.3235712Z Current runner version: '2.338.0'
+2026-10-24T13:21:43.3259554Z ##[group]Runner Image Provisioner
+2026-10-24T13:21:43.3260478Z Hosted Compute Agent
+2026-10-24T13:21:43.3261080Z Version: 20261021.618
+2026-10-24T13:21:43.3261921Z Commit: 21505ad2541d5be6135ed84fc33697146cf75b8e
+2026-10-24T13:21:43.3262919Z Build Date: 2026-10-21T00:45:21Z
+2026-10-24T13:21:43.3263598Z Worker ID: {f25fc50c-ebb3-4934-a0a9-94593c34771a}
+2026-10-24T13:21:43.3264378Z Region: centralus
+2026-10-24T13:21:43.3264906Z Cloud: Azure
+2026-10-24T13:21:43.3265406Z ##[endgroup]
+2026-10-24T13:21:43.3266799Z ##[group]Operating System
+2026-10-24T13:21:43.3267385Z Ubuntu
+2026-10-24T13:21:43.3267887Z 24.04.5
+2026-10-24T13:21:43.3268414Z LTS
+2026-10-24T13:21:43.3268915Z ##[endgroup]
+2026-10-24T13:21:43.3269460Z ##[group]Runner Image
+2026-10-24T13:21:43.3270060Z Image: ubuntu-24.04
+2026-10-24T13:21:43.3270606Z Version: 20261012.334.1
+2026-10-24T13:21:43.3271990Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261012.334/images/ubuntu/Ubuntu2404-Readme.md
+2026-10-24T13:21:43.3273484Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261012.334
+2026-10-24T13:21:43.3274442Z ##[endgroup]
+2026-10-24T13:21:43.3275519Z ##[group]GITHUB_TOKEN Permissions
+2026-10-24T13:21:43.3278031Z Contents: read
+2026-10-24T13:21:43.3278815Z Metadata: read
+2026-10-24T13:21:43.3279609Z ##[endgroup]
+2026-10-24T13:21:43.3282513Z Secret source: Actions
+2026-10-24T13:21:43.3283500Z Cache mode: write
+2026-10-24T13:21:43.3284695Z Prepare workflow directory
+2026-10-24T13:21:43.3770886Z Prepare all required actions
+2026-10-24T13:21:43.3822581Z Getting action download info
+2026-10-24T13:21:43.6258122Z Download action repository 'actions/checkout@v4' (SHA:11d5960a326750d5838078e36cf38b85af677262)
+2026-10-24T13:21:43.7113701Z Download action repository 'actions/setup-node@v4' (SHA:49933ea5288caeca8642d1e84afbd3f7d6820020)
+2026-10-24T13:21:43.9174794Z Complete job name: image-torture
+2026-10-24T13:21:43.9949844Z ##[group]Run actions/checkout@v4
+2026-10-24T13:21:43.9950815Z with:
+2026-10-24T13:21:43.9951411Z   repository: nashysaimarkets/nash-ai-markets
+2026-10-24T13:21:43.9955606Z   token: ***
+2026-10-24T13:21:43.9956173Z   ssh-strict: true
+2026-10-24T13:21:43.9956671Z   ssh-user: git
+2026-10-24T13:21:43.9957152Z   persist-credentials: true
+2026-10-24T13:21:43.9957716Z   clean: true
+2026-10-24T13:21:43.9958216Z   sparse-checkout-cone-mode: true
+2026-10-24T13:21:43.9958814Z   fetch-depth: 1
+2026-10-24T13:21:43.9959427Z   fetch-tags: false
+2026-10-24T13:21:43.9959945Z   show-progress: true
+2026-10-24T13:21:43.9960475Z   lfs: false
+2026-10-24T13:21:43.9960941Z   submodules: false
+2026-10-24T13:21:43.9961470Z   set-safe-directory: true
+2026-10-24T13:21:43.9962360Z   allow-unsafe-pr-checkout: false
+2026-10-24T13:21:43.9963162Z env:
+2026-10-24T13:21:43.9963649Z   OPENAI_POCKET_MODEL: 
+2026-10-24T13:21:43.9964160Z ##[endgroup]
+2026-10-24T13:21:44.0971531Z Syncing repository: nashysaimarkets/nash-ai-markets
+2026-10-24T13:21:44.0974751Z ##[group]Getting Git version info
+2026-10-24T13:21:44.0975993Z Working directory is '/home/runner/work/nash-ai-markets/nash-ai-markets'
+2026-10-24T13:21:44.0977834Z [command]/usr/bin/git version
+2026-10-24T13:21:44.1010450Z git version 2.55.0
+2026-10-24T13:21:44.1029596Z ##[endgroup]
+2026-10-24T13:21:44.1045512Z Temporarily overriding HOME='/home/runner/work/_temp/9f6836c3-5150-4653-8cc0-c7e018bded11' before making global git config changes
+2026-10-24T13:21:44.1047994Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-24T13:21:44.1052917Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/nash-ai-markets/nash-ai-markets
+2026-10-24T13:21:44.1118043Z Deleting the contents of '/home/runner/work/nash-ai-markets/nash-ai-markets'
+2026-10-24T13:21:44.1124007Z ##[group]Initializing the repository
+2026-10-24T13:21:44.1125661Z [command]/usr/bin/git init /home/runner/work/nash-ai-markets/nash-ai-markets
+2026-10-24T13:21:44.1207480Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-10-24T13:21:44.1209411Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-10-24T13:21:44.1210980Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-10-24T13:21:44.1212111Z hint: call:
+2026-10-24T13:21:44.1212706Z hint:
+2026-10-24T13:21:44.1213385Z hint: 	git config --global init.defaultBranch <name>
+2026-10-24T13:21:44.1214132Z hint:
+2026-10-24T13:21:44.1214954Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-10-24T13:21:44.1216123Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-10-24T13:21:44.1217014Z hint:
+2026-10-24T13:21:44.1217672Z hint: 	git branch -m <name>
+2026-10-24T13:21:44.1218407Z hint:
+2026-10-24T13:21:44.1219291Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-10-24T13:21:44.1221025Z Initialized empty Git repository in /home/runner/work/nash-ai-markets/nash-ai-markets/.git/
+2026-10-24T13:21:44.1224159Z [command]/usr/bin/git remote add origin https://github.com/nashysaimarkets/nash-ai-markets
+2026-10-24T13:21:44.1269641Z ##[endgroup]
+2026-10-24T13:21:44.1270772Z ##[group]Disabling automatic garbage collection
+2026-10-24T13:21:44.1274627Z [command]/usr/bin/git config --local gc.auto 0
+2026-10-24T13:21:44.1306607Z ##[endgroup]
+2026-10-24T13:21:44.1307743Z ##[group]Setting up auth
+2026-10-24T13:21:44.1316022Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-24T13:21:44.1354055Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-24T13:21:44.1713626Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-24T13:21:44.1744135Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-24T13:21:44.1943324Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-24T13:21:44.1974629Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-24T13:21:44.2166209Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-10-24T13:21:44.2203061Z ##[endgroup]
+2026-10-24T13:21:44.2204407Z ##[group]Fetching the repository
+2026-10-24T13:21:44.2213906Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +2143a8f7887db68b7cf0b20b9bef6df06e7a768c:refs/remotes/pull/146/merge
+2026-10-24T13:21:45.3704998Z From https://github.com/nashysaimarkets/nash-ai-markets
+2026-10-24T13:21:45.3706922Z  * [new ref]         2143a8f7887db68b7cf0b20b9bef6df06e7a768c -> pull/146/merge
+2026-10-24T13:21:45.3773469Z ##[endgroup]
+2026-10-24T13:21:45.3774825Z ##[group]Determining the checkout info
+2026-10-24T13:21:45.3776149Z ##[endgroup]
+2026-10-24T13:21:45.3777035Z [command]/usr/bin/git sparse-checkout disable
+2026-10-24T13:21:45.3779591Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-10-24T13:21:45.3813938Z ##[group]Checking out the ref
+2026-10-24T13:21:45.3818699Z [command]/usr/bin/git checkout --progress --force refs/remotes/pull/146/merge
+2026-10-24T13:21:45.4688224Z Note: switching to 'refs/remotes/pull/146/merge'.
+2026-10-24T13:21:45.4689638Z 
+2026-10-24T13:21:45.4690677Z You are in 'detached HEAD' state. You can look around, make experimental
+2026-10-24T13:21:45.4693525Z changes and commit them, and you can discard any commits you make in this
+2026-10-24T13:21:45.4696090Z state without impacting any branches by switching back to a branch.
+2026-10-24T13:21:45.4697534Z 
+2026-10-24T13:21:45.4698758Z If you want to create a new branch to retain commits you create, you may
+2026-10-24T13:21:45.4701842Z do so (now or later) by using -c with the switch command. Example:
+2026-10-24T13:21:45.4703362Z 
+2026-10-24T13:21:45.4704024Z   git switch -c <new-branch-name>
+2026-10-24T13:21:45.4705060Z 
+2026-10-24T13:21:45.4705674Z Or undo this operation with:
+2026-10-24T13:21:45.4706673Z 
+2026-10-24T13:21:45.4707280Z   git switch -
+2026-10-24T13:21:45.4708145Z 
+2026-10-24T13:21:45.4709423Z Turn off this advice by setting config variable advice.detachedHead to false
+2026-10-24T13:21:45.4711488Z 
+2026-10-24T13:21:45.4713523Z HEAD is now at 2143a8f Merge 97925f7620313ba6a6ebc377c9c9340a42889875 into b118c7a38a35514eb4cbd4cc86b3341de91a5ca5
+2026-10-24T13:21:45.4718787Z ##[endgroup]
+2026-10-24T13:21:45.4743681Z [command]/usr/bin/git log -1 --format=%H
+2026-10-24T13:21:45.4766295Z 2143a8f7887db68b7cf0b20b9bef6df06e7a768c
+2026-10-24T13:21:45.5156969Z ##[group]Run actions/setup-node@v4
+2026-10-24T13:21:45.5158328Z with:
+2026-10-24T13:21:45.5159319Z   node-version: 22
+2026-10-24T13:21:45.5160418Z   cache: npm
+2026-10-24T13:21:45.5161495Z   always-auth: false
+2026-10-24T13:21:45.5162881Z   check-latest: false
+2026-10-24T13:21:45.5172595Z   token: ***
+2026-10-24T13:21:45.5173647Z env:
+2026-10-24T13:21:45.5174619Z   OPENAI_POCKET_MODEL: 
+2026-10-24T13:21:45.5175752Z ##[endgroup]
+2026-10-24T13:21:45.6609615Z Found in cache @ /opt/hostedtoolcache/node/22.23.3/x64
+2026-10-24T13:21:45.6613292Z (node:2050) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-10-24T13:21:45.6616026Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-24T13:21:45.6618335Z ##[group]Environment details
+2026-10-24T13:21:46.0244559Z node: v22.23.3
+2026-10-24T13:21:46.0246375Z npm: 10.9.9
+2026-10-24T13:21:46.0247056Z yarn: 1.22.22
+2026-10-24T13:21:46.0248589Z ##[endgroup]
+2026-10-24T13:21:46.0264311Z [command]/opt/hostedtoolcache/node/22.23.3/x64/bin/npm config get cache
+2026-10-24T13:21:46.1340919Z /home/runner/.npm
+2026-10-24T13:21:46.3116672Z Cache hit for: node-cache-Linux-x64-npm-62f04c41a672a8614cacd2957a9b3a76ad536271613c24e83e8737823f2666bd
+2026-10-24T13:21:46.3216558Z (node:2050) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+2026-10-24T13:21:47.5043737Z Received 125829120 of 306649355 (41.0%), 119.9 MBs/sec
+2026-10-24T13:21:48.5002096Z Received 302455051 of 306649355 (98.6%), 144.1 MBs/sec
+2026-10-24T13:21:48.5213577Z Received 306649355 of 306649355 (100.0%), 144.6 MBs/sec
+2026-10-24T13:21:48.5214549Z Cache Size: ~292 MB (306649355 B)
+2026-10-24T13:21:48.5342119Z [command]/usr/bin/tar -xf /home/runner/work/_temp/82f49613-c913-440a-9bf1-198d28f76544/cache.tzst -P -C /home/runner/work/nash-ai-markets/nash-ai-markets --use-compress-program unzstd
+2026-10-24T13:21:48.8628100Z Cache restored successfully
+2026-10-24T13:21:48.8745291Z Cache restored from key: node-cache-Linux-x64-npm-62f04c41a672a8614cacd2957a9b3a76ad536271613c24e83e8737823f2666bd
+2026-10-24T13:21:48.8940585Z ##[group]Run chmod +x scripts/sites-env.sh scripts/install-ci.sh
+2026-10-24T13:21:48.8941327Z [36;1mchmod +x scripts/sites-env.sh scripts/install-ci.sh[0m
+2026-10-24T13:21:48.9116964Z shell: /usr/bin/bash -e {0}
+2026-10-24T13:21:48.9117427Z env:
+2026-10-24T13:21:48.9117794Z   OPENAI_POCKET_MODEL: 
+2026-10-24T13:21:48.9118171Z ##[endgroup]
+2026-10-24T13:21:48.9267055Z ##[group]Run npm run install:ci
+2026-10-24T13:21:48.9267510Z [36;1mnpm run install:ci[0m
+2026-10-24T13:21:48.9306266Z shell: /usr/bin/bash -e {0}
+2026-10-24T13:21:48.9306684Z env:
+2026-10-24T13:21:48.9307371Z   OPENAI_POCKET_MODEL: 
+2026-10-24T13:21:48.9307769Z ##[endgroup]
+2026-10-24T13:21:49.0670498Z 
+2026-10-24T13:21:49.0677559Z > nash-ai-markets-bullseye@1.0.0-rc.2 install:ci
+2026-10-24T13:21:49.0678552Z > bash scripts/install-ci.sh
+2026-10-24T13:21:49.0678902Z 
+2026-10-24T13:21:49.1006142Z [sites] validating writable install environment
+2026-10-24T13:21:49.2045179Z [sites] environment passed: HOME=/home/runner/work/nash-ai-markets/nash-ai-markets/.sites-runtime/home, cache=/home/runner/work/nash-ai-markets/nash-ai-markets/.sites-runtime/npm-cache
+2026-10-24T13:21:49.5694313Z [sites] downloading the complete locked vinext tarball
+2026-10-24T13:21:49.6967480Z [sites] verifying locked vinext tarball integrity
+2026-10-24T13:21:49.7360059Z [sites] network and integrity preflight passed
+2026-10-24T13:21:49.7362563Z [sites] running exactly one bounded npm ci
+2026-10-24T13:21:52.0646703Z npm warn deprecated uuid@7.0.3: uuid@10 and below is no longer supported.  For ESM codebases, update to uuid@latest.  For CommonJS codebases, use uuid@11 (but be aware this version will likely be deprecated in 2028).
+2026-10-24T13:21:58.4251746Z npm warn deprecated jsrsasign@11.1.5: This package is no longer maintained.
+2026-10-24T13:22:10.7179936Z npm warn deprecated @esbuild-kit/core-utils@3.3.2: Merged into tsx: https://tsx.is
+2026-10-24T13:22:10.8060634Z npm warn deprecated @esbuild-kit/esm-loader@2.6.5: Merged into tsx: https://tsx.is
+2026-10-24T13:22:15.5053231Z 
+2026-10-24T13:22:15.5063942Z added 665 packages in 26s
+2026-10-24T13:22:15.5654991Z [sites] npm ci passed and vinext is available
+2026-10-24T13:22:15.5742802Z ##[group]Run node --import tsx --test tests/pocket-sharp-packaging.test.ts
+2026-10-24T13:22:15.5743437Z [36;1mnode --import tsx --test tests/pocket-sharp-packaging.test.ts[0m
+2026-10-24T13:22:15.5787323Z shell: /usr/bin/bash -e {0}
+2026-10-24T13:22:15.5787782Z env:
+2026-10-24T13:22:15.5788159Z   OPENAI_POCKET_MODEL: 
+2026-10-24T13:22:15.5788508Z ##[endgroup]
+2026-10-24T13:22:15.6261476Z TAP version 13
+2026-10-24T13:22:16.0158961Z # Prepared same-origin OCR worker, WebAssembly cores and English model.
+2026-10-24T13:22:16.0888550Z # Subtest: Sharp and Linux libvips remain production dependencies
+2026-10-24T13:22:16.0893447Z ok 1 - Sharp and Linux libvips remain production dependencies
+2026-10-24T13:22:16.0894365Z   ---
+2026-10-24T13:22:16.0897071Z   duration_ms: 8.809951
+2026-10-24T13:22:16.0898130Z   type: 'test'
+2026-10-24T13:22:16.0898458Z   ...
+2026-10-24T13:22:16.2014969Z # Subtest: all six labelled SVGs rasterize and decode without an AI provider
+2026-10-24T13:22:16.2016864Z ok 2 - all six labelled SVGs rasterize and decode without an AI provider
+2026-10-24T13:22:16.2017484Z   ---
+2026-10-24T13:22:16.2018159Z   duration_ms: 114.633529
+2026-10-24T13:22:16.2019132Z   type: 'test'
+2026-10-24T13:22:16.2019537Z   ...
+2026-10-24T13:22:16.2040386Z # Subtest: live torture reads the analysis envelope rather than silently scoring empty output
+2026-10-24T13:22:16.2042206Z ok 3 - live torture reads the analysis envelope rather than silently scoring empty output
+2026-10-24T13:22:16.2057632Z   ---
+2026-10-24T13:22:16.2058374Z   duration_ms: 2.420802
+2026-10-24T13:22:16.2059097Z   type: 'test'
+2026-10-24T13:22:16.2059603Z   ...
+2026-10-24T13:22:16.2060389Z # Subtest: torture payload matches the app's precision-crop geometry and chart scale
+2026-10-24T13:22:16.2061725Z ok 4 - torture payload matches the app's precision-crop geometry and chart scale
+2026-10-24T13:22:16.2062512Z   ---
+2026-10-24T13:22:16.2062954Z   duration_ms: 2.075853
+2026-10-24T13:22:16.2063409Z   type: 'test'
+2026-10-24T13:22:16.2063935Z   ...
+2026-10-24T13:22:16.2094243Z # Subtest: both torture runners use the real analyse envelope and precision crop
+2026-10-24T13:22:16.2095606Z ok 5 - both torture runners use the real analyse envelope and precision crop
+2026-10-24T13:22:16.2096377Z   ---
+2026-10-24T13:22:16.2096787Z   duration_ms: 2.222732
+2026-10-24T13:22:16.2097274Z   type: 'test'
+2026-10-24T13:22:16.2097711Z   ...
+2026-10-24T13:22:16.2105377Z # Subtest: live torture enforces forbidden patterns and minimum liquidity zones
+2026-10-24T13:22:16.2106575Z ok 6 - live torture enforces forbidden patterns and minimum liquidity zones
+2026-10-24T13:22:16.2107247Z   ---
+2026-10-24T13:22:16.2107711Z   duration_ms: 1.520763
+2026-10-24T13:22:16.2108154Z   type: 'test'
+2026-10-24T13:22:16.2108671Z   ...
+2026-10-24T13:22:16.2129276Z # Subtest: synthetic candle OHLC geometry is internally valid for every fixture
+2026-10-24T13:22:16.2131899Z ok 7 - synthetic candle OHLC geometry is internally valid for every fixture
+2026-10-24T13:22:16.2132720Z   ---
+2026-10-24T13:22:16.2133120Z   duration_ms: 2.479368
+2026-10-24T13:22:16.2133661Z   type: 'test'
+2026-10-24T13:22:16.2134241Z   ...
+2026-10-24T13:22:16.2142109Z # Subtest: all displayed synthetic price labels lie on the same linear price scale
+2026-10-24T13:22:16.2143641Z ok 8 - all displayed synthetic price labels lie on the same linear price scale
+2026-10-24T13:22:16.2144397Z   ---
+2026-10-24T13:22:16.2144857Z   duration_ms: 1.469811
+2026-10-24T13:22:16.2145309Z   type: 'test'
+2026-10-24T13:22:16.2145773Z   ...
+2026-10-24T13:22:16.2175622Z # Subtest: synthetic price axis remains readable without system fonts
+2026-10-24T13:22:16.2176769Z ok 9 - synthetic price axis remains readable without system fonts
+2026-10-24T13:22:16.2177548Z   ---
+2026-10-24T13:22:16.2177841Z   duration_ms: 3.461233
+2026-10-24T13:22:16.2178240Z   type: 'test'
+2026-10-24T13:22:16.2178640Z   ...
+2026-10-24T13:22:16.2736391Z # (node:2622) ExperimentalWarning: stripTypeScriptTypes is an experimental feature and might change at any time
+2026-10-24T13:22:16.2737316Z # (Use `node --trace-warnings ...` to show where the warning was created)
+2026-10-24T13:22:17.4020178Z # Subtest: actual deployed raster route reports stable decoded pixel digests without provider calls
+2026-10-24T13:22:17.4025491Z ok 10 - actual deployed raster route reports stable decoded pixel digests without provider calls
+2026-10-24T13:22:17.4026514Z   ---
+2026-10-24T13:22:17.4027081Z   duration_ms: 1183.291926
+2026-10-24T13:22:17.4027715Z   type: 'test'
+2026-10-24T13:22:17.4028236Z   ...
+2026-10-24T13:22:17.4029169Z # Subtest: all fixture labels use vectors so cold-start font selection cannot change pixels
+2026-10-24T13:22:17.4030286Z ok 11 - all fixture labels use vectors so cold-start font selection cannot change pixels
+2026-10-24T13:22:17.4031479Z   ---
+2026-10-24T13:22:17.4032256Z   duration_ms: 1.13273
+2026-10-24T13:22:17.4032697Z   type: 'test'
+2026-10-24T13:22:17.4033119Z   ...
+2026-10-24T13:22:17.4276034Z 1..11
+2026-10-24T13:22:17.4276538Z # tests 11
+2026-10-24T13:22:17.4277136Z # suites 0
+2026-10-24T13:22:17.4277503Z # pass 11
+2026-10-24T13:22:17.4277893Z # fail 0
+2026-10-24T13:22:17.4278313Z # cancelled 0
+2026-10-24T13:22:17.4278761Z # skipped 0
+2026-10-24T13:22:17.4279144Z # todo 0
+2026-10-24T13:22:17.4279670Z # duration_ms 1811.993538
+2026-10-24T13:22:17.4355850Z ##[group]Run npx playwright install --with-deps chromium
+2026-10-24T13:22:17.4356389Z [36;1mnpx playwright install --with-deps chromium[0m
+2026-10-24T13:22:17.4398430Z shell: /usr/bin/bash -e {0}
+2026-10-24T13:22:17.4398859Z env:
+2026-10-24T13:22:17.4399151Z   OPENAI_POCKET_MODEL: 
+2026-10-24T13:22:17.4399520Z ##[endgroup]
+2026-10-24T13:22:18.2764661Z Installing dependencies...
+2026-10-24T13:22:18.2819212Z Switching to root user to install dependencies...
+2026-10-24T13:22:18.4019711Z Get:1 file:/etc/apt/apt-mirrors.txt Mirrorlist [144 B]
+2026-10-24T13:22:18.4287541Z Get:6 https://packages.microsoft.com/ubuntu/24.04/prod noble InRelease [3600 B]
+2026-10-24T13:22:18.5435292Z Get:7 https://packages.microsoft.com/ubuntu/24.04/prod noble/main armhf Packages [12.4 kB]
+2026-10-24T13:22:18.5536892Z Hit:2 http://azure.archive.ubuntu.com/ubuntu noble InRelease
+2026-10-24T13:22:18.5567145Z Get:3 http://azure.archive.ubuntu.com/ubuntu noble-updates InRelease [126 kB]
+2026-10-24T13:22:18.5568388Z Get:8 https://packages.microsoft.com/ubuntu/24.04/prod noble/main amd64 Packages [652 kB]
+2026-10-24T13:22:18.5634701Z Get:4 http://azure.archive.ubuntu.com/ubuntu noble-backports InRelease [126 kB]
+2026-10-24T13:22:18.5689223Z Get:5 http://azure.archive.ubuntu.com/ubuntu noble-security InRelease [126 kB]
+2026-10-24T13:22:18.5746077Z Get:9 https://packages.microsoft.com/ubuntu/24.04/prod noble/main arm64 Packages [589 kB]
+2026-10-24T13:22:18.6627232Z Get:10 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 Packages [1400 kB]
+2026-10-24T13:22:18.6716197Z Get:11 http://azure.archive.ubuntu.com/ubuntu noble-updates/main Translation-en [310 kB]
+2026-10-24T13:22:18.6733339Z Get:12 http://azure.archive.ubuntu.com/ubuntu noble-updates/universe amd64 Packages [1706 kB]
+2026-10-24T13:22:18.6803837Z Get:13 http://azure.archive.ubuntu.com/ubuntu noble-updates/universe Translation-en [342 kB]
+2026-10-24T13:22:18.6822269Z Get:14 http://azure.archive.ubuntu.com/ubuntu noble-updates/restricted amd64 Packages [1805 kB]
+2026-10-24T13:22:18.6905915Z Get:15 http://azure.archive.ubuntu.com/ubuntu noble-updates/restricted Translation-en [411 kB]
+2026-10-24T13:22:18.7536747Z Get:16 http://azure.archive.ubuntu.com/ubuntu noble-security/main amd64 Packages [1146 kB]
+2026-10-24T13:22:18.7598387Z Get:17 http://azure.archive.ubuntu.com/ubuntu noble-security/main Translation-en [231 kB]
+2026-10-24T13:22:18.7615899Z Get:18 http://azure.archive.ubuntu.com/ubuntu noble-security/universe amd64 Packages [1222 kB]
+2026-10-24T13:22:18.7676226Z Get:19 http://azure.archive.ubuntu.com/ubuntu noble-security/universe Translation-en [246 kB]
+2026-10-24T13:22:18.8116400Z Get:20 http://azure.archive.ubuntu.com/ubuntu noble-security/restricted amd64 Packages [1713 kB]
+2026-10-24T13:22:18.8208015Z Get:21 http://azure.archive.ubuntu.com/ubuntu noble-security/restricted Translation-en [392 kB]
+2026-10-24T13:22:31.4923583Z Fetched 12.6 MB in 1s (8797 kB/s)
+2026-10-24T13:22:32.4785603Z Reading package lists...
+2026-10-24T13:22:32.5062849Z Reading package lists...
+2026-10-24T13:22:32.7096077Z Building dependency tree...
+2026-10-24T13:22:32.7102569Z Reading state information...
+2026-10-24T13:22:32.8811763Z libasound2t64 is already the newest version (1.2.11-1ubuntu0.3).
+2026-10-24T13:22:32.8813083Z libasound2t64 set to manually installed.
+2026-10-24T13:22:32.8814021Z libatk-bridge2.0-0t64 is already the newest version (2.52.0-1build1).
+2026-10-24T13:22:32.8814968Z libatk-bridge2.0-0t64 set to manually installed.
+2026-10-24T13:22:32.8815796Z libatk1.0-0t64 is already the newest version (2.52.0-1build1).
+2026-10-24T13:22:32.8816597Z libatk1.0-0t64 set to manually installed.
+2026-10-24T13:22:32.8817611Z libatspi2.0-0t64 is already the newest version (2.52.0-1build1).
+2026-10-24T13:22:32.8818426Z libatspi2.0-0t64 set to manually installed.
+2026-10-24T13:22:32.8819227Z libcairo2 is already the newest version (1.18.0-3build1).
+2026-10-24T13:22:32.8819962Z libcairo2 set to manually installed.
+2026-10-24T13:22:32.8821210Z libcups2t64 is already the newest version (2.4.7-1.2ubuntu7.14).
+2026-10-24T13:22:32.8822168Z libcups2t64 set to manually installed.
+2026-10-24T13:22:32.8823030Z libdbus-1-3 is already the newest version (1.14.10-4ubuntu4.1).
+2026-10-24T13:22:32.8823833Z libdbus-1-3 set to manually installed.
+2026-10-24T13:22:32.8825573Z libdrm2 is already the newest version (2.4.125-1ubuntu0.1~24.04.2).
+2026-10-24T13:22:32.8827385Z libdrm2 set to manually installed.
+2026-10-24T13:22:32.8828583Z libgbm1 is already the newest version (25.2.8-0ubuntu0.24.04.4).
+2026-10-24T13:22:32.8829529Z libgbm1 set to manually installed.
+2026-10-24T13:22:32.8830350Z libnspr4 is already the newest version (2:4.35-1.1build1).
+2026-10-24T13:22:32.8830985Z libnspr4 set to manually installed.
+2026-10-24T13:22:32.8831962Z libpango-1.0-0 is already the newest version (1.52.1+ds-1build1).
+2026-10-24T13:22:32.8832587Z libpango-1.0-0 set to manually installed.
+2026-10-24T13:22:32.8833208Z libx11-6 is already the newest version (2:1.8.7-1ubuntu0.1).
+2026-10-24T13:22:32.8833807Z libx11-6 set to manually installed.
+2026-10-24T13:22:32.8834401Z libxcb1 is already the newest version (1.15-1ubuntu2).
+2026-10-24T13:22:32.8835053Z libxcb1 set to manually installed.
+2026-10-24T13:22:32.8835650Z libxcomposite1 is already the newest version (1:0.4.5-1build3).
+2026-10-24T13:22:32.8836174Z libxcomposite1 set to manually installed.
+2026-10-24T13:22:32.8836666Z libxdamage1 is already the newest version (1:1.1.6-1build1).
+2026-10-24T13:22:32.8837180Z libxdamage1 set to manually installed.
+2026-10-24T13:22:32.8837927Z libxext6 is already the newest version (2:1.3.4-1build2).
+2026-10-24T13:22:32.8838371Z libxext6 set to manually installed.
+2026-10-24T13:22:32.8838918Z libxfixes3 is already the newest version (1:6.0.0-2build1).
+2026-10-24T13:22:32.8839371Z libxfixes3 set to manually installed.
+2026-10-24T13:22:32.8839876Z libxkbcommon0 is already the newest version (1.6.0-1build1).
+2026-10-24T13:22:32.8840384Z libxkbcommon0 set to manually installed.
+2026-10-24T13:22:32.8840922Z libxrandr2 is already the newest version (2:1.5.2-2build1).
+2026-10-24T13:22:32.8841381Z libxrandr2 set to manually installed.
+2026-10-24T13:22:32.8842189Z fonts-noto-color-emoji is already the newest version (2.047-0ubuntu0.24.04.1).
+2026-10-24T13:22:32.8842818Z libfontconfig1 is already the newest version (2.15.0-1.1ubuntu2).
+2026-10-24T13:22:32.8843306Z libfontconfig1 set to manually installed.
+2026-10-24T13:22:32.8843902Z libfreetype6 is already the newest version (2.13.2+dfsg-1ubuntu0.2).
+2026-10-24T13:22:32.8844395Z libfreetype6 set to manually installed.
+2026-10-24T13:22:32.8844891Z fonts-liberation is already the newest version (1:2.1.5-3).
+2026-10-24T13:22:32.8845409Z fonts-liberation set to manually installed.
+2026-10-24T13:22:32.8845893Z The following additional packages will be installed:
+2026-10-24T13:22:32.8846430Z   gir1.2-glib-2.0 libglib2.0-bin libglib2.0-data libnss3-tools
+2026-10-24T13:22:32.8846954Z   xfonts-encodings xfonts-utils xserver-common
+2026-10-24T13:22:32.8847369Z Suggested packages:
+2026-10-24T13:22:32.8847692Z   low-memory-monitor
+2026-10-24T13:22:32.8848210Z Recommended packages:
+2026-10-24T13:22:32.8848617Z   fonts-ipafont-mincho fonts-tlwg-loma xfonts-base
+2026-10-24T13:22:32.9441477Z The following NEW packages will be installed:
+2026-10-24T13:22:32.9442501Z   fonts-freefont-ttf fonts-ipafont-gothic fonts-tlwg-loma-otf fonts-unifont
+2026-10-24T13:22:32.9452533Z   fonts-wqy-zenhei xfonts-cyrillic xfonts-encodings xfonts-scalable
+2026-10-24T13:22:32.9453196Z   xfonts-utils
+2026-10-24T13:22:32.9456881Z The following packages will be upgraded:
+2026-10-24T13:22:32.9458662Z   gir1.2-glib-2.0 libglib2.0-0t64 libglib2.0-bin libglib2.0-data libnss3
+2026-10-24T13:22:32.9463138Z   libnss3-tools xserver-common xvfb
+2026-10-24T13:22:32.9624396Z 8 upgraded, 9 newly installed, 0 to remove and 91 not upgraded.
+2026-10-24T13:22:32.9625381Z Need to get 25.9 MB of archives.
+2026-10-24T13:22:32.9626226Z After this operation, 79.5 MB of additional disk space will be used.
+2026-10-24T13:22:32.9627209Z Get:1 file:/etc/apt/apt-mirrors.txt Mirrorlist [144 B]
+2026-10-24T13:22:33.0236865Z Get:2 http://azure.archive.ubuntu.com/ubuntu noble/universe amd64 fonts-ipafont-gothic all 00303-21ubuntu1 [3513 kB]
+2026-10-24T13:22:33.0943724Z Get:3 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 libglib2.0-data all 2.80.0-6ubuntu3.10 [50.2 kB]
+2026-10-24T13:22:33.2493399Z Get:4 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 libglib2.0-bin amd64 2.80.0-6ubuntu3.10 [97.9 kB]
+2026-10-24T13:22:33.2843019Z Get:5 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 gir1.2-glib-2.0 amd64 2.80.0-6ubuntu3.10 [183 kB]
+2026-10-24T13:22:33.3707445Z Get:6 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 libglib2.0-0t64 amd64 2.80.0-6ubuntu3.10 [1548 kB]
+2026-10-24T13:22:33.4820352Z Get:7 http://azure.archive.ubuntu.com/ubuntu noble/main amd64 fonts-freefont-ttf all 20211204+svn4273-2 [5641 kB]
+2026-10-24T13:22:33.6048671Z Get:8 http://azure.archive.ubuntu.com/ubuntu noble/universe amd64 fonts-tlwg-loma-otf all 1:0.7.3-1 [107 kB]
+2026-10-24T13:22:33.7223324Z Get:9 http://azure.archive.ubuntu.com/ubuntu noble/universe amd64 fonts-unifont all 1:15.1.01-1build1 [2993 kB]
+2026-10-24T13:22:33.9353778Z Get:10 http://azure.archive.ubuntu.com/ubuntu noble/universe amd64 fonts-wqy-zenhei all 0.9.45-8 [7472 kB]
+2026-10-24T13:22:34.0502114Z Get:11 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 libnss3 amd64 2:3.98-1ubuntu0.3 [1445 kB]
+2026-10-24T13:22:34.1134524Z Get:12 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 libnss3-tools amd64 2:3.98-1ubuntu0.3 [615 kB]
+2026-10-24T13:22:34.1537130Z Get:13 http://azure.archive.ubuntu.com/ubuntu noble/main amd64 xfonts-encodings all 1:1.0.5-0ubuntu2 [578 kB]
+2026-10-24T13:22:34.2129673Z Get:14 http://azure.archive.ubuntu.com/ubuntu noble/main amd64 xfonts-utils amd64 1:7.7+6build3 [94.4 kB]
+2026-10-24T13:22:34.2450158Z Get:15 http://azure.archive.ubuntu.com/ubuntu noble/universe amd64 xfonts-cyrillic all 1:1.0.5+nmu1 [384 kB]
+2026-10-24T13:22:34.3565623Z Get:16 http://azure.archive.ubuntu.com/ubuntu noble/main amd64 xfonts-scalable all 1:1.0.3-1.3 [304 kB]
+2026-10-24T13:22:34.3899124Z Get:17 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 xserver-common all 2:21.1.12-1ubuntu1.9 [35.0 kB]
+2026-10-24T13:22:34.4218521Z Get:18 http://azure.archive.ubuntu.com/ubuntu noble-updates/universe amd64 xvfb amd64 2:21.1.12-1ubuntu1.9 [877 kB]
+2026-10-24T13:22:34.7578106Z Fetched 25.9 MB in 1s (17.6 MB/s)
+2026-10-24T13:22:35.2147710Z Selecting previously unselected package fonts-ipafont-gothic.
+2026-10-24T13:22:35.2793135Z (Reading database ... 
+2026-10-24T13:22:35.2793794Z (Reading database ... 5%
+2026-10-24T13:22:35.2794204Z (Reading database ... 10%
+2026-10-24T13:22:35.2794629Z (Reading database ... 15%
+2026-10-24T13:22:35.2795623Z (Reading database ... 20%
+2026-10-24T13:22:35.2795997Z (Reading database ... 25%
+2026-10-24T13:22:35.2796352Z (Reading database ... 30%
+2026-10-24T13:22:35.2796687Z (Reading database ... 35%
+2026-10-24T13:22:35.2797119Z (Reading database ... 40%
+2026-10-24T13:22:35.2797461Z (Reading database ... 45%
+2026-10-24T13:22:35.2797795Z (Reading database ... 50%
+2026-10-24T13:22:35.3199530Z (Reading database ... 55%
+2026-10-24T13:22:35.7138728Z (Reading database ... 60%
+2026-10-24T13:22:36.0044989Z (Reading database ... 65%
+2026-10-24T13:22:36.3114556Z (Reading database ... 70%
+2026-10-24T13:22:36.6587043Z (Reading database ... 75%
+2026-10-24T13:22:37.0861032Z (Reading database ... 80%
+2026-10-24T13:22:37.6982233Z (Reading database ... 85%
+2026-10-24T13:22:38.4031286Z (Reading database ... 90%
+2026-10-24T13:22:39.0621263Z (Reading database ... 95%
+2026-10-24T13:22:39.0622494Z (Reading database ... 100%
+2026-10-24T13:22:39.0623357Z (Reading database ... 203540 files and directories currently installed.)
+2026-10-24T13:22:39.0669236Z Preparing to unpack .../00-fonts-ipafont-gothic_00303-21ubuntu1_all.deb ...
+2026-10-24T13:22:39.0806730Z Unpacking fonts-ipafont-gothic (00303-21ubuntu1) ...
+2026-10-24T13:22:39.3806122Z Preparing to unpack .../01-libglib2.0-data_2.80.0-6ubuntu3.10_all.deb ...
+2026-10-24T13:22:39.3825356Z Unpacking libglib2.0-data (2.80.0-6ubuntu3.10) over (2.80.0-6ubuntu3.9) ...
+2026-10-24T13:22:39.4219778Z Preparing to unpack .../02-libglib2.0-bin_2.80.0-6ubuntu3.10_amd64.deb ...
+2026-10-24T13:22:39.4239522Z Unpacking libglib2.0-bin (2.80.0-6ubuntu3.10) over (2.80.0-6ubuntu3.9) ...
+2026-10-24T13:22:39.4990488Z Preparing to unpack .../03-gir1.2-glib-2.0_2.80.0-6ubuntu3.10_amd64.deb ...
+2026-10-24T13:22:39.5009558Z Unpacking gir1.2-glib-2.0:amd64 (2.80.0-6ubuntu3.10) over (2.80.0-6ubuntu3.9) ...
+2026-10-24T13:22:39.5419149Z Preparing to unpack .../04-libglib2.0-0t64_2.80.0-6ubuntu3.10_amd64.deb ...
+2026-10-24T13:22:39.5535536Z Unpacking libglib2.0-0t64:amd64 (2.80.0-6ubuntu3.10) over (2.80.0-6ubuntu3.9) ...
+2026-10-24T13:22:39.6079146Z Selecting previously unselected package fonts-freefont-ttf.
+2026-10-24T13:22:39.6209274Z Preparing to unpack .../05-fonts-freefont-ttf_20211204+svn4273-2_all.deb ...
+2026-10-24T13:22:39.6218858Z Unpacking fonts-freefont-ttf (20211204+svn4273-2) ...
+2026-10-24T13:22:39.7417892Z Selecting previously unselected package fonts-tlwg-loma-otf.
+2026-10-24T13:22:39.7542219Z Preparing to unpack .../06-fonts-tlwg-loma-otf_1%3a0.7.3-1_all.deb ...
+2026-10-24T13:22:39.7547963Z Unpacking fonts-tlwg-loma-otf (1:0.7.3-1) ...
+2026-10-24T13:22:39.7713527Z Selecting previously unselected package fonts-unifont.
+2026-10-24T13:22:39.7837416Z Preparing to unpack .../07-fonts-unifont_1%3a15.1.01-1build1_all.deb ...
+2026-10-24T13:22:39.7848241Z Unpacking fonts-unifont (1:15.1.01-1build1) ...
+2026-10-24T13:22:40.0264343Z Selecting previously unselected package fonts-wqy-zenhei.
+2026-10-24T13:22:40.0390748Z Preparing to unpack .../08-fonts-wqy-zenhei_0.9.45-8_all.deb ...
+2026-10-24T13:22:40.0482520Z Unpacking fonts-wqy-zenhei (0.9.45-8) ...
+2026-10-24T13:22:40.6657071Z Preparing to unpack .../09-libnss3_2%3a3.98-1ubuntu0.3_amd64.deb ...
+2026-10-24T13:22:40.6678312Z Unpacking libnss3:amd64 (2:3.98-1ubuntu0.3) over (2:3.98-1ubuntu0.2) ...
+2026-10-24T13:22:40.7239865Z Preparing to unpack .../10-libnss3-tools_2%3a3.98-1ubuntu0.3_amd64.deb ...
+2026-10-24T13:22:40.7261693Z Unpacking libnss3-tools (2:3.98-1ubuntu0.3) over (2:3.98-1ubuntu0.2) ...
+2026-10-24T13:22:40.7724738Z Selecting previously unselected package xfonts-encodings.
+2026-10-24T13:22:40.7858213Z Preparing to unpack .../11-xfonts-encodings_1%3a1.0.5-0ubuntu2_all.deb ...
+2026-10-24T13:22:40.7866929Z Unpacking xfonts-encodings (1:1.0.5-0ubuntu2) ...
+2026-10-24T13:22:40.8140731Z Selecting previously unselected package xfonts-utils.
+2026-10-24T13:22:40.8265017Z Preparing to unpack .../12-xfonts-utils_1%3a7.7+6build3_amd64.deb ...
+2026-10-24T13:22:40.8274081Z Unpacking xfonts-utils (1:7.7+6build3) ...
+2026-10-24T13:22:40.8806291Z Selecting previously unselected package xfonts-cyrillic.
+2026-10-24T13:22:40.8930596Z Preparing to unpack .../13-xfonts-cyrillic_1%3a1.0.5+nmu1_all.deb ...
+2026-10-24T13:22:40.8941048Z Unpacking xfonts-cyrillic (1:1.0.5+nmu1) ...
+2026-10-24T13:22:40.9253587Z Selecting previously unselected package xfonts-scalable.
+2026-10-24T13:22:40.9378414Z Preparing to unpack .../14-xfonts-scalable_1%3a1.0.3-1.3_all.deb ...
+2026-10-24T13:22:40.9386868Z Unpacking xfonts-scalable (1:1.0.3-1.3) ...
+2026-10-24T13:22:40.9707056Z Preparing to unpack .../15-xserver-common_2%3a21.1.12-1ubuntu1.9_all.deb ...
+2026-10-24T13:22:40.9729158Z Unpacking xserver-common (2:21.1.12-1ubuntu1.9) over (2:21.1.12-1ubuntu1.8) ...
+2026-10-24T13:22:41.0030666Z Preparing to unpack .../16-xvfb_2%3a21.1.12-1ubuntu1.9_amd64.deb ...
+2026-10-24T13:22:41.0052136Z Unpacking xvfb (2:21.1.12-1ubuntu1.9) over (2:21.1.12-1ubuntu1.8) ...
+2026-10-24T13:22:41.0732772Z Setting up fonts-wqy-zenhei (0.9.45-8) ...
+2026-10-24T13:22:41.1005917Z Setting up fonts-freefont-ttf (20211204+svn4273-2) ...
+2026-10-24T13:22:41.1024772Z Setting up libnss3:amd64 (2:3.98-1ubuntu0.3) ...
+2026-10-24T13:22:41.1043533Z Setting up libglib2.0-0t64:amd64 (2.80.0-6ubuntu3.10) ...
+2026-10-24T13:22:41.1248657Z Setting up libglib2.0-data (2.80.0-6ubuntu3.10) ...
+2026-10-24T13:22:41.1266544Z Setting up fonts-tlwg-loma-otf (1:0.7.3-1) ...
+2026-10-24T13:22:41.1284131Z Setting up xfonts-encodings (1:1.0.5-0ubuntu2) ...
+2026-10-24T13:22:41.1301248Z Setting up gir1.2-glib-2.0:amd64 (2.80.0-6ubuntu3.10) ...
+2026-10-24T13:22:41.1318696Z Setting up fonts-ipafont-gothic (00303-21ubuntu1) ...
+2026-10-24T13:22:41.1374199Z update-alternatives: using /usr/share/fonts/opentype/ipafont-gothic/ipag.ttf to provide /usr/share/fonts/truetype/fonts-japanese-gothic.ttf (fonts-japanese-gothic.ttf) in auto mode
+2026-10-24T13:22:41.1387252Z Setting up xserver-common (2:21.1.12-1ubuntu1.9) ...
+2026-10-24T13:22:41.1407819Z Setting up libnss3-tools (2:3.98-1ubuntu0.3) ...
+2026-10-24T13:22:41.1427623Z Setting up fonts-unifont (1:15.1.01-1build1) ...
+2026-10-24T13:22:41.1446751Z Setting up xvfb (2:21.1.12-1ubuntu1.9) ...
+2026-10-24T13:22:41.1464315Z Setting up libglib2.0-bin (2.80.0-6ubuntu3.10) ...
+2026-10-24T13:22:41.1481957Z Setting up xfonts-utils (1:7.7+6build3) ...
+2026-10-24T13:22:41.1517449Z Setting up xfonts-cyrillic (1:1.0.5+nmu1) ...
+2026-10-24T13:22:41.2051736Z Setting up xfonts-scalable (1:1.0.3-1.3) ...
+2026-10-24T13:22:41.2320677Z Processing triggers for libc-bin (2.39-0ubuntu8.9) ...
+2026-10-24T13:22:42.8886474Z Processing triggers for man-db (2.12.0-4build2) ...
+2026-10-24T13:22:42.8908067Z Not building database; man-db/auto-update is not 'true'.
+2026-10-24T13:22:42.8921636Z Processing triggers for fontconfig (2.15.0-1.1ubuntu2) ...
+2026-10-24T13:22:44.0929507Z 
+2026-10-24T13:22:44.0930700Z Running kernel seems to be up-to-date.
+2026-10-24T13:22:44.0931113Z 
+2026-10-24T13:22:44.0931461Z Restarting services...
+2026-10-24T13:22:44.1300505Z  systemctl restart packagekit.service php8.3-fpm.service polkit.service udisks2.service
+2026-10-24T13:22:44.2523244Z 
+2026-10-24T13:22:44.2524164Z Service restarts being deferred:
+2026-10-24T13:22:44.2525017Z  systemctl restart ModemManager.service
+2026-10-24T13:22:44.2525753Z  systemctl restart networkd-dispatcher.service
+2026-10-24T13:22:44.2526119Z 
+2026-10-24T13:22:44.2526475Z No containers need to be restarted.
+2026-10-24T13:22:44.2526839Z 
+2026-10-24T13:22:44.2527193Z No user sessions are running outdated binaries.
+2026-10-24T13:22:44.2527552Z 
+2026-10-24T13:22:44.2528077Z No VM guests are running outdated hypervisor (qemu) binaries on this host.
+2026-10-24T13:22:45.1689637Z Downloading Chromium 140.0.7339.186 (playwright build v1193) from https://cdn.playwright.dev/dbazure/download/playwright/builds/chromium/1193/chromium-linux.zip
+2026-10-24T13:22:45.3632819Z |                                                                                |   0% of 173.8 MiB
+2026-10-24T13:22:45.5599184Z |■■■■■■■■                                                                        |  10% of 173.8 MiB
+2026-10-24T13:22:45.6304938Z |■■■■■■■■■■■■■■■■                                                                |  20% of 173.8 MiB
+2026-10-24T13:22:45.7078686Z |■■■■■■■■■■■■■■■■■■■■■■■■                                                        |  30% of 173.8 MiB
+2026-10-24T13:22:45.7728455Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                                |  40% of 173.8 MiB
+2026-10-24T13:22:45.8435804Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                        |  50% of 173.8 MiB
+2026-10-24T13:22:45.9225874Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                |  60% of 173.8 MiB
+2026-10-24T13:22:45.9973529Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                        |  70% of 173.8 MiB
+2026-10-24T13:22:46.0735933Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                |  80% of 173.8 MiB
+2026-10-24T13:22:46.1497770Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■        |  90% of 173.8 MiB
+2026-10-24T13:22:46.2145038Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■| 100% of 173.8 MiB
+2026-10-24T13:22:49.9359097Z Chromium 140.0.7339.186 (playwright build v1193) downloaded to /home/runner/.cache/ms-playwright/chromium-1193
+2026-10-24T13:22:49.9360461Z Downloading FFMPEG playwright build v1011 from https://cdn.playwright.dev/dbazure/download/playwright/builds/ffmpeg/1011/ffmpeg-linux.zip
+2026-10-24T13:22:50.1103678Z |                                                                                |   0% of 2.3 MiB
+2026-10-24T13:22:50.1499994Z |■■■■■■■■                                                                        |  10% of 2.3 MiB
+2026-10-24T13:22:50.1657054Z |■■■■■■■■■■■■■■■■                                                                |  20% of 2.3 MiB
+2026-10-24T13:22:50.1794959Z |■■■■■■■■■■■■■■■■■■■■■■■■                                                        |  30% of 2.3 MiB
+2026-10-24T13:22:50.1922216Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                                |  40% of 2.3 MiB
+2026-10-24T13:22:50.1963527Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                        |  50% of 2.3 MiB
+2026-10-24T13:22:50.2065136Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                |  60% of 2.3 MiB
+2026-10-24T13:22:50.2080775Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                        |  70% of 2.3 MiB
+2026-10-24T13:22:50.2194513Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                |  80% of 2.3 MiB
+2026-10-24T13:22:50.2210115Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■        |  90% of 2.3 MiB
+2026-10-24T13:22:50.2218503Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■| 100% of 2.3 MiB
+2026-10-24T13:22:50.2750085Z FFMPEG playwright build v1011 downloaded to /home/runner/.cache/ms-playwright/ffmpeg-1011
+2026-10-24T13:22:50.2752751Z Downloading Chromium Headless Shell 140.0.7339.186 (playwright build v1193) from https://cdn.playwright.dev/dbazure/download/playwright/builds/chromium/1193/chromium-headless-shell-linux.zip
+2026-10-24T13:22:50.4339918Z |                                                                                |   0% of 104.3 MiB
+2026-10-24T13:22:50.6101091Z |■■■■■■■■                                                                        |  10% of 104.3 MiB
+2026-10-24T13:22:50.6498875Z |■■■■■■■■■■■■■■■■                                                                |  20% of 104.3 MiB
+2026-10-24T13:22:50.6853433Z |■■■■■■■■■■■■■■■■■■■■■■■■                                                        |  30% of 104.3 MiB
+2026-10-24T13:22:50.7126614Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                                |  40% of 104.3 MiB
+2026-10-24T13:22:50.7529965Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                        |  50% of 104.3 MiB
+2026-10-24T13:22:50.7982201Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                |  60% of 104.3 MiB
+2026-10-24T13:22:50.8340670Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                        |  70% of 104.3 MiB
+2026-10-24T13:22:50.8713291Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                |  80% of 104.3 MiB
+2026-10-24T13:22:50.9138883Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■        |  90% of 104.3 MiB
+2026-10-24T13:22:50.9563261Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■| 100% of 104.3 MiB
+2026-10-24T13:22:52.9540859Z Chromium Headless Shell 140.0.7339.186 (playwright build v1193) downloaded to /home/runner/.cache/ms-playwright/chromium_headless_shell-1193
+2026-10-24T13:22:53.0351521Z ##[group]Run node --import tsx scripts/verify-pocket-raster-browser-free.mjs
+2026-10-24T13:22:53.0352584Z [36;1mnode --import tsx scripts/verify-pocket-raster-browser-free.mjs[0m
+2026-10-24T13:22:53.0392493Z shell: /usr/bin/bash -e {0}
+2026-10-24T13:22:53.0392883Z env:
+2026-10-24T13:22:53.0393237Z   OPENAI_POCKET_MODEL: 
+2026-10-24T13:22:53.0393562Z ##[endgroup]
+2026-10-24T13:23:04.4543520Z {
+2026-10-24T13:23:04.4559744Z   "cases": [
+2026-10-24T13:23:04.4560556Z     {
+2026-10-24T13:23:04.4561177Z       "id": "range-clear",
+2026-10-24T13:23:04.4561964Z       "results": {
+2026-10-24T13:23:04.4565748Z         "verified": {
+2026-10-24T13:23:04.4592777Z           "status": "verified",
+2026-10-24T13:23:04.4607661Z           "anchors": [
+2026-10-24T13:23:04.4608571Z             {
+2026-10-24T13:23:04.4609335Z               "price": 110,
+2026-10-24T13:23:04.4610123Z               "y": 13.25
+2026-10-24T13:23:04.4610635Z             },
+2026-10-24T13:23:04.4611000Z             {
+2026-10-24T13:23:04.4611751Z               "price": 105,
+2026-10-24T13:23:04.4612264Z               "y": 30.75
+2026-10-24T13:23:04.4612934Z             },
+2026-10-24T13:23:04.4613365Z             {
+2026-10-24T13:23:04.4613851Z               "price": 100,
+2026-10-24T13:23:04.4614323Z               "y": 48.25
+2026-10-24T13:23:04.4614789Z             },
+2026-10-24T13:23:04.4615144Z             {
+2026-10-24T13:23:04.4615727Z               "price": 95,
+2026-10-24T13:23:04.4616181Z               "y": 65.75
+2026-10-24T13:23:04.4616624Z             },
+2026-10-24T13:23:04.4617092Z             {
+2026-10-24T13:23:04.4617660Z               "price": 90,
+2026-10-24T13:23:04.4618220Z               "y": 83.25
+2026-10-24T13:23:04.4618665Z             }
+2026-10-24T13:23:04.4619086Z           ],
+2026-10-24T13:23:04.4619600Z           "matchedModelTicks": 5,
+2026-10-24T13:23:04.4620199Z           "axisLeft": 832
+2026-10-24T13:23:04.4620623Z         },
+2026-10-24T13:23:04.4621025Z         "cropVerified": {
+2026-10-24T13:23:04.4621641Z           "status": "verified",
+2026-10-24T13:23:04.4622516Z           "anchors": [
+2026-10-24T13:23:04.4622928Z             {
+2026-10-24T13:23:04.4623342Z               "price": 110,
+2026-10-24T13:23:04.4623787Z               "y": 8.88888888888889
+2026-10-24T13:23:04.4624262Z             },
+2026-10-24T13:23:04.4624618Z             {
+2026-10-24T13:23:04.4625005Z               "price": 105,
+2026-10-24T13:23:04.4625385Z               "y": 30.19607843137255
+2026-10-24T13:23:04.4625799Z             },
+2026-10-24T13:23:04.4626228Z             {
+2026-10-24T13:23:04.4626608Z               "price": 100,
+2026-10-24T13:23:04.4627081Z               "y": 51.503267973856204
+2026-10-24T13:23:04.4627639Z             },
+2026-10-24T13:23:04.4628009Z             {
+2026-10-24T13:23:04.4628459Z               "price": 95,
+2026-10-24T13:23:04.4628874Z               "y": 72.94117647058823
+2026-10-24T13:23:04.4629368Z             },
+2026-10-24T13:23:04.4629672Z             {
+2026-10-24T13:23:04.4630115Z               "price": 90,
+2026-10-24T13:23:04.4631224Z               "y": 94.24836601307189
+2026-10-24T13:23:04.4631947Z             }
+2026-10-24T13:23:04.4632265Z           ],
+2026-10-24T13:23:04.4632849Z           "matchedModelTicks": 5,
+2026-10-24T13:23:04.4633315Z           "axisLeft": 1294.2222222222222
+2026-10-24T13:23:04.4633803Z         },
+2026-10-24T13:23:04.4634138Z         "misaligned": {
+2026-10-24T13:23:04.4634673Z           "status": "held",
+2026-10-24T13:23:04.4635375Z           "reason": "Independent price labels need a clearer axis."
+2026-10-24T13:23:04.4635884Z         },
+2026-10-24T13:23:04.4636359Z         "blurred": {
+2026-10-24T13:23:04.4636714Z           "status": "held",
+2026-10-24T13:23:04.4637274Z           "reason": "Price grid could not be independently verified."
+2026-10-24T13:23:04.4637955Z         },
+2026-10-24T13:23:04.4638306Z         "missing": {
+2026-10-24T13:23:04.4638705Z           "status": "held",
+2026-10-24T13:23:04.4639180Z           "reason": "Independent price labels need a clearer axis."
+2026-10-24T13:23:04.4640445Z         },
+2026-10-24T13:23:04.4640983Z         "ocr": {
+2026-10-24T13:23:04.4641302Z           "status": "verified",
+2026-10-24T13:23:04.4641893Z           "anchors": [
+2026-10-24T13:23:04.4642267Z             {
+2026-10-24T13:23:04.4642658Z               "price": 110,
+2026-10-24T13:23:04.4642985Z               "y": 13.25
+2026-10-24T13:23:04.4643544Z             },
+2026-10-24T13:23:04.4643854Z             {
+2026-10-24T13:23:04.4644271Z               "price": 105,
+2026-10-24T13:23:04.4644668Z               "y": 30.75
+2026-10-24T13:23:04.4645130Z             },
+2026-10-24T13:23:04.4645421Z             {
+2026-10-24T13:23:04.4645953Z               "price": 100,
+2026-10-24T13:23:04.4646352Z               "y": 48.25
+2026-10-24T13:23:04.4646782Z             },
+2026-10-24T13:23:04.4647072Z             {
+2026-10-24T13:23:04.4647486Z               "price": 95,
+2026-10-24T13:23:04.4647818Z               "y": 65.75
+2026-10-24T13:23:04.4648182Z             },
+2026-10-24T13:23:04.4648712Z             {
+2026-10-24T13:23:04.4649088Z               "price": 90,
+2026-10-24T13:23:04.4649533Z               "y": 83.25
+2026-10-24T13:23:04.4650071Z             }
+2026-10-24T13:23:04.4650364Z           ],
+2026-10-24T13:23:04.4650703Z           "matchedModelTicks": 5,
+2026-10-24T13:23:04.4651181Z           "axisLeft": 833
+2026-10-24T13:23:04.4651526Z         },
+2026-10-24T13:23:04.4652128Z         "cropOcr": {
+2026-10-24T13:23:04.4652589Z           "status": "verified",
+2026-10-24T13:23:04.4653193Z           "anchors": [
+2026-10-24T13:23:04.4653644Z             {
+2026-10-24T13:23:04.4654128Z               "price": 110,
+2026-10-24T13:23:04.4654753Z               "y": 8.88888888888889
+2026-10-24T13:23:04.4655360Z             },
+2026-10-24T13:23:04.4655839Z             {
+2026-10-24T13:23:04.4656278Z               "price": 105,
+2026-10-24T13:23:04.4656745Z               "y": 30.19607843137255
+2026-10-24T13:23:04.4657141Z             },
+2026-10-24T13:23:04.4657529Z             {
+2026-10-24T13:23:04.4657978Z               "price": 100,
+2026-10-24T13:23:04.4658486Z               "y": 51.503267973856204
+2026-10-24T13:23:04.4659102Z             },
+2026-10-24T13:23:04.4659454Z             {
+2026-10-24T13:23:04.4659971Z               "price": 95,
+2026-10-24T13:23:04.4660509Z               "y": 72.94117647058823
+2026-10-24T13:23:04.4661379Z             },
+2026-10-24T13:23:04.4662252Z             {
+2026-10-24T13:23:04.4662627Z               "price": 90,
+2026-10-24T13:23:04.4663341Z               "y": 94.24836601307189
+2026-10-24T13:23:04.4664041Z             }
+2026-10-24T13:23:04.4664767Z           ],
+2026-10-24T13:23:04.4665569Z           "matchedModelTicks": 5,
+2026-10-24T13:23:04.4666093Z           "axisLeft": 1295.5
+2026-10-24T13:23:04.4666470Z         },
+2026-10-24T13:23:04.4666832Z         "missingOcr": {
+2026-10-24T13:23:04.4667289Z           "status": "held",
+2026-10-24T13:23:04.4667908Z           "reason": "Independent price labels need a clearer axis."
+2026-10-24T13:23:04.4668571Z         },
+2026-10-24T13:23:04.4668964Z         "grid": [
+2026-10-24T13:23:04.4669384Z           59.5,
+2026-10-24T13:23:04.4669842Z           79.5,
+2026-10-24T13:23:04.4670287Z           184.5,
+2026-10-24T13:23:04.4670719Z           289.5,
+2026-10-24T13:23:04.4671095Z           394.5,
+2026-10-24T13:23:04.4671684Z           499.5,
+2026-10-24T13:23:04.4672082Z           519.5
+2026-10-24T13:23:04.4672462Z         ],
+2026-10-24T13:23:04.4673141Z         "cropGrid": [
+2026-10-24T13:23:04.4673837Z           37.00000000000001,
+2026-10-24T13:23:04.4674340Z           68,
+2026-10-24T13:23:04.4674684Z           231,
+2026-10-24T13:23:04.4675006Z           393.99999999999994,
+2026-10-24T13:23:04.4675353Z           558,
+2026-10-24T13:23:04.4675634Z           721,
+2026-10-24T13:23:04.4675964Z           752
+2026-10-24T13:23:04.4676245Z         ],
+2026-10-24T13:23:04.4676551Z         "cropDimensions": [
+2026-10-24T13:23:04.4676942Z           1400,
+2026-10-24T13:23:04.4677231Z           765
+2026-10-24T13:23:04.4677523Z         ]
+2026-10-24T13:23:04.4677827Z       }
+2026-10-24T13:23:04.4678377Z     },
+2026-10-24T13:23:04.4678975Z     {
+2026-10-24T13:23:04.4679277Z       "id": "double-top",
+2026-10-24T13:23:04.4679664Z       "results": {
+2026-10-24T13:23:04.4679998Z         "verified": {
+2026-10-24T13:23:04.4680342Z           "status": "verified",
+2026-10-24T13:23:04.4680728Z           "anchors": [
+2026-10-24T13:23:04.4681015Z             {
+2026-10-24T13:23:04.4681340Z               "price": 110,
+2026-10-24T13:23:04.4681994Z               "y": 13.25
+2026-10-24T13:23:04.4682412Z             },
+2026-10-24T13:23:04.4682753Z             {
+2026-10-24T13:23:04.4683195Z               "price": 105,
+2026-10-24T13:23:04.4683707Z               "y": 30.75
+2026-10-24T13:23:04.4684150Z             },
+2026-10-24T13:23:04.4684646Z             {
+2026-10-24T13:23:04.4685119Z               "price": 100,
+2026-10-24T13:23:04.4685554Z               "y": 48.25
+2026-10-24T13:23:04.4686009Z             },
+2026-10-24T13:23:04.4686392Z             {
+2026-10-24T13:23:04.4686790Z               "price": 95,
+2026-10-24T13:23:04.4687202Z               "y": 65.75
+2026-10-24T13:23:04.4687679Z             },
+2026-10-24T13:23:04.4688029Z             {
+2026-10-24T13:23:04.4688377Z               "price": 90,
+2026-10-24T13:23:04.4688867Z               "y": 83.25
+2026-10-24T13:23:04.4689252Z             }
+2026-10-24T13:23:04.4689670Z           ],
+2026-10-24T13:23:04.4690126Z           "matchedModelTicks": 5,
+2026-10-24T13:23:04.4690581Z           "axisLeft": 832
+2026-10-24T13:23:04.4690982Z         },
+2026-10-24T13:23:04.4691339Z         "cropVerified": {
+2026-10-24T13:23:04.4692023Z           "status": "verified",
+2026-10-24T13:23:04.4692453Z           "anchors": [
+2026-10-24T13:23:04.4692835Z             {
+2026-10-24T13:23:04.4693257Z               "price": 110,
+2026-10-24T13:23:04.4693683Z               "y": 8.88888888888889
+2026-10-24T13:23:04.4694177Z             },
+2026-10-24T13:23:04.4694577Z             {
+2026-10-24T13:23:04.4694958Z               "price": 105,
+2026-10-24T13:23:04.4695409Z               "y": 30.19607843137255
+2026-10-24T13:23:04.4696016Z             },
+2026-10-24T13:23:04.4696435Z             {
+2026-10-24T13:23:04.4696826Z               "price": 100,
+2026-10-24T13:23:04.4697298Z               "y": 51.503267973856204
+2026-10-24T13:23:04.4697740Z             },
+2026-10-24T13:23:04.4698235Z             {
+2026-10-24T13:23:04.4698631Z               "price": 95,
+2026-10-24T13:23:04.4699044Z               "y": 72.94117647058823
+2026-10-24T13:23:04.4699522Z             },
+2026-10-24T13:23:04.4699883Z             {
+2026-10-24T13:23:04.4700245Z               "price": 90,
+2026-10-24T13:23:04.4700726Z               "y": 94.24836601307189
+2026-10-24T13:23:04.4701162Z             }
+2026-10-24T13:23:04.4701773Z           ],
+2026-10-24T13:23:04.4702250Z           "matchedModelTicks": 5,
+2026-10-24T13:23:04.4703010Z           "axisLeft": 1294.2222222222222
+2026-10-24T13:23:04.4703485Z         },
+2026-10-24T13:23:04.4703849Z         "misaligned": {
+2026-10-24T13:23:04.4704300Z           "status": "held",
+2026-10-24T13:23:04.4704894Z           "reason": "Independent price labels need a clearer axis."
+2026-10-24T13:23:04.4705477Z         },
+2026-10-24T13:23:04.4705857Z         "blurred": {
+2026-10-24T13:23:04.4706353Z           "status": "held",
+2026-10-24T13:23:04.4706978Z           "reason": "Price grid could not be independently verified."
+2026-10-24T13:23:04.4707580Z         },
+2026-10-24T13:23:04.4707954Z         "missing": {
+2026-10-24T13:23:04.4708357Z           "status": "held",
+2026-10-24T13:23:04.4708938Z           "reason": "Independent price labels need a clearer axis."
+2026-10-24T13:23:04.4709474Z         },
+2026-10-24T13:23:04.4709847Z         "ocr": {
+2026-10-24T13:23:04.4710298Z           "status": "verified",
+2026-10-24T13:23:04.4710786Z           "anchors": [
+2026-10-24T13:23:04.4711249Z             {
+2026-10-24T13:23:04.4711999Z               "price": 110,
+2026-10-24T13:23:04.4712354Z               "y": 13.25
+2026-10-24T13:23:04.4712664Z             },
+2026-10-24T13:23:04.4712999Z             {
+2026-10-24T13:23:04.4713604Z               "price": 105,
+2026-10-24T13:23:04.4714066Z               "y": 30.75
+2026-10-24T13:23:04.4714400Z             },
+2026-10-24T13:23:04.4714716Z             {
+2026-10-24T13:23:04.4715011Z               "price": 100,
+2026-10-24T13:23:04.4715368Z               "y": 48.25
+2026-10-24T13:23:04.4715690Z             },
+2026-10-24T13:23:04.4716011Z             {
+2026-10-24T13:23:04.4716309Z               "price": 95,
+2026-10-24T13:23:04.4716701Z               "y": 65.75
+2026-10-24T13:23:04.4717001Z             },
+2026-10-24T13:23:04.4717275Z             {
+2026-10-24T13:23:04.4717624Z               "price": 90,
+2026-10-24T13:23:04.4717941Z               "y": 83.25
+2026-10-24T13:23:04.4718288Z             }
+2026-10-24T13:23:04.4718570Z           ],
+2026-10-24T13:23:04.4718940Z           "matchedModelTicks": 5,
+2026-10-24T13:23:04.4719301Z           "axisLeft": 833
+2026-10-24T13:23:04.4719611Z         },
+2026-10-24T13:23:04.4719983Z         "cropOcr": {
+2026-10-24T13:23:04.4720335Z           "status": "verified",
+2026-10-24T13:23:04.4720674Z           "anchors": [
+2026-10-24T13:23:04.4721029Z             {
+2026-10-24T13:23:04.4721332Z               "price": 110,
+2026-10-24T13:23:04.4721843Z               "y": 8.88888888888889
+2026-10-24T13:23:04.4722212Z             },
+2026-10-24T13:23:04.4722518Z             {
+2026-10-24T13:23:04.4722809Z               "price": 105,
+2026-10-24T13:23:04.4723212Z               "y": 30.19607843137255
+2026-10-24T13:23:04.4723566Z             },
+2026-10-24T13:23:04.4723855Z             {
+2026-10-24T13:23:04.4724161Z               "price": 100,
+2026-10-24T13:23:04.4724577Z               "y": 51.503267973856204
+2026-10-24T13:23:04.4724919Z             },
+2026-10-24T13:23:04.4725219Z             {
+2026-10-24T13:23:04.4725528Z               "price": 95,
+2026-10-24T13:23:04.4725918Z               "y": 72.94117647058823
+2026-10-24T13:23:04.4726271Z             },
+2026-10-24T13:23:04.4726598Z             {
+2026-10-24T13:23:04.4726884Z               "price": 90,
+2026-10-24T13:23:04.4727215Z               "y": 94.24836601307189
+2026-10-24T13:23:04.4727606Z             }
+2026-10-24T13:23:04.4727911Z           ],
+2026-10-24T13:23:04.4728253Z           "matchedModelTicks": 5,
+2026-10-24T13:23:04.4728600Z           "axisLeft": 1295.5
+2026-10-24T13:23:04.4728952Z         },
+2026-10-24T13:23:04.4729250Z         "missingOcr": {
+2026-10-24T13:23:04.4729668Z           "status": "held",
+2026-10-24T13:23:04.4730666Z           "reason": "Independent price labels need a clearer axis."
+2026-10-24T13:23:04.4731200Z         },
+2026-10-24T13:23:04.4731747Z         "grid": [
+2026-10-24T13:23:04.4732251Z           59.5,
+2026-10-24T13:23:04.4732637Z           79.5,
+2026-10-24T13:23:04.4733070Z           184.5,
+2026-10-24T13:23:04.4733503Z           289.5,
+2026-10-24T13:23:04.4733889Z           394.5,
+2026-10-24T13:23:04.4734296Z           499.5,
+2026-10-24T13:23:04.4734700Z           519.5
+2026-10-24T13:23:04.4735075Z         ],
+2026-10-24T13:23:04.4735437Z         "cropGrid": [
+2026-10-24T13:23:04.4735872Z           37.00000000000001,
+2026-10-24T13:23:04.4736365Z           68,
+2026-10-24T13:23:04.4736755Z           231,
+2026-10-24T13:23:04.4737228Z           393.99999999999994,
+2026-10-24T13:23:04.4737672Z           558,
+2026-10-24T13:23:04.4738141Z           721,
+2026-10-24T13:23:04.4738522Z           752
+2026-10-24T13:23:04.4738934Z         ],
+2026-10-24T13:23:04.4739298Z         "cropDimensions": [
+2026-10-24T13:23:04.4739703Z           1400,
+2026-10-24T13:23:04.4740240Z           765
+2026-10-24T13:23:04.4740628Z         ]
+2026-10-24T13:23:04.4741101Z       }
+2026-10-24T13:23:04.4741448Z     },
+2026-10-24T13:23:04.4742267Z     {
+2026-10-24T13:23:04.4742714Z       "id": "head-shoulders",
+2026-10-24T13:23:04.4743220Z       "results": {
+2026-10-24T13:23:04.4743683Z         "verified": {
+2026-10-24T13:23:04.4744183Z           "status": "verified",
+2026-10-24T13:23:04.4744863Z           "anchors": [
+2026-10-24T13:23:04.4745405Z             {
+2026-10-24T13:23:04.4745781Z               "price": 110,
+2026-10-24T13:23:04.4746476Z               "y": 13.25
+2026-10-24T13:23:04.4747258Z             },
+2026-10-24T13:23:04.4747841Z             {
+2026-10-24T13:23:04.4748418Z               "price": 105,
+2026-10-24T13:23:04.4749033Z               "y": 30.75
+2026-10-24T13:23:04.4749737Z             },
+2026-10-24T13:23:04.4750258Z             {
+2026-10-24T13:23:04.4750652Z               "price": 100,
+2026-10-24T13:23:04.4751091Z               "y": 48.25
+2026-10-24T13:23:04.4751497Z             },
+2026-10-24T13:23:04.4752051Z             {
+2026-10-24T13:23:04.4752682Z               "price": 95,
+2026-10-24T13:23:04.4753198Z               "y": 65.75
+2026-10-24T13:23:04.4753607Z             },
+2026-10-24T13:23:04.4754009Z             {
+2026-10-24T13:23:04.4754443Z               "price": 90,
+2026-10-24T13:23:04.4754886Z               "y": 83.25
+2026-10-24T13:23:04.4755391Z             }
+2026-10-24T13:23:04.4755848Z           ],
+2026-10-24T13:23:04.4756397Z           "matchedModelTicks": 5,
+2026-10-24T13:23:04.4757010Z           "axisLeft": 832
+2026-10-24T13:23:04.4757613Z         },
+2026-10-24T13:23:04.4758099Z         "cropVerified": {
+2026-10-24T13:23:04.4758652Z           "status": "verified",
+2026-10-24T13:23:04.4759242Z           "anchors": [
+2026-10-24T13:23:04.4759731Z             {
+2026-10-24T13:23:04.4760316Z               "price": 110,
+2026-10-24T13:23:04.4760860Z               "y": 8.88888888888889
+2026-10-24T13:23:04.4761408Z             },
+2026-10-24T13:23:04.4762024Z             {
+2026-10-24T13:23:04.4762582Z               "price": 105,
+2026-10-24T13:23:04.4763202Z               "y": 30.19607843137255
+2026-10-24T13:23:04.4763779Z             },
+2026-10-24T13:23:04.4764201Z             {
+2026-10-24T13:23:04.4764768Z               "price": 100,
+2026-10-24T13:23:04.4765396Z               "y": 51.503267973856204
+2026-10-24T13:23:04.4765996Z             },
+2026-10-24T13:23:04.4766498Z             {
+2026-10-24T13:23:04.4766973Z               "price": 95,
+2026-10-24T13:23:04.4767663Z               "y": 72.94117647058823
+2026-10-24T13:23:04.4768296Z             },
+2026-10-24T13:23:04.4768807Z             {
+2026-10-24T13:23:04.4769309Z               "price": 90,
+2026-10-24T13:23:04.4770000Z               "y": 94.24836601307189
+2026-10-24T13:23:04.4770566Z             }
+2026-10-24T13:23:04.4771006Z           ],
+2026-10-24T13:23:04.4771878Z           "matchedModelTicks": 5,
+2026-10-24T13:23:04.4772488Z           "axisLeft": 1294.2222222222222
+2026-10-24T13:23:04.4773065Z         },
+2026-10-24T13:23:04.4773460Z         "misaligned": {
+2026-10-24T13:23:04.4774125Z           "status": "held",
+2026-10-24T13:23:04.4774804Z           "reason": "Independent price labels need a clearer axis."
+2026-10-24T13:23:04.4775497Z         },
+2026-10-24T13:23:04.4775987Z         "blurred": {
+2026-10-24T13:23:04.4776399Z           "status": "held",
+2026-10-24T13:23:04.4777220Z           "reason": "Price grid could not be independently verified."
+2026-10-24T13:23:04.4777943Z         },
+2026-10-24T13:23:04.4778297Z         "missing": {
+2026-10-24T13:23:04.4778805Z           "status": "held",
+2026-10-24T13:23:04.4779452Z           "reason": "Independent price labels need a clearer axis."
+2026-10-24T13:23:04.4780039Z         },
+2026-10-24T13:23:04.4780442Z         "ocr": {
+2026-10-24T13:23:04.4781013Z           "status": "verified",
+2026-10-24T13:23:04.4781474Z           "anchors": [
+2026-10-24T13:23:04.4782116Z             {
+2026-10-24T13:23:04.4782546Z               "price": 110,
+2026-10-24T13:23:04.4782944Z               "y": 13.25
+2026-10-24T13:23:04.4783352Z             },
+2026-10-24T13:23:04.4783721Z             {
+2026-10-24T13:23:04.4784115Z               "price": 105,
+2026-10-24T13:23:04.4784533Z               "y": 30.75
+2026-10-24T13:23:04.4784912Z             },
+2026-10-24T13:23:04.4785403Z             {
+2026-10-24T13:23:04.4785809Z               "price": 100,
+2026-10-24T13:23:04.4786238Z               "y": 48.25
+2026-10-24T13:23:04.4786751Z             },
+2026-10-24T13:23:04.4787165Z             {
+2026-10-24T13:23:04.4787801Z               "price": 95,
+2026-10-24T13:23:04.4788411Z               "y": 65.75
+2026-10-24T13:23:04.4788847Z             },
+2026-10-24T13:23:04.4789293Z             {
+2026-10-24T13:23:04.4789701Z               "price": 90,
+2026-10-24T13:23:04.4790221Z               "y": 83.25
+2026-10-24T13:23:04.4790647Z             }
+2026-10-24T13:23:04.4791045Z           ],
+2026-10-24T13:23:04.4791793Z           "matchedModelTicks": 5,
+2026-10-24T13:23:04.4792300Z           "axisLeft": 833
+2026-10-24T13:23:04.4792793Z         },
+2026-10-24T13:23:04.4793236Z         "cropOcr": {
+2026-10-24T13:23:04.4793731Z           "status": "verified",
+2026-10-24T13:23:04.4794239Z           "anchors": [
+2026-10-24T13:23:04.4794713Z             {
+2026-10-24T13:23:04.4795135Z               "price": 110,
+2026-10-24T13:23:04.4795633Z               "y": 8.88888888888889
+2026-10-24T13:23:04.4796205Z             },
+2026-10-24T13:23:04.4796597Z             {
+2026-10-24T13:23:04.4797007Z               "price": 105,
+2026-10-24T13:23:04.4797521Z               "y": 30.19607843137255
+2026-10-24T13:23:04.4798040Z             },
+2026-10-24T13:23:04.4798504Z             {
+2026-10-24T13:23:04.4798909Z               "price": 100,
+2026-10-24T13:23:04.4799467Z               "y": 51.503267973856204
+2026-10-24T13:23:04.4799944Z             },
+2026-10-24T13:23:04.4800313Z             {
+2026-10-24T13:23:04.4800830Z               "price": 95,
+2026-10-24T13:23:04.4801324Z               "y": 72.94117647058823
+2026-10-24T13:23:04.4802004Z             },
+2026-10-24T13:23:04.4802526Z             {
+2026-10-24T13:23:04.4802939Z               "price": 90,
+2026-10-24T13:23:04.4803470Z               "y": 94.24836601307189
+2026-10-24T13:23:04.4803971Z             }
+2026-10-24T13:23:04.4804406Z           ],
+2026-10-24T13:23:04.4804860Z           "matchedModelTicks": 5,
+2026-10-24T13:23:04.4805414Z           "axisLeft": 1295.5
+2026-10-24T13:23:04.4805921Z         },
+2026-10-24T13:23:04.4806303Z         "missingOcr": {
+2026-10-24T13:23:04.4806797Z           "status": "held",
+2026-10-24T13:23:04.4807476Z           "reason": "Independent price labels need a clearer axis."
+2026-10-24T13:23:04.4808143Z         },
+2026-10-24T13:23:04.4808533Z         "grid": [
+2026-10-24T13:23:04.4808994Z           59.5,
+2026-10-24T13:23:04.4809412Z           79.5,
+2026-10-24T13:23:04.4809818Z           184.5,
+2026-10-24T13:23:04.4810323Z           289.5,
+2026-10-24T13:23:04.4810723Z           394.5,
+2026-10-24T13:23:04.4811121Z           499.5,
+2026-10-24T13:23:04.4811655Z           519.5
+2026-10-24T13:23:04.4812060Z         ],
+2026-10-24T13:23:04.4812463Z         "cropGrid": [
+2026-10-24T13:23:04.4812866Z           37.00000000000001,
+2026-10-24T13:23:04.4813319Z           68,
+2026-10-24T13:23:04.4813657Z           231,
+2026-10-24T13:23:04.4814024Z           393.99999999999994,
+2026-10-24T13:23:04.4814483Z           558,
+2026-10-24T13:23:04.4814816Z           721,
+2026-10-24T13:23:04.4815181Z           752
+2026-10-24T13:23:04.4815593Z         ],
+2026-10-24T13:23:04.4816062Z         "cropDimensions": [
+2026-10-24T13:23:04.4816475Z           1400,
+2026-10-24T13:23:04.4816897Z           765
+2026-10-24T13:23:04.4817263Z         ]
+2026-10-24T13:23:04.4817640Z       }
+2026-10-24T13:23:04.4818007Z     },
+2026-10-24T13:23:04.4818386Z     {
+2026-10-24T13:23:04.4818764Z       "id": "sweep-reclaim",
+2026-10-24T13:23:04.4819207Z       "results": {
+2026-10-24T13:23:04.4819632Z         "verified": {
+2026-10-24T13:23:04.4820090Z           "status": "verified",
+2026-10-24T13:23:04.4820513Z           "anchors": [
+2026-10-24T13:23:04.4820940Z             {
+2026-10-24T13:23:04.4821320Z               "price": 110,
+2026-10-24T13:23:04.4821958Z               "y": 13.25
+2026-10-24T13:23:04.4822417Z             },
+2026-10-24T13:23:04.4822888Z             {
+2026-10-24T13:23:04.4823302Z               "price": 105,
+2026-10-24T13:23:04.4823769Z               "y": 30.75
+2026-10-24T13:23:04.4824221Z             },
+2026-10-24T13:23:04.4824575Z             {
+2026-10-24T13:23:04.4824929Z               "price": 100,
+2026-10-24T13:23:04.4825558Z               "y": 48.25
+2026-10-24T13:23:04.4826033Z             },
+2026-10-24T13:23:04.4826375Z             {
+2026-10-24T13:23:04.4826805Z               "price": 95,
+2026-10-24T13:23:04.4827203Z               "y": 65.75
+2026-10-24T13:23:04.4827753Z             },
+2026-10-24T13:23:04.4828227Z             {
+2026-10-24T13:23:04.4828636Z               "price": 90,
+2026-10-24T13:23:04.4829055Z               "y": 83.25
+2026-10-24T13:23:04.4829522Z             }
+2026-10-24T13:23:04.4829889Z           ],
+2026-10-24T13:23:04.4830317Z           "matchedModelTicks": 5,
+2026-10-24T13:23:04.4830792Z           "axisLeft": 832
+2026-10-24T13:23:04.4831227Z         },
+2026-10-24T13:23:04.4831813Z         "cropVerified": {
+2026-10-24T13:23:04.4832361Z           "status": "verified",
+2026-10-24T13:23:04.4832846Z           "anchors": [
+2026-10-24T13:23:04.4833275Z             {
+2026-10-24T13:23:04.4833654Z               "price": 110,
+2026-10-24T13:23:04.4834190Z               "y": 8.88888888888889
+2026-10-24T13:23:04.4834666Z             },
+2026-10-24T13:23:04.4835052Z             {
+2026-10-24T13:23:04.4835545Z               "price": 105,
+2026-10-24T13:23:04.4836063Z               "y": 30.19607843137255
+2026-10-24T13:23:04.4836561Z             },
+2026-10-24T13:23:04.4836954Z             {
+2026-10-24T13:23:04.4837420Z               "price": 100,
+2026-10-24T13:23:04.4837926Z               "y": 51.503267973856204
+2026-10-24T13:23:04.4838442Z             },
+2026-10-24T13:23:04.4838902Z             {
+2026-10-24T13:23:04.4839313Z               "price": 95,
+2026-10-24T13:23:04.4839811Z               "y": 72.94117647058823
+2026-10-24T13:23:04.4840342Z             },
+2026-10-24T13:23:04.4840746Z             {
+2026-10-24T13:23:04.4841198Z               "price": 90,
+2026-10-24T13:23:04.4841840Z               "y": 94.24836601307189
+2026-10-24T13:23:04.4842354Z             }
+2026-10-24T13:23:04.4842747Z           ],
+2026-10-24T13:23:04.4843297Z           "matchedModelTicks": 5,
+2026-10-24T13:23:04.4843863Z           "axisLeft": 1294.2222222222222
+2026-10-24T13:23:04.4844373Z         },
+2026-10-24T13:23:04.4844803Z         "misaligned": {
+2026-10-24T13:23:04.4845459Z           "status": "held",
+2026-10-24T13:23:04.4846516Z           "reason": "Independent price labels need a clearer axis."
+2026-10-24T13:23:04.4847149Z         },
+2026-10-24T13:23:04.4847555Z         "blurred": {
+2026-10-24T13:23:04.4848176Z           "status": "held",
+2026-10-24T13:23:04.4848850Z           "reason": "Price grid could not be independently verified."
+2026-10-24T13:23:04.4849539Z         },
+2026-10-24T13:23:04.4849937Z         "missing": {
+2026-10-24T13:23:04.4850352Z           "status": "held",
+2026-10-24T13:23:04.4851098Z           "reason": "Independent price labels need a clearer axis."
+2026-10-24T13:23:04.4852135Z         },
+2026-10-24T13:23:04.4852570Z         "ocr": {
+2026-10-24T13:23:04.4853075Z           "status": "verified",
+2026-10-24T13:23:04.4853558Z           "anchors": [
+2026-10-24T13:23:04.4854041Z             {
+2026-10-24T13:23:04.4854483Z               "price": 110,
+2026-10-24T13:23:04.4854993Z               "y": 13.25
+2026-10-24T13:23:04.4855433Z             },
+2026-10-24T13:23:04.4855887Z             {
+2026-10-24T13:23:04.4856325Z               "price": 105,
+2026-10-24T13:23:04.4856764Z               "y": 30.75
+2026-10-24T13:23:04.4857233Z             },
+2026-10-24T13:23:04.4857669Z             {
+2026-10-24T13:23:04.4858121Z               "price": 100,
+2026-10-24T13:23:04.4858577Z               "y": 48.25
+2026-10-24T13:23:04.4859057Z             },
+2026-10-24T13:23:04.4859469Z             {
+2026-10-24T13:23:04.4859877Z               "price": 95,
+2026-10-24T13:23:04.4860431Z               "y": 65.75
+2026-10-24T13:23:04.4860861Z             },
+2026-10-24T13:23:04.4861264Z             {
+2026-10-24T13:23:04.4861947Z               "price": 90,
+2026-10-24T13:23:04.4862394Z               "y": 83.25
+2026-10-24T13:23:04.4862900Z             }
+2026-10-24T13:23:04.4863292Z           ],
+2026-10-24T13:23:04.4863814Z           "matchedModelTicks": 5,
+2026-10-24T13:23:04.4864457Z           "axisLeft": 833
+2026-10-24T13:23:04.4865016Z         },
+2026-10-24T13:23:04.4865498Z         "cropOcr": {
+2026-10-24T13:23:04.4865975Z           "status": "verified",
+2026-10-24T13:23:04.4866474Z           "anchors": [
+2026-10-24T13:23:04.4866980Z             {
+2026-10-24T13:23:04.4867397Z               "price": 110,
+2026-10-24T13:23:04.4867910Z               "y": 8.88888888888889
+2026-10-24T13:23:04.4868418Z             },
+2026-10-24T13:23:04.4868846Z             {
+2026-10-24T13:23:04.4869277Z               "price": 105,
+2026-10-24T13:23:04.4869839Z               "y": 30.19607843137255
+2026-10-24T13:23:04.4870318Z             },
+2026-10-24T13:23:04.4870692Z             {
+2026-10-24T13:23:04.4871141Z               "price": 100,
+2026-10-24T13:23:04.4871830Z               "y": 51.503267973856204
+2026-10-24T13:23:04.4872349Z             },
+2026-10-24T13:23:04.4872739Z             {
+2026-10-24T13:23:04.4873192Z               "price": 95,
+2026-10-24T13:23:04.4873701Z               "y": 72.94117647058823
+2026-10-24T13:23:04.4874209Z             },
+2026-10-24T13:23:04.4874671Z             {
+2026-10-24T13:23:04.4875079Z               "price": 90,
+2026-10-24T13:23:04.4875567Z               "y": 94.24836601307189
+2026-10-24T13:23:04.4876125Z             }
+2026-10-24T13:23:04.4876512Z           ],
+2026-10-24T13:23:04.4876997Z           "matchedModelTicks": 5,
+2026-10-24T13:23:04.4877497Z           "axisLeft": 1295.5
+2026-10-24T13:23:04.4878016Z         },
+2026-10-24T13:23:04.4878463Z         "missingOcr": {
+2026-10-24T13:23:04.4878895Z           "status": "held",
+2026-10-24T13:23:04.4879601Z           "reason": "Independent price labels need a clearer axis."
+2026-10-24T13:23:04.4880211Z         },
+2026-10-24T13:23:04.4880637Z         "grid": [
+2026-10-24T13:23:04.4881119Z           59.5,
+2026-10-24T13:23:04.4881844Z           79.5,
+2026-10-24T13:23:04.4882377Z           184.5,
+2026-10-24T13:23:04.4882803Z           289.5,
+2026-10-24T13:23:04.4883284Z           394.5,
+2026-10-24T13:23:04.4883708Z           499.5,
+2026-10-24T13:23:04.4884197Z           519.5
+2026-10-24T13:23:04.4884583Z         ],
+2026-10-24T13:23:04.4884957Z         "cropGrid": [
+2026-10-24T13:23:04.4885481Z           37.00000000000001,
+2026-10-24T13:23:04.4885968Z           68,
+2026-10-24T13:23:04.4886384Z           231,
+2026-10-24T13:23:04.4886780Z           393.99999999999994,
+2026-10-24T13:23:04.4887270Z           558,
+2026-10-24T13:23:04.4887694Z           721,
+2026-10-24T13:23:04.4888072Z           752
+2026-10-24T13:23:04.4888497Z         ],
+2026-10-24T13:23:04.4888858Z         "cropDimensions": [
+2026-10-24T13:23:04.4889170Z           1400,
+2026-10-24T13:23:04.4889513Z           765
+2026-10-24T13:23:04.4889773Z         ]
+2026-10-24T13:23:04.4890082Z       }
+2026-10-24T13:23:04.4890363Z     },
+2026-10-24T13:23:04.4890708Z     {
+2026-10-24T13:23:04.4890995Z       "id": "near-miss-chop",
+2026-10-24T13:23:04.4891309Z       "results": {
+2026-10-24T13:23:04.4891811Z         "verified": {
+2026-10-24T13:23:04.4892244Z           "status": "verified",
+2026-10-24T13:23:04.4892721Z           "anchors": [
+2026-10-24T13:23:04.4893102Z             {
+2026-10-24T13:23:04.4893394Z               "price": 110,
+2026-10-24T13:23:04.4893713Z               "y": 13.25
+2026-10-24T13:23:04.4894054Z             },
+2026-10-24T13:23:04.4894358Z             {
+2026-10-24T13:23:04.4894644Z               "price": 105,
+2026-10-24T13:23:04.4894958Z               "y": 30.75
+2026-10-24T13:23:04.4895299Z             },
+2026-10-24T13:23:04.4895593Z             {
+2026-10-24T13:23:04.4895911Z               "price": 100,
+2026-10-24T13:23:04.4896266Z               "y": 48.25
+2026-10-24T13:23:04.4896588Z             },
+2026-10-24T13:23:04.4896870Z             {
+2026-10-24T13:23:04.4897219Z               "price": 95,
+2026-10-24T13:23:04.4897548Z               "y": 65.75
+2026-10-24T13:23:04.4897846Z             },
+2026-10-24T13:23:04.4898168Z             {
+2026-10-24T13:23:04.4898482Z               "price": 90,
+2026-10-24T13:23:04.4898792Z               "y": 83.25
+2026-10-24T13:23:04.4899249Z             }
+2026-10-24T13:23:04.4899687Z           ],
+2026-10-24T13:23:04.4900126Z           "matchedModelTicks": 5,
+2026-10-24T13:23:04.4900566Z           "axisLeft": 832
+2026-10-24T13:23:04.4901018Z         },
+2026-10-24T13:23:04.4901375Z         "cropVerified": {
+2026-10-24T13:23:04.4901942Z           "status": "verified",
+2026-10-24T13:23:04.4902555Z           "anchors": [
+2026-10-24T13:23:04.4902907Z             {
+2026-10-24T13:23:04.4903254Z               "price": 110,
+2026-10-24T13:23:04.4903626Z               "y": 8.88888888888889
+2026-10-24T13:23:04.4903947Z             },
+2026-10-24T13:23:04.4904252Z             {
+2026-10-24T13:23:04.4904553Z               "price": 105,
+2026-10-24T13:23:04.4904905Z               "y": 30.19607843137255
+2026-10-24T13:23:04.4905229Z             },
+2026-10-24T13:23:04.4905504Z             {
+2026-10-24T13:23:04.4905855Z               "price": 100,
+2026-10-24T13:23:04.4906172Z               "y": 51.503267973856204
+2026-10-24T13:23:04.4906523Z             },
+2026-10-24T13:23:04.4906838Z             {
+2026-10-24T13:23:04.4907159Z               "price": 95,
+2026-10-24T13:23:04.4907491Z               "y": 72.94117647058823
+2026-10-24T13:23:04.4907858Z             },
+2026-10-24T13:23:04.4908186Z             {
+2026-10-24T13:23:04.4908557Z               "price": 90,
+2026-10-24T13:23:04.4908982Z               "y": 94.24836601307189
+2026-10-24T13:23:04.4909306Z             }
+2026-10-24T13:23:04.4909588Z           ],
+2026-10-24T13:23:04.4909953Z           "matchedModelTicks": 5,
+2026-10-24T13:23:04.4910313Z           "axisLeft": 1294.2222222222222
+2026-10-24T13:23:04.4910709Z         },
+2026-10-24T13:23:04.4910993Z         "misaligned": {
+2026-10-24T13:23:04.4911363Z           "status": "held",
+2026-10-24T13:23:04.4912085Z           "reason": "Independent price labels need a clearer axis."
+2026-10-24T13:23:04.4912487Z         },
+2026-10-24T13:23:04.4912860Z         "blurred": {
+2026-10-24T13:23:04.4913180Z           "status": "held",
+2026-10-24T13:23:04.4913633Z           "reason": "Price grid could not be independently verified."
+2026-10-24T13:23:04.4914090Z         },
+2026-10-24T13:23:04.4914475Z         "missing": {
+2026-10-24T13:23:04.4914878Z           "status": "held",
+2026-10-24T13:23:04.4915404Z           "reason": "Independent price labels need a clearer axis."
+2026-10-24T13:23:04.4915834Z         },
+2026-10-24T13:23:04.4916113Z         "ocr": {
+2026-10-24T13:23:04.4916644Z           "status": "verified",
+2026-10-24T13:23:04.4917048Z           "anchors": [
+2026-10-24T13:23:04.4917338Z             {
+2026-10-24T13:23:04.4917692Z               "price": 110,
+2026-10-24T13:23:04.4918036Z               "y": 13.25
+2026-10-24T13:23:04.4918350Z             },
+2026-10-24T13:23:04.4918664Z             {
+2026-10-24T13:23:04.4918954Z               "price": 105,
+2026-10-24T13:23:04.4919282Z               "y": 30.75
+2026-10-24T13:23:04.4919746Z             },
+2026-10-24T13:23:04.4920146Z             {
+2026-10-24T13:23:04.4920434Z               "price": 100,
+2026-10-24T13:23:04.4920758Z               "y": 48.25
+2026-10-24T13:23:04.4921112Z             },
+2026-10-24T13:23:04.4921444Z             {
+2026-10-24T13:23:04.4921963Z               "price": 95,
+2026-10-24T13:23:04.4922321Z               "y": 65.75
+2026-10-24T13:23:04.4922641Z             },
+2026-10-24T13:23:04.4922944Z             {
+2026-10-24T13:23:04.4923274Z               "price": 90,
+2026-10-24T13:23:04.4923598Z               "y": 83.25
+2026-10-24T13:23:04.4923901Z             }
+2026-10-24T13:23:04.4924190Z           ],
+2026-10-24T13:23:04.4924571Z           "matchedModelTicks": 5,
+2026-10-24T13:23:04.4924920Z           "axisLeft": 833
+2026-10-24T13:23:04.4925236Z         },
+2026-10-24T13:23:04.4925540Z         "cropOcr": {
+2026-10-24T13:23:04.4925904Z           "status": "verified",
+2026-10-24T13:23:04.4926262Z           "anchors": [
+2026-10-24T13:23:04.4926611Z             {
+2026-10-24T13:23:04.4926901Z               "price": 110,
+2026-10-24T13:23:04.4927228Z               "y": 8.88888888888889
+2026-10-24T13:23:04.4927633Z             },
+2026-10-24T13:23:04.4928049Z             {
+2026-10-24T13:23:04.4928431Z               "price": 105,
+2026-10-24T13:23:04.4928771Z               "y": 30.19607843137255
+2026-10-24T13:23:04.4929149Z             },
+2026-10-24T13:23:04.4929472Z             {
+2026-10-24T13:23:04.4929760Z               "price": 100,
+2026-10-24T13:23:04.4930157Z               "y": 51.503267973856204
+2026-10-24T13:23:04.4930489Z             },
+2026-10-24T13:23:04.4930789Z             {
+2026-10-24T13:23:04.4931124Z               "price": 95,
+2026-10-24T13:23:04.4931446Z               "y": 72.94117647058823
+2026-10-24T13:23:04.4932176Z             },
+2026-10-24T13:23:04.4932524Z             {
+2026-10-24T13:23:04.4932850Z               "price": 90,
+2026-10-24T13:23:04.4933184Z               "y": 94.24836601307189
+2026-10-24T13:23:04.4933630Z             }
+2026-10-24T13:23:04.4933961Z           ],
+2026-10-24T13:23:04.4934332Z           "matchedModelTicks": 5,
+2026-10-24T13:23:04.4934911Z           "axisLeft": 1295.5
+2026-10-24T13:23:04.4935355Z         },
+2026-10-24T13:23:04.4935665Z         "missingOcr": {
+2026-10-24T13:23:04.4935995Z           "status": "held",
+2026-10-24T13:23:04.4936531Z           "reason": "Independent price labels need a clearer axis."
+2026-10-24T13:23:04.4937035Z         },
+2026-10-24T13:23:04.4937323Z         "grid": [
+2026-10-24T13:23:04.4937666Z           59.5,
+2026-10-24T13:23:04.4938032Z           79.5,
+2026-10-24T13:23:04.4938329Z           184.5,
+2026-10-24T13:23:04.4938783Z           289.5,
+2026-10-24T13:23:04.4939185Z           394.5,
+2026-10-24T13:23:04.4939503Z           499.5,
+2026-10-24T13:23:04.4939837Z           519.5
+2026-10-24T13:23:04.4940126Z         ],
+2026-10-24T13:23:04.4940557Z         "cropGrid": [
+2026-10-24T13:23:04.4940878Z           37.00000000000001,
+2026-10-24T13:23:04.4941239Z           68,
+2026-10-24T13:23:04.4941819Z           231,
+2026-10-24T13:23:04.4942190Z           393.99999999999994,
+2026-10-24T13:23:04.4942648Z           558,
+2026-10-24T13:23:04.4942966Z           721,
+2026-10-24T13:23:04.4943344Z           752
+2026-10-24T13:23:04.4943686Z         ],
+2026-10-24T13:23:04.4944092Z         "cropDimensions": [
+2026-10-24T13:23:04.4944452Z           1400,
+2026-10-24T13:23:04.4944884Z           765
+2026-10-24T13:23:04.4945190Z         ]
+2026-10-24T13:23:04.4945615Z       }
+2026-10-24T13:23:04.4945987Z     },
+2026-10-24T13:23:04.4946369Z     {
+2026-10-24T13:23:04.4946700Z       "id": "degraded-no-signal",
+2026-10-24T13:23:04.4947077Z       "results": {
+2026-10-24T13:23:04.4947400Z         "verified": {
+2026-10-24T13:23:04.4947909Z           "status": "held",
+2026-10-24T13:23:04.4948394Z           "reason": "Price grid could not be independently verified."
+2026-10-24T13:23:04.4948970Z         },
+2026-10-24T13:23:04.4949291Z         "cropVerified": {
+2026-10-24T13:23:04.4949599Z           "status": "held",
+2026-10-24T13:23:04.4950221Z           "reason": "Price grid could not be independently verified."
+2026-10-24T13:23:04.4950660Z         },
+2026-10-24T13:23:04.4950962Z         "misaligned": {
+2026-10-24T13:23:04.4951342Z           "status": "held",
+2026-10-24T13:23:04.4951986Z           "reason": "Price grid could not be independently verified."
+2026-10-24T13:23:04.4952419Z         },
+2026-10-24T13:23:04.4952720Z         "blurred": {
+2026-10-24T13:23:04.4953088Z           "status": "held",
+2026-10-24T13:23:04.4953548Z           "reason": "Price grid could not be independently verified."
+2026-10-24T13:23:04.4954165Z         },
+2026-10-24T13:23:04.4954445Z         "missing": {
+2026-10-24T13:23:04.4954740Z           "status": "held",
+2026-10-24T13:23:04.4955261Z           "reason": "Price grid could not be independently verified."
+2026-10-24T13:23:04.4955786Z         },
+2026-10-24T13:23:04.4956091Z         "ocr": {
+2026-10-24T13:23:04.4956506Z           "status": "held",
+2026-10-24T13:23:04.4956980Z           "reason": "Price grid could not be independently verified."
+2026-10-24T13:23:04.4957502Z         },
+2026-10-24T13:23:04.4957788Z         "cropOcr": {
+2026-10-24T13:23:04.4958412Z           "status": "held",
+2026-10-24T13:23:04.4958926Z           "reason": "Price grid could not be independently verified."
+2026-10-24T13:23:04.4959557Z         },
+2026-10-24T13:23:04.4959963Z         "missingOcr": {
+2026-10-24T13:23:04.4960267Z           "status": "held",
+2026-10-24T13:23:04.4960711Z           "reason": "Price grid could not be independently verified."
+2026-10-24T13:23:04.4961252Z         },
+2026-10-24T13:23:04.4961779Z         "grid": [],
+2026-10-24T13:23:04.4962106Z         "cropGrid": [],
+2026-10-24T13:23:04.4962471Z         "cropDimensions": [
+2026-10-24T13:23:04.4962952Z           1400,
+2026-10-24T13:23:04.4963384Z           765
+2026-10-24T13:23:04.4963823Z         ]
+2026-10-24T13:23:04.4964119Z       }
+2026-10-24T13:23:04.4964436Z     }
+2026-10-24T13:23:04.4964870Z   ],
+2026-10-24T13:23:04.4965350Z   "externalRequests": [],
+2026-10-24T13:23:04.4965791Z   "jsErrors": [],
+2026-10-24T13:23:04.4966098Z   "providerCalls": 0
+2026-10-24T13:23:04.4966603Z }
+2026-10-24T13:23:04.5299432Z ##[group]Run node --import tsx scripts/verify-pocket-workflows-free.mjs
+2026-10-24T13:23:04.5299950Z [36;1mnode --import tsx scripts/verify-pocket-workflows-free.mjs[0m
+2026-10-24T13:23:04.5339469Z shell: /usr/bin/bash -e {0}
+2026-10-24T13:23:04.5339731Z env:
+2026-10-24T13:23:04.5339944Z   OPENAI_POCKET_MODEL: 
+2026-10-24T13:23:04.5340179Z ##[endgroup]
+2026-10-24T13:23:08.4295032Z {
+2026-10-24T13:23:08.4295736Z   "checks": [
+2026-10-24T13:23:08.4296166Z     "no automatic billed requests",
+2026-10-24T13:23:08.4296721Z     "user-defined plan calculation and actual text download",
+2026-10-24T13:23:08.4297368Z     "shared existing IndexedDB vault preserves exact original image",
+2026-10-24T13:23:08.4298123Z     "follow-up transports exact selected report through existing endpoint",
+2026-10-24T13:23:08.4298919Z     "chart/report remount aborts delayed reply and suppresses stale answer",
+2026-10-24T13:23:08.4299836Z     "process review requires after-image privacy and original saved decision",
+2026-10-24T13:23:08.4300753Z     "Level Lab requires its own explicit privacy confirmation after source facts are locked",
+2026-10-24T13:23:08.4301761Z     "mismatched Level Lab identity holds original drawing",
+2026-10-24T13:23:08.4302555Z     "matched separate Level Lab source passes actual original-pixel local OCR and draws its own overlay",
+2026-10-24T13:23:08.4303174Z     "standalone Level Lab uses locked separate source and actual Canvas JPEG crop",
+2026-10-24T13:23:08.4303678Z     "unavailable official calendar does not assert no event risk",
+2026-10-24T13:23:08.4304246Z     "saved decision deletion completes transaction and refreshes history",
+2026-10-24T13:23:08.4305001Z     "company calendar requires identified company and explicit symbol-matched request"
+2026-10-24T13:23:08.4305601Z   ],
+2026-10-24T13:23:08.4305906Z   "interceptedRequests": [
+2026-10-24T13:23:08.4306260Z     "/api/pocket/follow-up",
+2026-10-24T13:23:08.4306590Z     "/api/pocket/follow-up",
+2026-10-24T13:23:08.4306862Z     "/api/pocket/review",
+2026-10-24T13:23:08.4307103Z     "/api/pocket/preflight",
+2026-10-24T13:23:08.4307422Z     "/api/pocket/levels",
+2026-10-24T13:23:08.4307733Z     "/api/pocket/levels",
+2026-10-24T13:23:08.4308030Z     "/api/pocket/events"
+2026-10-24T13:23:08.4308333Z   ],
+2026-10-24T13:23:08.4308615Z   "providerCalls": 0,
+2026-10-24T13:23:08.4308969Z   "jsErrors": [],
+2026-10-24T13:23:08.4309341Z   "blockedExternalRequests": [],
+2026-10-24T13:23:08.4309706Z   "overflow": {
+2026-10-24T13:23:08.4310017Z     "viewport": 390,
+2026-10-24T13:23:08.4310337Z     "body": 390
+2026-10-24T13:23:08.4310635Z   },
+2026-10-24T13:23:08.4311291Z   "browser": "Chromium emulated mobile 390x844; mocked endpoints; not physical iPhone or scanner accuracy"
+2026-10-24T13:23:08.4312191Z }
+2026-10-24T13:23:08.4757267Z ##[group]Run node --import tsx scripts/verify-pocket-next-local-free.mjs
+2026-10-24T13:23:08.4757809Z [36;1mnode --import tsx scripts/verify-pocket-next-local-free.mjs[0m
+2026-10-24T13:23:08.4799306Z shell: /usr/bin/bash -e {0}
+2026-10-24T13:23:08.4799581Z env:
+2026-10-24T13:23:08.4799791Z   OPENAI_POCKET_MODEL: 
+2026-10-24T13:23:08.4800191Z ##[endgroup]
+2026-10-24T13:23:09.6009694Z (node:3809) ExperimentalWarning: stripTypeScriptTypes is an experimental feature and might change at any time
+2026-10-24T13:23:09.6011071Z (Use `node --trace-warnings ...` to show where the warning was created)
+2026-10-24T13:23:15.0038415Z {
+2026-10-24T13:23:15.0038899Z   "results": [
+2026-10-24T13:23:15.0039336Z     "image-bound preflight, confirmation and fresh-image privacy PASS",
+2026-10-24T13:23:15.0039807Z     "confirmed payload and safe mock failure PASS",
+2026-10-24T13:23:15.0040205Z     "in-flight cancellation preserves confirmation PASS",
+2026-10-24T13:23:15.0040706Z     "replacement clears lock and rejects stale failure PASS",
+2026-10-24T13:23:15.0041207Z     "successful mocked analysis preserves locked source and exposes workflows PASS",
+2026-10-24T13:23:15.0042069Z     "fact edits remove cached report; reconfirmation and cancelled late response cannot restore it PASS",
+2026-10-24T13:23:15.0042763Z     "editing one slot preserves independent report while the edited slot remains invalidated PASS",
+2026-10-24T13:23:15.0043444Z     "clear workspace removes real reports and images PASS",
+2026-10-24T13:23:15.0043969Z     "synthetic demo tabs and mobile layout PASS",
+2026-10-24T13:23:15.0044652Z     "leaving demo restores the cleared workspace without granting privacy consent PASS"
+2026-10-24T13:23:15.0045277Z   ],
+2026-10-24T13:23:15.0045594Z   "analysisCalls": 7,
+2026-10-24T13:23:15.0045921Z   "preflightCalls": 4,
+2026-10-24T13:23:15.0046245Z   "providerCalls": 0,
+2026-10-24T13:23:15.0046569Z   "jsErrors": [],
+2026-10-24T13:23:15.0046871Z   "overflow": {
+2026-10-24T13:23:15.0047148Z     "viewport": 390,
+2026-10-24T13:23:15.0047431Z     "body": 390
+2026-10-24T13:23:15.0047689Z   },
+2026-10-24T13:23:15.0048192Z   "browser": "Chromium emulated mobile; no physical iPhone or paid scanner evidence"
+2026-10-24T13:23:15.0048762Z }
+2026-10-24T13:23:15.0548942Z ##[group]Run node --import tsx scripts/verify-pocket-customer-lab-free.mjs
+2026-10-24T13:23:15.0549554Z [36;1mnode --import tsx scripts/verify-pocket-customer-lab-free.mjs[0m
+2026-10-24T13:23:15.0589894Z shell: /usr/bin/bash -e {0}
+2026-10-24T13:23:15.0590195Z env:
+2026-10-24T13:23:15.0590413Z   OPENAI_POCKET_MODEL: 
+2026-10-24T13:23:15.0590647Z ##[endgroup]
+2026-10-24T13:23:15.8019908Z (node:3881) ExperimentalWarning: stripTypeScriptTypes is an experimental feature and might change at any time
+2026-10-24T13:23:15.8021015Z (Use `node --trace-warnings ...` to show where the warning was created)
+2026-10-24T13:23:18.1709606Z {
+2026-10-24T13:23:18.1710022Z   "checks": [
+2026-10-24T13:23:18.1710557Z     "actual customer primary upload/fact lock/mocked analysis",
+2026-10-24T13:23:18.1711173Z     "separate Lab photo needs its own fact lock",
+2026-10-24T13:23:18.1712012Z     "Lab request uses its own original bytes and source identity",
+2026-10-24T13:23:18.1712875Z     "separate low-quality Lab result holds drawing and preserves main verdict/report"
+2026-10-24T13:23:18.1713469Z   ],
+2026-10-24T13:23:18.1713795Z   "interceptedRequests": [
+2026-10-24T13:23:18.1714234Z     "/api/pocket/subscription-access",
+2026-10-24T13:23:18.1714670Z     "/api/pocket/preflight",
+2026-10-24T13:23:18.1715029Z     "/api/pocket/analyse",
+2026-10-24T13:23:18.1715380Z     "/api/pocket/preflight",
+2026-10-24T13:23:18.1715738Z     "/api/pocket/levels"
+2026-10-24T13:23:18.1716039Z   ],
+2026-10-24T13:23:18.1716301Z   "providerCalls": 0,
+2026-10-24T13:23:18.1716635Z   "jsErrors": [],
+2026-10-24T13:23:18.1717002Z   "blockedExternalRequests": [],
+2026-10-24T13:23:18.1717770Z   "browser": "Chromium mobile 390x844; mocked providers; no physical-device or scanner accuracy evidence"
+2026-10-24T13:23:18.1718401Z }
+2026-10-24T13:23:18.2152273Z ##[group]Run npx next build
+2026-10-24T13:23:18.2152693Z [36;1mnpx next build[0m
+2026-10-24T13:23:18.2194141Z shell: /usr/bin/bash -e {0}
+2026-10-24T13:23:18.2194416Z env:
+2026-10-24T13:23:18.2194628Z   OPENAI_POCKET_MODEL: 
+2026-10-24T13:23:18.2194871Z   NEXT_TELEMETRY_DISABLED: 1
+2026-10-24T13:23:18.2195405Z   NEXT_PUBLIC_SUPABASE_URL: https://ci-placeholder.supabase.co
+2026-10-24T13:23:18.2195863Z   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_ci_placeholder
+2026-10-24T13:23:18.2196216Z ##[endgroup]
+2026-10-24T13:23:18.8555161Z ▲ Next.js 16.3.8 (Turbopack)
+2026-10-24T13:23:20.1534700Z Prepared same-origin OCR worker, WebAssembly cores and English model.
+2026-10-24T13:23:20.1663958Z ✓ Running next.config.ts took 1310ms
+2026-10-24T13:23:20.1666661Z ⚠ No build cache found. Please configure build caching for faster rebuilds. Read more: https://nextjs.org/docs/messages/no-cache
+2026-10-24T13:23:20.1791192Z 
+2026-10-24T13:23:20.1817339Z ⚠ The "middleware" file convention is deprecated. Please use "proxy" instead.
+2026-10-24T13:23:20.1817857Z 
+2026-10-24T13:23:20.1818221Z   To migrate automatically, run:
+2026-10-24T13:23:20.1818792Z   npx @next/codemod@canary middleware-to-proxy .
+2026-10-24T13:23:20.1819051Z 
+2026-10-24T13:23:20.1819301Z   Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+2026-10-24T13:23:20.2205359Z   Creating an optimized production build ...
+2026-10-24T13:23:20.8771865Z Prepared same-origin OCR worker, WebAssembly cores and English model.
+2026-10-24T13:23:31.7974730Z ✓ Compiled successfully in 10.9s
+2026-10-24T13:23:31.8022707Z   Running TypeScript ...
+2026-10-24T13:23:50.2598971Z   Finished TypeScript in 18.5s ...
+2026-10-24T13:23:50.2619474Z   Collecting page data using 3 workers ...
+2026-10-24T13:23:51.2230957Z   Generating static pages using 3 workers (0/40) ...
+2026-10-24T13:23:51.3892895Z   Generating static pages using 3 workers (10/40) 
+2026-10-24T13:23:51.3979633Z [verified-macro-context] {"route":"/pocket-next","status":"unavailable","observationCount":0,"releaseCount":0,"availableSources":["BEA","BLS","Federal Reserve","New York Fed","Treasury"],"unavailableSources":["Census","SEC"],"durationMs":5}
+2026-10-24T13:23:51.4053343Z   Generating static pages using 3 workers (20/40) 
+2026-10-24T13:23:51.5341167Z   Generating static pages using 3 workers (30/40) 
+2026-10-24T13:23:51.6532666Z ✓ Generating static pages using 3 workers (40/40) in 430ms
+2026-10-24T13:23:51.6573735Z   Finalizing page optimization ...
+2026-10-24T13:23:51.6662430Z 
+2026-10-24T13:23:51.6686848Z Route (app)
+2026-10-24T13:23:51.6687396Z ┌ ƒ /
+2026-10-24T13:23:51.6687736Z ├ ○ /_not-found
+2026-10-24T13:23:51.6688146Z ├ ○ /about
+2026-10-24T13:23:51.6688671Z ├ ƒ /admin/commercial
+2026-10-24T13:23:51.6689106Z ├ ƒ /admin/founding-100
+2026-10-24T13:23:51.6689558Z ├ ƒ /admin/visual-preview
+2026-10-24T13:23:51.6690004Z ├ ƒ /api/auth/redirect-probe
+2026-10-24T13:23:51.6690470Z ├ ƒ /api/auth/session
+2026-10-24T13:23:51.6690899Z ├ ƒ /api/auth/supabase-config-probe
+2026-10-24T13:23:51.6691414Z ├ ƒ /api/founding-member
+2026-10-24T13:23:51.6692005Z ├ ƒ /api/ideas
+2026-10-24T13:23:51.6692348Z ├ ƒ /api/ideas/[id]
+2026-10-24T13:23:51.6692688Z ├ ƒ /api/journal
+2026-10-24T13:23:51.6693039Z ├ ƒ /api/market/candles
+2026-10-24T13:23:51.6693425Z ├ ƒ /api/marketing/visit
+2026-10-24T13:23:51.6693884Z ├ ƒ /api/membership/preview
+2026-10-24T13:23:51.6694298Z ├ ƒ /api/onboarding
+2026-10-24T13:23:51.6694658Z ├ ƒ /api/openai/health
+2026-10-24T13:23:51.6695045Z ├ ƒ /api/pocket/analyse
+2026-10-24T13:23:51.6695469Z ├ ƒ /api/pocket/apple-account
+2026-10-24T13:23:51.6696054Z ├ ƒ /api/pocket/apple-notifications
+2026-10-24T13:23:51.6696691Z ├ ƒ /api/pocket/billing-portal
+2026-10-24T13:23:51.6697189Z ├ ƒ /api/pocket/build-manifest
+2026-10-24T13:23:51.6697708Z ├ ƒ /api/pocket/crypto-derivatives
+2026-10-24T13:23:51.6698207Z ├ ƒ /api/pocket/events
+2026-10-24T13:23:51.6698619Z ├ ƒ /api/pocket/follow-up
+2026-10-24T13:23:51.6699119Z ├ ƒ /api/pocket/levels
+2026-10-24T13:23:51.6699575Z ├ ƒ /api/pocket/options-wall
+2026-10-24T13:23:51.6700322Z ├ ƒ /api/pocket/preflight
+2026-10-24T13:23:51.6700767Z ├ ƒ /api/pocket/review
+2026-10-24T13:23:51.6701214Z ├ ƒ /api/pocket/subscription-access
+2026-10-24T13:23:51.6701852Z ├ ƒ /api/pocket/torture
+2026-10-24T13:23:51.6702240Z ├ ƒ /api/profile
+2026-10-24T13:23:51.6702633Z ├ ƒ /api/second-opinion
+2026-10-24T13:23:51.6703286Z ├ ƒ /api/stripe/checkout
+2026-10-24T13:23:51.6703710Z ├ ƒ /api/stripe/portal
+2026-10-24T13:23:51.6704132Z ├ ƒ /api/stripe/webhook
+2026-10-24T13:23:51.6704530Z ├ ƒ /api/waitlist
+2026-10-24T13:23:51.6704938Z ├ ƒ /api/youtube/oauth/callback
+2026-10-24T13:23:51.6705333Z ├ ƒ /archive
+2026-10-24T13:23:51.6705697Z ├ ƒ /archive/[date]
+2026-10-24T13:23:51.6706082Z ├ ƒ /auth/callback
+2026-10-24T13:23:51.6706440Z ├ ƒ /auth/confirm
+2026-10-24T13:23:51.6706773Z ├ ○ /auth/implicit
+2026-10-24T13:23:51.6707138Z ├ ƒ /auth/signout
+2026-10-24T13:23:51.6707456Z ├ ƒ /brief
+2026-10-24T13:23:51.6707753Z ├ ○ /cancelled
+2026-10-24T13:23:51.6708063Z ├ ○ /contact
+2026-10-24T13:23:51.6708391Z ├ ƒ /dashboard
+2026-10-24T13:23:51.6708723Z ├ ƒ /dev/logo-concepts
+2026-10-24T13:23:51.6709130Z ├ ƒ /dev/terminal-chart
+2026-10-24T13:23:51.6709543Z ├ ƒ /founding-member
+2026-10-24T13:23:51.6709878Z ├ ○ /help
+2026-10-24T13:23:51.6710190Z ├ ƒ /ideas
+2026-10-24T13:23:51.6710516Z ├ ƒ /ideas/[id]
+2026-10-24T13:23:51.6710882Z ├ ƒ /join
+2026-10-24T13:23:51.6711203Z ├ ƒ /journal
+2026-10-24T13:23:51.6711755Z ├ ƒ /launch-preview
+2026-10-24T13:23:51.6712125Z ├ ƒ /login
+2026-10-24T13:23:51.6712497Z ├ ○ /manifest.webmanifest
+2026-10-24T13:23:51.6712943Z ├ ƒ /marketing-preview
+2026-10-24T13:23:51.6713373Z ├ ƒ /membership-required
+2026-10-24T13:23:51.6713761Z ├ ƒ /methodology
+2026-10-24T13:23:51.6714073Z ├ ƒ /onboarding
+2026-10-24T13:23:51.6714395Z ├ ƒ /performance
+2026-10-24T13:23:51.6714709Z ├ ○ /pocket
+2026-10-24T13:23:51.6715008Z ├ ƒ /pocket-next
+2026-10-24T13:23:51.6715351Z ├ ƒ /pocket/founding
+2026-10-24T13:23:51.6715736Z ├ ○ /pocket/founding/welcome
+2026-10-24T13:23:51.6716117Z ├ ƒ /pocket/login
+2026-10-24T13:23:51.6716484Z ├ ƒ /preferences
+2026-10-24T13:23:51.6716831Z ├ ƒ /pricing
+2026-10-24T13:23:51.6717144Z ├ ○ /privacy
+2026-10-24T13:23:51.6717467Z ├ ƒ /profile
+2026-10-24T13:23:51.6717793Z ├ ƒ /replay
+2026-10-24T13:23:51.6718101Z ├ ƒ /results
+2026-10-24T13:23:51.6718422Z ├ ƒ /review
+2026-10-24T13:23:51.6718710Z ├ ƒ /reviews
+2026-10-24T13:23:51.6719090Z ├ ○ /risk-disclaimer
+2026-10-24T13:23:51.6719439Z ├ ○ /robots.txt
+2026-10-24T13:23:51.6719796Z ├ ƒ /second-opinion
+2026-10-24T13:23:51.6720136Z ├ ○ /sitemap.xml
+2026-10-24T13:23:51.6720442Z ├ ƒ /terminal
+2026-10-24T13:23:51.6720783Z ├ ƒ /terminal/diagnostics
+2026-10-24T13:23:51.6721133Z ├ ○ /terms
+2026-10-24T13:23:51.6721413Z ├ ƒ /waitlist
+2026-10-24T13:23:51.6721941Z └ ○ /welcome
+2026-10-24T13:23:51.6722114Z 
+2026-10-24T13:23:51.6722126Z 
+2026-10-24T13:23:51.6722305Z ƒ Proxy (Middleware)
+2026-10-24T13:23:51.6722507Z 
+2026-10-24T13:23:51.6722806Z ○  (Static)   prerendered as static content
+2026-10-24T13:23:51.6723405Z ƒ  (Dynamic)  server-rendered on demand
+2026-10-24T13:23:51.6723734Z 
+2026-10-24T13:23:51.7132857Z ##[group]Run node scripts/verify-sharp-trace.mjs
+2026-10-24T13:23:51.7133227Z [36;1mnode scripts/verify-sharp-trace.mjs[0m
+2026-10-24T13:23:51.7172708Z shell: /usr/bin/bash -e {0}
+2026-10-24T13:23:51.7173012Z env:
+2026-10-24T13:23:51.7173223Z   OPENAI_POCKET_MODEL: 
+2026-10-24T13:23:51.7173491Z ##[endgroup]
+2026-10-24T13:23:52.3424436Z Isolated production trace: Sharp/libvips SVG rasterization passed
+2026-10-24T13:23:52.3688141Z ##[group]Run echo "Packaging checks always run without provider calls."
+2026-10-24T13:23:52.3688637Z [36;1mecho "Packaging checks always run without provider calls."[0m
+2026-10-24T13:23:52.3689238Z [36;1mecho "Billed scanner measurements require an explicit run_live manual dispatch or the protected preview harness."[0m
+2026-10-24T13:23:52.3728370Z shell: /usr/bin/bash -e {0}
+2026-10-24T13:23:52.3728640Z env:
+2026-10-24T13:23:52.3728847Z   OPENAI_POCKET_MODEL: 
+2026-10-24T13:23:52.3729076Z ##[endgroup]
+2026-10-24T13:23:52.3784304Z Packaging checks always run without provider calls.
+2026-10-24T13:23:52.3785249Z Billed scanner measurements require an explicit run_live manual dispatch or the protected preview harness.
+2026-10-24T13:23:52.3891896Z Post job cleanup.
+2026-10-24T13:23:52.5121865Z (node:4145) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-10-24T13:23:52.5123475Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-24T13:23:52.5125261Z Cache hit occurred on the primary key node-cache-Linux-x64-npm-62f04c41a672a8614cacd2957a9b3a76ad536271613c24e83e8737823f2666bd, not saving cache.
+2026-10-24T13:23:52.5252797Z Post job cleanup.
+2026-10-24T13:23:52.6079432Z [command]/usr/bin/git version
+2026-10-24T13:23:52.6116193Z git version 2.55.0
+2026-10-24T13:23:52.6148702Z Temporarily overriding HOME='/home/runner/work/_temp/f729eeb5-9fec-4cba-b7e6-dc54854c9cf2' before making global git config changes
+2026-10-24T13:23:52.6150218Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-24T13:23:52.6153668Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/nash-ai-markets/nash-ai-markets
+2026-10-24T13:23:52.6189235Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-24T13:23:52.6221036Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-24T13:23:52.6440689Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-24T13:23:52.6463685Z http.https://github.com/.extraheader
+2026-10-24T13:23:52.6473626Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2026-10-24T13:23:52.6507135Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-24T13:23:52.6723913Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-24T13:23:52.6753507Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-24T13:23:52.7175230Z Cleaning up orphan processes
+2026-10-24T13:23:52.7527266Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/setup-node@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+

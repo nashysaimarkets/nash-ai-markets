@@ -1,0 +1,125 @@
+{
+  "kind": "POCKET_SCANNER_GEOMETRY_REPAIR_LOCAL_ACCEPTANCE",
+  "status": "OFFLINE_CANDIDATE_READY_FOR_INDEPENDENT_REVIEW",
+  "createdAt": "2026-10-24T13:17:02.290936+00:00",
+  "worktree": "/workspace/scratch/616faf3e8649/scanner-geometry-repair",
+  "branch": "monaco-scanner-geometry-repair-126-20261024",
+  "baseCommit": "b118c7a38a35514eb4cbd4cc86b3341de91a5ca5",
+  "acceptedAppBeforeRepair": "2812bfbc6e8f62e93d0bc56957fd5ce71cc819dc",
+  "candidateCommit": null,
+  "candidateIdentityMeaning": "Uncommitted candidate working-tree bytes are identified by the hashes below; not the unchanged base commit. Root owns later exact-source publication.",
+  "files": {
+    "app/api/pocket/analysis-calibration.ts": "50f6b5dde09030422cc9ddbb71660b11bf902a58c0beea92b1b02c190e1360d5",
+    "app/api/pocket/liquidity-chain.ts": "88c222d3f0c788015f8faa9ef8f86c15c08ac585fba998c0d18c795a9256c2f2",
+    "tests/pocket-calibration-plot-bounds.test.ts": "01499ed3f2b953f8a5a0b94f03e5c49e6a6ec49115ebfa56a1b2195cab1bf1ea",
+    "tests/pocket-launch-hardening.test.ts": "6c9a52112610d8081fd83503b2f171ea445da28ef4f931eb6161d9136cdbac78",
+    "vercel.json": "3c5afa97890b0e97e5bf4c23761afc01bec7820a66e4d8055adddc9fa3544b39"
+  },
+  "unchangedFiles": {
+    "app/api/pocket/analyse/route.ts": "7b47dcd1d25cc03213a3b0c9052fb24a10418c34f5ed76e5c06953a0c34d4ea7",
+    "app/api/pocket/precision-fallback.ts": "a440dfd6d78aade5bbfb95e5ffdbe8e73d22e5cf72fc39355476e037725db711",
+    "scripts/pocket-monaco-internal-diagnostics.ts": "6a1296448dfd52de25ceedf19c8c5bcae606f762db6c5414f6ac618ea52269f7"
+  },
+  "frozenEvaluationSource": "20783ed5e8eb95a11df86b0d60766ffcbbf4fa79",
+  "frozenEvaluationCalibrationSha256": "dfb8f2a93c290ff92adc389583b11cf1bc3103c5615454c0ce781ecdee1f0edb",
+  "newRegressions": 10,
+  "existingAffectedTests": 58,
+  "distinctAcceptedTests": 68,
+  "suiteFiles": [
+    "pocket-calibration-plot-bounds",
+    "pocket-launch-hardening",
+    "pocket-calibration-observations-contract",
+    "pocket-liquidity-chain-integration",
+    "pocket-liquidity-event-evidence",
+    "pocket-pattern-calibration",
+    "pocket-pattern-malformed-geometry",
+    "pocket-original-levels",
+    "pocket-original-geometry",
+    "pocket-chart-benchmark"
+  ],
+  "red": {
+    "command": "node --test --test-isolation=none --test-reporter=tap tests/pocket-calibration-plot-bounds.test.ts",
+    "workingDirectory": "/workspace/scratch/616faf3e8649/scanner-geometry-repair",
+    "log": "/workspace/scratch/616faf3e8649/scanner-geometry-repair-evidence/RED.tap",
+    "logSha256": "94c92e7f6f02c0e740874af3a84819b2cdf8f9ebd4fdbdb0ff2c11aebd143cc1",
+    "tests": 10,
+    "pass": 2,
+    "fail": 8,
+    "cancelled": 0,
+    "skipped": 0,
+    "todo": 0
+  },
+  "green": {
+    "command": "node --test --test-isolation=none --test-reporter=tap tests/pocket-calibration-plot-bounds.test.ts",
+    "workingDirectory": "/workspace/scratch/616faf3e8649/scanner-geometry-repair",
+    "log": "/workspace/scratch/616faf3e8649/scanner-geometry-repair-evidence/GREEN.tap",
+    "logSha256": "b9b8b52fc50e9cf597e98fb3c85de6376bd5dcd9485cba9700078cd26394e639",
+    "tests": 10,
+    "pass": 10,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0,
+    "todo": 0
+  },
+  "affected": {
+    "command": "node --test --test-isolation=none --test-reporter=tap tests/pocket-calibration-plot-bounds.test.ts tests/pocket-launch-hardening.test.ts tests/pocket-calibration-observations-contract.test.ts tests/pocket-liquidity-chain-integration.test.ts tests/pocket-liquidity-event-evidence.test.ts tests/pocket-pattern-calibration.test.ts tests/pocket-pattern-malformed-geometry.test.ts tests/pocket-original-levels.test.ts tests/pocket-original-geometry.test.ts tests/pocket-chart-benchmark.test.ts",
+    "workingDirectory": "/workspace/scratch/616faf3e8649/scanner-geometry-repair",
+    "log": "/workspace/scratch/616faf3e8649/scanner-geometry-repair-evidence/AFFECTED.tap",
+    "logSha256": "5f59788f92bb60517050a5f5bd91a3a5bd38bb898b65a62d98fa5cb2848ac3a8",
+    "tests": 68,
+    "pass": 68,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0,
+    "todo": 0
+  },
+  "counting": "The10 new regressions are included in the68 affected total. GREEN repeats that subset; it does not add coverage.",
+  "localHarnessLimitation": {
+    "command": "node --test tests/pocket-calibration-plot-bounds.test.ts",
+    "observed": "Default process isolation returned one test-file harness failure with no underlying diagnostic and did not report the10 actual test cases. It is not counted as a product regression.",
+    "fallback": "Same suite with --test-isolation=none produced the real assertions recorded in RED/GREEN. Hosted CI retains normal isolation.",
+    "log": "RED-HARNESS-REFUSAL.txt",
+    "logSha256": "7fa47ad954a7a9e99bde3bbca243c86706ee291da62d68ef62967afc43d55799"
+  },
+  "retainedReplay": {
+    "executed": "Node stdin script, with exact command preserved in REPLAY-COMMAND.sh",
+    "commandFileSha256": "ff6d6721ea54f035adaccaad907b110ba82b98b0831630626672394151158aa8",
+    "receiptSha256": "97b7516f1128585ac884e99daf56650a682833100401ad4db74901c400fe5c34",
+    "baselineMatchesRetainedPostprocessedDiagnostic": true,
+    "rawArtifactsUnchanged": true,
+    "originalPixelTolerance": 1,
+    "rawMainLevelAssertions": 4,
+    "rawMainConformant": 0,
+    "rawMainNonconformant": 4,
+    "candidateLiquidityChain": {
+      "status": "BLOCKED",
+      "zones": [],
+      "reasons": [
+        "PLOT_BOUNDS_UNVERIFIED"
+      ]
+    },
+    "candidateScaleReadable": false,
+    "candidateAbsenceCredit": "UNSCORED_NO_SEMANTIC_NEGATIVE_REFERENCE"
+  },
+  "proposedPatch": {
+    "file": "SCANNER-GEOMETRY-REPAIR.patch",
+    "sha256": "37f1b52bf41c9431c19d6116a4bbdab76b7a7ca3810f87d4b8033d5bcbd538d3"
+  },
+  "actions": {
+    "providerCalls": 0,
+    "hostedDatabaseCalls": 0,
+    "heldoutReads": 0,
+    "credentialReads": 0,
+    "privateKeyReads": 0,
+    "remoteWrites": 0,
+    "acceptedRuntimeEdits": 0
+  },
+  "limits": [
+    "Rejects structurally invalid or missing model plot rectangles; does not locate the correct plot.",
+    "Does not infer units or multiply fractional coordinates by100.",
+    "Preserves raw malformed bounds/anchors and witness semantics; suppressed geometry is not semantic absence.",
+    "Existing coordinate accuracy failure remains; no source tolerance, prompt, model, rescue policy or scorer changes.",
+    "No browser/build/full-suite rerun; root owns the bounded hosted exact-source gate.",
+    "No production deployment or scanner accuracy acceptance."
+  ]
+}
