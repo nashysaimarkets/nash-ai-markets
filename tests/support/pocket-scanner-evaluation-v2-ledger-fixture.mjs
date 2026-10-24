@@ -6,7 +6,7 @@ export const plan=JSON.parse(planBytes),planSha256=createHash('sha256').update(p
 export function admissionFixture({caseId='v2-d001',previousCaseReceiptSha256=null,carryIn={},now=Date.now()}={}){
  const runtimeSourceSha='a'.repeat(40);
  const approval={kind:'POCKET_SCANNER_EVALUATION_V2_EXTENSION_APPROVAL',status:'APPROVED',approvedBy:'OWNER',
-  approvalRef:'comment-99999999999',scopeId:P.scopeId,originalAllowanceRef:'comment-6165012632',appSourceSha:P.appSourceSha,
+  approvalRef:'https://github.com/nashysaimarkets/nash-ai-markets/issues/126#issuecomment-99999999999',scopeId:P.scopeId,originalAllowanceRef:'comment-6165012632',appSourceSha:P.appSourceSha,
   runtimeSourceSha,planSha256,allowedCaseIds:[...P.caseIds],maximumAdditionalCases:6,maximumAdditionalSends:18,
   maximumAdditionalMicroUsd:1980000,aggregateCapMicroUsd:5000000,originalHeldMicroUsd:1506400,retries:0,
   approvedAt:new Date(now-60000).toISOString(),validUntil:new Date(now+3600000).toISOString(),approvalBodySha256:'b'.repeat(64)};

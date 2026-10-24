@@ -39,6 +39,7 @@ for(const name of selected){
     status:passed?'PASS':'FAIL',exitCode:result.status,signal:result.signal,
     processErrorCode:result.error?.code??null,...counts});
   process.stdout.write(`${passed?'PASS':'FAIL'} tests/${name}: ${counts.pass??0}/${counts.tests??0}\n`);
+  if(!passed){process.stdout.write(stdout);process.stderr.write(stderr);}
 }
 verifyAppSources();
 const report={kind:'POCKET_SCANNER_EVALUATION_V2_FREE_ACCEPTANCE',status:results.every(r=>r.status==='PASS')?'PASS':'FAIL',

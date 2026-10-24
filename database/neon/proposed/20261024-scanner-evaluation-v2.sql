@@ -25,8 +25,8 @@ CREATE TABLE private.monaco_scanner_eval_v2_scopes (
  scope_id text NOT NULL UNIQUE CHECK(scope_id='pocket-scanner-evaluation-v2-20261024'),
  ledger_key text NOT NULL REFERENCES private.pocket_benchmark_pilot_ledgers(ledger_key)
   CHECK(ledger_key='monaco-first-six-aggregate'),
- approval_ref text NOT NULL CHECK(approval_ref ~ '^comment-[1-9][0-9]{8,19}$'
-  AND approval_ref NOT IN ('comment-6165012632','comment-6383327587','comment-6383999765')),
+ approval_ref text NOT NULL CHECK(approval_ref ~ '^https://github[.]com/nashysaimarkets/nash-ai-markets/issues/126#issuecomment-[1-9][0-9]{8,19}$'
+  AND approval_ref NOT IN ('https://github.com/nashysaimarkets/nash-ai-markets/issues/126#issuecomment-6165012632','https://github.com/nashysaimarkets/nash-ai-markets/issues/126#issuecomment-6309459418','https://github.com/nashysaimarkets/nash-ai-markets/issues/126#issuecomment-6383327587','https://github.com/nashysaimarkets/nash-ai-markets/issues/126#issuecomment-6383999765')),
  approval_evidence_sha256 text NOT NULL CHECK(approval_evidence_sha256 ~ '^[a-f0-9]{64}$'),
  approval_document jsonb NOT NULL CHECK(jsonb_typeof(approval_document)='object'),
  app_source_sha text NOT NULL CHECK(app_source_sha ~ '^[a-f0-9]{40}$'),
@@ -102,6 +102,8 @@ CREATE TABLE private.monaco_scanner_eval_v2_receipts (
  service_tier text NOT NULL CHECK(service_tier='default'),
  usage jsonb NOT NULL CHECK(jsonb_typeof(usage)='object'
   AND usage-ARRAY['input_tokens','output_tokens','total_tokens']='{}'::jsonb),
+ -- Exact raw provider-response JSON bytes; encrypted artifact/wrapper digests
+ -- are separately retained by the runtime and are not interchangeable here.
  response_sha256 text NOT NULL CHECK(response_sha256 ~ '^[a-f0-9]{64}$'),
  receipted_at timestamptz NOT NULL DEFAULT clock_timestamp(),
  PRIMARY KEY(scope_id,case_id,slot),
@@ -137,10 +139,10 @@ DO $protect$
 DECLARE t text;
 BEGIN
  FOREACH t IN ARRAY ARRAY['scopes','pins','permits','claims','submissions','receipts','accounts','stops','revocations'] LOOP
-  EXECUTE format('ALTER TABLE private.monaco_scanner_eval_v2_%I ENABLE ROW LEVEL SECURITY',t);
-  EXECUTE format('REVOKE ALL ON private.monaco_scanner_eval_v2_%I FROM public,monaco_ledger_runner',t);
-  EXECUTE format('CREATE TRIGGER immutable BEFORE UPDATE OR DELETE ON private.monaco_scanner_eval_v2_%I FOR EACH ROW EXECUTE FUNCTION private.block_pocket_benchmark_budget_change()',t);
-  EXECUTE format('CREATE TRIGGER no_reset BEFORE TRUNCATE ON private.monaco_scanner_eval_v2_%I FOR EACH STATEMENT EXECUTE FUNCTION private.block_pocket_benchmark_budget_change()',t);
+  EXECUTE format('ALTER TABLE private.%I ENABLE ROW LEVEL SECURITY','monaco_scanner_eval_v2_'||t);
+  EXECUTE format('REVOKE ALL ON private.%I FROM public,monaco_ledger_runner','monaco_scanner_eval_v2_'||t);
+  EXECUTE format('CREATE TRIGGER immutable BEFORE UPDATE OR DELETE ON private.%I FOR EACH ROW EXECUTE FUNCTION private.block_pocket_benchmark_budget_change()','monaco_scanner_eval_v2_'||t);
+  EXECUTE format('CREATE TRIGGER no_reset BEFORE TRUNCATE ON private.%I FOR EACH STATEMENT EXECUTE FUNCTION private.block_pocket_benchmark_budget_change()','monaco_scanner_eval_v2_'||t);
  END LOOP;
 END $protect$;
 
@@ -250,7 +252,7 @@ BEGIN
    IS DISTINCT FROM row(s.runtime_source_sha,b.backend_ref,b.project_ref,b.existing_key_tracking_id,b.key_fingerprint_sha256,s.plan_sha256)
   OR e->>'appSourceSha' IS DISTINCT FROM s.app_source_sha OR e->>'approvalRef' IS DISTINCT FROM s.approval_ref
   OR e->>'attemptId' IS DISTINCT FROM p.attempt_id OR e->>'sourceCaseId' IS DISTINCT FROM substring(p.case_id FROM 4)
-  OR p_identity->>'environment' IS DISTINCT FROM 'monaco-scanner-evaluation-v2'
+  OR p_identity->>'environment' IS DISTINCT FROM 'monaco-first-six-inference'
   OR e->>'runAttempt' IS DISTINCT FROM '1'
   OR (SELECT count(*) FROM private.monaco_scanner_eval_v2_pins WHERE scope_id=s.scope_id)<>18 THEN
   RAISE EXCEPTION 'Evaluation identity is not the independently admitted attempt'; END IF;
@@ -262,6 +264,11 @@ BEGIN
  ordinal:=right(p.case_id,1)::integer;
  denied:=CASE WHEN EXISTS(SELECT 1 FROM private.monaco_scanner_eval_v2_revocations WHERE scope_id=s.scope_id AND target IN ('scope',p.attempt_id)) THEN 'revoked'
   WHEN s.approved_at>clock_timestamp() OR s.valid_until<=clock_timestamp() OR p.admitted_at>clock_timestamp() OR p.valid_until<=clock_timestamp() THEN 'expired'
+  WHEN ordinal>1 AND NOT EXISTS(SELECT 1 FROM private.monaco_scanner_eval_v2_accounts a
+   WHERE a.scope_id=s.scope_id AND a.case_id='v2-d00'||(ordinal-1)::text
+    AND a.receipt_sha256 IS NOT DISTINCT FROM p.previous_case_receipt_sha256
+    AND a.receipt_sha256=private.monaco_scanner_eval_v2_receipt_digest(a.scope_id,a.case_id)
+    AND p.admitted_at>=a.accounted_at) THEN 'previous_case_unresolved'
   WHEN (SELECT count(*) FROM private.monaco_scanner_eval_v2_accounts WHERE scope_id=s.scope_id AND case_id<p.case_id)<>ordinal-1
    OR EXISTS(SELECT 1 FROM private.monaco_scanner_eval_v2_claims c LEFT JOIN private.monaco_scanner_eval_v2_accounts a USING(scope_id,case_id) WHERE c.scope_id=s.scope_id AND c.case_id<>p.case_id AND a.case_id IS NULL) THEN 'previous_case_unresolved'
   ELSE NULL END;
@@ -303,7 +310,7 @@ BEGIN
   IF p_args->>'requestId' IS DISTINCT FROM pin.request_id OR p_args->>'model' IS DISTINCT FROM 'gpt-5-mini-2025-08-07'
    OR p_args->>'serviceTier' IS DISTINCT FROM 'default' OR NOT EXISTS(SELECT 1 FROM private.monaco_scanner_eval_v2_submissions WHERE scope_id=s.scope_id AND case_id=p.case_id AND slot=slot_name)
    OR (SELECT count(*) FROM jsonb_object_keys(p_args->'usage'))<>3
-   OR p_args->'usage'-ARRAY['input_tokens','output_tokens','total_tokens']<>'{}'::jsonb
+   OR (p_args->'usage')-ARRAY['input_tokens','output_tokens','total_tokens']<>'{}'::jsonb
    OR jsonb_typeof(p_args->'usage'->'input_tokens') IS DISTINCT FROM 'number'
    OR jsonb_typeof(p_args->'usage'->'output_tokens') IS DISTINCT FROM 'number'
    OR jsonb_typeof(p_args->'usage'->'total_tokens') IS DISTINCT FROM 'number'

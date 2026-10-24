@@ -3,6 +3,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {pathToFileURL} from 'node:url';
+import {createEvaluationSqlPort,createEvaluationLedgerBridge,validateEvaluationIdentity} from '../scripts/pocket-scanner-evaluation-v2-bridge.mjs';
 import {prepareNeonLedgerSql} from '../scripts/prepare-monaco-neon-ledger.mjs';
 import {admissionFixture,buildEvaluationV2Admission,P,plan} from './support/pocket-scanner-evaluation-v2-ledger-fixture.mjs';
 assert.equal(process.env.MONACO_QA_DISPOSABLE_POSTGRES,'true','Disposable localhost PostgreSQL required');
@@ -104,7 +105,10 @@ await test('new admission preserves original history and privileges, and refuses
  await assert.rejects(()=>f.admit());await f.owner.query('rollback');
  for(const sql of ['delete from private.monaco_scanner_eval_v2_scopes','truncate private.monaco_scanner_eval_v2_pins',"update private.monaco_scanner_eval_v2_scopes set approval_ref='comment-88888888888'"])
   await assert.rejects(()=>f.owner.query(sql));
- await f.activate();const r=await f.connect();const state=await rpc(r,f.prepared.identity,'inspect');
+ await f.activate();const r=await f.connect();
+ assert.deepEqual(validateEvaluationIdentity(f.prepared.identity),f.prepared.identity);
+ const bridge=createEvaluationLedgerBridge(createEvaluationSqlPort(r,n,f.prepared.identity),f.prepared.identity);
+ const state=await bridge.inspect();
  assert.equal(state.allowed,true);assert.equal(state.originalCommitmentsMicroUsd,1506400);assert.equal(state.remainingMicroUsd,3493600);
  await assert.rejects(()=>r.query('select * from private.monaco_scanner_eval_v2_pins'));
  assert.equal(await f.digest(),f.before);
@@ -131,12 +135,28 @@ await test('concurrent same-case claims reserve once and duplicate submissions c
  await assert.rejects(()=>rpc(a,i,'submit_slot',submitArgs('v2-d001','primary_precision')));
  assert.equal(await f.digest(),f.before);
 }));
+await test('different concurrent cases cannot overlap or inherit a premature operator permit',()=>fixture(async f=>{
+ await f.admit();
+ const nextConfig=admissionFixture({caseId:'v2-d002',previousCaseReceiptSha256:'f'.repeat(64),carryIn:{originalHistorySha256:f.before}});
+ nextConfig.approval=f.config.approval;const next=buildEvaluationV2Admission(nextConfig);
+ // Adversarial synthetic owner-seeded permit: claims must enforce sequencing
+ // even if a privileged caller bypasses the offline admission builder.
+ await f.owner.query(`insert into private.monaco_scanner_eval_v2_permits(scope_id,case_id,attempt_id,identity,admission_evidence_sha256,reassessment_evidence_sha256,previous_case_receipt_sha256,admitted_at,valid_until)
+ select scope_id,'v2-d002','v2-d002-attempt-1',$1::jsonb,admission_evidence_sha256,reassessment_evidence_sha256,repeat('f',64),admitted_at,valid_until
+ from private.monaco_scanner_eval_v2_permits where case_id='v2-d001'`,[JSON.stringify(next.identity)]);
+ await f.activate();const a=await f.connect(),b=await f.connect();
+ const claims=await Promise.all([rpc(a,f.prepared.identity,'begin_case'),rpc(b,next.identity,'begin_case')]);
+ assert.equal(claims[0].allowed,true);assert.equal(claims[1].allowed,false);assert.equal(claims[1].reason,'previous_case_unresolved');
+ await complete(a,f.prepared.identity);
+ assert.equal((await rpc(b,next.identity,'begin_case')).allowed,false,'an earlier permit cannot stand in for reassessment of the completed preceding case');
+ assert.equal((await rpc(a,f.prepared.identity,'inspect')).evaluationCommitmentsMicroUsd,330000);
+}));
 await test('receipts bind exact submitted requests, reject old receipt reuse and remain idempotent under concurrency',()=>fixture(async f=>{
  await f.admit();await f.activate();const a=await f.connect(),b=await f.connect(),i=f.prepared.identity;
  await rpc(a,i,'begin_case');await rpc(a,i,'submit_slot',submitArgs('v2-d001','main'));
  for(const patch of [{providerRequestId:'synthetic-old-request-d001-main'},{responseId:'synthetic-old-response-d001-main'},
   {requestId:row('v2-d002','main').requestId},{model:'other'},{usage:{input_tokens:1,output_tokens:7001,total_tokens:7002}},
-  {usage:{input_tokens:1,output_tokens:1,total_tokens:5}},{responseSha256:'bad'}])
+  {usage:{input_tokens:1,output_tokens:1,total_tokens:5}},{responseSha256:'bad'},{responseSha256:null},{responseId:null},{providerRequestId:null},{model:null},{serviceTier:null},{usage:null},{requestId:null}])
   await assert.rejects(()=>rpc(a,i,'receipt_slot',{...receiptArgs('v2-d001','main'),...patch}));
  const replies=await Promise.all([rpc(a,i,'receipt_slot',receiptArgs('v2-d001','main')),rpc(b,i,'receipt_slot',receiptArgs('v2-d001','main'))]);
  assert.equal(replies.filter(x=>x.idempotent).length,1);
@@ -153,6 +173,19 @@ await test('revocation stops new submissions while genuine late receipts and hel
  assert.equal((await rpc(r,i,'stop_case',{reason:'CANCELLED'})).status,'stopped');
  assert.equal((await rpc(r,i,'inspect')).evaluationCommitmentsMicroUsd,330000);
  await assert.rejects(()=>f.next('v2-d002'));
+}));
+await test('late diagnostic accounting after revocation retains full reservation and cannot authorise another send',()=>fixture(async f=>{
+ await f.admit();await f.activate();const r=await f.connect(),i=f.prepared.identity;
+ await rpc(r,i,'begin_case');
+ for(const slot of ['main','primary_precision']){
+  await rpc(r,i,'submit_slot',submitArgs('v2-d001',slot));await rpc(r,i,'receipt_slot',receiptArgs('v2-d001',slot));
+ }
+ await f.owner.query("insert into private.monaco_scanner_eval_v2_revocations values($1,'scope',repeat('f',64),clock_timestamp())",[P.scopeId]);
+ await assert.rejects(()=>rpc(r,i,'finish_case',{diagnosticSha256:null,diagnosticArtifactId:'1'}));
+ const final=await rpc(r,i,'finish_case',finishArgs('v2-d001'));
+ assert.equal(final.status,'completed');assert.equal(final.reservedMicroUsd,330000);assert.equal(final.financiallySettled,false);
+ await assert.rejects(()=>rpc(r,i,'submit_slot',submitArgs('v2-d001','rescue_precision')));
+ assert.equal((await rpc(r,i,'stop_case',{reason:'ACCOUNTING_ACK_UNKNOWN'})).status,'completed');
 }));
 await test('expired permit cannot begin or dispatch and no caller can replace its runtime identity',()=>fixture(async f=>{
  const c=structuredClone(f.config);c.planBytes=f.config.planBytes;c.attempt.validUntil=new Date(Date.now()+1800).toISOString();

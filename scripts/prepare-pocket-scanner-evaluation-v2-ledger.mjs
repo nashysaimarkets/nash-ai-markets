@@ -30,8 +30,8 @@ export function validateEvaluationV2Approval(a,{planSha256,runtimeSourceSha,now=
  need(exact(a,approvalFields),'Future explicit complete owner extension approval required; draft HOLD is not authority');
  need(a.kind==='POCKET_SCANNER_EVALUATION_V2_EXTENSION_APPROVAL'&&a.status==='APPROVED'&&a.approvedBy==='OWNER',
   'Future explicit owner extension approval required');
- need(typeof a.approvalRef==='string'&&/^comment-[1-9][0-9]{8,19}$/.test(a.approvalRef)
-  &&!['comment-6165012632','comment-6383327587','comment-6383999765'].includes(a.approvalRef)
+ need(typeof a.approvalRef==='string'&&/^https:\/\/github\.com\/nashysaimarkets\/nash-ai-markets\/issues\/126#issuecomment-[1-9][0-9]{8,19}$/.test(a.approvalRef)
+  &&!['6165012632','6309459418','6383327587','6383999765'].some(id=>a.approvalRef.endsWith('#issuecomment-'+id))
   &&digest(a.approvalBodySha256),'A new immutable owner approval reference and body digest are required');
  need(a.scopeId===P.scopeId&&a.originalAllowanceRef==='comment-6165012632'
   &&a.appSourceSha===P.appSourceSha&&sha(runtimeSourceSha)&&a.runtimeSourceSha===runtimeSourceSha
@@ -89,7 +89,7 @@ export function buildEvaluationV2Admission({approval,planBytes,runtimeSourceSha,
  const deadline=Date.parse(attempt.validUntil);
  need(Number.isFinite(deadline)&&deadline>now&&deadline-now<=60*60000&&deadline<=Date.parse(approval.validUntil),
   'Current bounded per-case permit required');
- const identity={environment:'monaco-scanner-evaluation-v2',sourceSha:runtimeSourceSha,backendRef:P.backendRef,
+ const identity={environment:'monaco-first-six-inference',sourceSha:runtimeSourceSha,backendRef:P.backendRef,
   projectRef:P.projectRef,keyTrackingId:P.keyTrackingId,keyFingerprintSha256:P.keyFingerprintSha256,planSha256,
   evaluation:{scopeId:P.scopeId,attemptId,caseId,sourceCaseId:caseId.slice(3),appSourceSha:P.appSourceSha,
    evidenceSha:attempt.evidenceSha,wrapperSha:attempt.wrapperSha,runId:attempt.runId,jobId:attempt.jobId,
