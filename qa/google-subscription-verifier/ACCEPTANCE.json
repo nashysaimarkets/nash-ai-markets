@@ -1,0 +1,33 @@
+{
+  "kind": "GOOGLE_SUBSCRIPTION_VERIFIER_OFFLINE_ACCEPTANCE_V1",
+  "parentCommit": "42684f0e3fba56964275d8ae939f550b7216a54c",
+  "checkedAtUtc": "2026-10-21T22:05:16.554206+00:00",
+  "runtime": "Node v22.16.0",
+  "command": "node --test tests/pocket-google-subscription-verifier.test.mjs",
+  "tests": 35,
+  "passed": 35,
+  "failed": 0,
+  "skipped": 0,
+  "sourceSha256": {
+    "app/api/pocket/google-subscription-verifier.mjs": "95676b06dc3b0da5ccabd072770f0a69432e7f668e3b3d0930793645140b7875",
+    "tests/pocket-google-subscription-verifier.test.mjs": "d1acb2832d0a70bd35c278d2beb33b31c99a13734167be07129207d96e07bad9"
+  },
+  "logSha256": "0ec18ccbc2f2b66b811c12ff7df540c18adb2564e9f72cf5f314e363039d79fc",
+  "log": "qa/google-subscription-verifier/targeted-tests.log.gz.b64",
+  "realGoogleRequests": 0,
+  "purchasesOrAcknowledgements": 0,
+  "entitlementWrites": 0,
+  "routeMounted": false,
+  "oldSuitesRepeated": false,
+  "review": "Author adversarial review plus new negative tests; not an independent reviewer or real-provider acceptance.",
+  "limits": [
+    "The successful result is a persistence candidate and always entitled=false.",
+    "Authenticated account mapping, atomic global token ownership and linked-token retirement, acknowledgement and RTDN/voided reconciliation remain integration requirements.",
+    "No signed Android build, device/store test, real credentials, live provider request, deployment or store release."
+  ],
+  "sources": [
+    "https://developers.google.com/android-publisher/api-ref/rest/v3/purchases.subscriptionsv2/get",
+    "https://developers.google.com/android-publisher/api-ref/rest/v3/purchases.subscriptionsv2",
+    "https://developer.android.com/google/play/billing/security"
+  ]
+}

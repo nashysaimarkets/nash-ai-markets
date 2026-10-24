@@ -1,0 +1,34 @@
+{
+  "kind": "GOOGLE_TOKEN_OWNERSHIP_SCOPED_ACCEPTANCE_V1",
+  "parentCommit": "2a00ef0c860010ca94593a6cfb5f95c335d4dcc9",
+  "localRuntime": "Node v22.16.0",
+  "localBoundaryTests": {
+    "passed": 15,
+    "failed": 0,
+    "skipped": 0
+  },
+  "pendingHosted": {
+    "compositionCases": 4,
+    "postgresCases": 15,
+    "claim": "Not executed locally; actual exact-source result must be recorded in Issue126."
+  },
+  "sourceSha256": {
+    "app/api/pocket/google-subscription-ownership.mjs": "7480c9176cf1be54844d7ca4f215c999fc80b392760c93e961e545ee2d88ce65",
+    "database/google/20261022-proposed-token-ownership.sql": "badbbad7b31b5ec8b0f02017b6880f615cdf82ae1a3565cd790af57f2488b494",
+    "tests/pocket-google-ownership.test.mjs": "e1e5d1cb18441a28e59ec404097db778cd58f1562e7f3cf8b562f84834a087f6",
+    "tests/pocket-google-ownership-integration.test.mjs": "534af8502eb31dee99eac1877ee77b3e1856b97c4917759117c8bc3b860c4509",
+    "tests/pocket-google-ownership-postgres.py": "6cc9bf3cde714248a7091f597fe24e99fce86aa31e1ccd45bafdb8a2916ae21f",
+    ".github/workflows/monaco-google-ownership-qa.yml": "70f6add45ba88d11f587015a5793dfe14d58b3047687af29e0e1d26bddd62ff6"
+  },
+  "reusedVerifierSha256": "95676b06dc3b0da5ccabd072770f0a69432e7f668e3b3d0930793645140b7875",
+  "reusedOriginalTests": 35,
+  "localLog": "qa/google-ownership/node-tests.log.gz.b64",
+  "localLogSha256": "914e46ccbff57b42597fde4005bb0ed2783ef6893f726f53be4c278b99ff197d",
+  "realProviderRequests": 0,
+  "hostedDatabaseChanges": 0,
+  "routeMounted": false,
+  "purchaseOrEntitlementActivated": false,
+  "paidCostUsd": 0,
+  "independentReview": false,
+  "limits": "Server ports/configuration, live installation, acknowledgement/revocation/admission and signed-device acceptance remain. Ownership receipts never grant entitlement."
+}
