@@ -1,0 +1,424 @@
+{
+  "kind": "INDEPENDENT_FINAL_HOSTED_ARTIFACT_AND_SOURCE_INTEGRITY",
+  "createdAt": "2026-10-24T14:49:19.242774+00:00",
+  "sourceCommit": "a3b108d59d4cd530b326a0e9a106e671aaead265",
+  "sourceTree": "4424bffcba24f8285fae5e945f99eaa9fc956dcd",
+  "mergeCheckout": "a9f864ec0854a807330fadfb4701dab8148fb1b8",
+  "wholeTreeEquivalent": true,
+  "artifact": {
+    "id": 12563319937,
+    "runId": 40103559042,
+    "bytes": 15208,
+    "sha256": "0426d184361f3cd09690d5a01936640498f644803074c0403652993e54e896a0",
+    "members": [
+      {
+        "path": "AFFECTED-REGRESSIONS.json",
+        "bytes": 3902,
+        "sha256": "bfa84980ea25e7611a13609fd1a8b25e3fd565feed846d885eb865d070015d94"
+      },
+      {
+        "path": "legacy-browser.json",
+        "bytes": 2495,
+        "sha256": "d459fb02dad1c7454e6ccc4467c8b29a76e71fbe14814f9ef0056cb190a49237"
+      },
+      {
+        "path": "pocket-analysis-cancellation.test.ts.log",
+        "bytes": 768,
+        "sha256": "9a8b89c63a26ca82100fc37b6a7ee904b77c4b2781d98bbe8a57d2e9b40eb090"
+      },
+      {
+        "path": "pocket-browser-image-axis-ocr.test.mjs.log",
+        "bytes": 1029,
+        "sha256": "44f2c82275b34b3dde882eea91716c4f093a9788c8bd07ee08a77f59d06b1b6b"
+      },
+      {
+        "path": "pocket-image-axis-verification.test.ts.log",
+        "bytes": 4893,
+        "sha256": "31ac69a154dece38ed2f87a8fbfbb9c53b57a5bcd0bbfc0096cec14ab4923798"
+      },
+      {
+        "path": "pocket-image-plot-region.test.ts.log",
+        "bytes": 4230,
+        "sha256": "234301a4084b771aee446ff0f292905d9085baeeb8e73a049a0f47b226234cf2"
+      },
+      {
+        "path": "pocket-image-recovery-integration.test.ts.log",
+        "bytes": 2501,
+        "sha256": "c01435d727aabeafaf48f919fb18185186f97bc59a776475309633569c4bfb80"
+      },
+      {
+        "path": "pocket-level-provenance.test.ts.log",
+        "bytes": 747,
+        "sha256": "d6b22baf2edd79820228979a578f454a1ded4bc62a60d090c18083ca5361b6aa"
+      },
+      {
+        "path": "pocket-source-level-candidates.test.ts.log",
+        "bytes": 1753,
+        "sha256": "eab140b2e7cd98271a15b5f5a9c1e4d0b57823c9d9137325c8daba3f5c2d6bbd"
+      },
+      {
+        "path": "pocket-source-placement-render.test.ts.log",
+        "bytes": 1584,
+        "sha256": "d3ef988fffdebdf580d89c5ca010d517814a473f587c05eb0889c2425315ec7a"
+      },
+      {
+        "path": "pocket-source-placement.test.ts.log",
+        "bytes": 1805,
+        "sha256": "8d70d7f9e955f4f2b2ce26b9ba971f2736ac42344e89e1742e63079b008877f1"
+      },
+      {
+        "path": "real-ocr-browser.json",
+        "bytes": 10649,
+        "sha256": "f52f4d8201aabfe969700c4e58a7bafcdafd405d77868990b7eef0c53df92699"
+      },
+      {
+        "path": "recovery-browser.json",
+        "bytes": 5484,
+        "sha256": "bcc91a5b2ebcbf74fa778df6d28d2d9328a0229aae69e77fa0fe98b957062031"
+      }
+    ]
+  },
+  "affectedTests": {
+    "byFile": {
+      "tests/pocket-image-plot-region.test.ts": {
+        "tests": 18,
+        "pass": 18,
+        "fail": 0,
+        "skipped": 0,
+        "cancelled": 0,
+        "sourceSha256": "3849b43832cbfb7d8e7737b9b29a5c6b6ed1aa65d56af115e383913f91addbb2",
+        "tapSha256": "234301a4084b771aee446ff0f292905d9085baeeb8e73a049a0f47b226234cf2"
+      },
+      "tests/pocket-source-level-candidates.test.ts": {
+        "tests": 7,
+        "pass": 7,
+        "fail": 0,
+        "skipped": 0,
+        "cancelled": 0,
+        "sourceSha256": "6d17156f2a222dfd471a56f4bc3af727af6f8c7da49bcb1aae14dec54ecabd5e",
+        "tapSha256": "eab140b2e7cd98271a15b5f5a9c1e4d0b57823c9d9137325c8daba3f5c2d6bbd"
+      },
+      "tests/pocket-image-axis-verification.test.ts": {
+        "tests": 19,
+        "pass": 19,
+        "fail": 0,
+        "skipped": 0,
+        "cancelled": 0,
+        "sourceSha256": "f9486479c2c024088323abc0186dbf168ebae4a575a8769730911c9f33cfcdcf",
+        "tapSha256": "31ac69a154dece38ed2f87a8fbfbb9c53b57a5bcd0bbfc0096cec14ab4923798"
+      },
+      "tests/pocket-image-recovery-integration.test.ts": {
+        "tests": 9,
+        "pass": 9,
+        "fail": 0,
+        "skipped": 0,
+        "cancelled": 0,
+        "sourceSha256": "04b258de3e4a8d19a40268e19d7643654664ad120bc587b075569bb0b6bdfe61",
+        "tapSha256": "c01435d727aabeafaf48f919fb18185186f97bc59a776475309633569c4bfb80"
+      },
+      "tests/pocket-browser-image-axis-ocr.test.mjs": {
+        "tests": 4,
+        "pass": 4,
+        "fail": 0,
+        "skipped": 0,
+        "cancelled": 0,
+        "sourceSha256": "27a9ca071ee2257288fa77849bfaca5c5a38a5fbf16d5f1f70cb094cde5003a8",
+        "tapSha256": "44f2c82275b34b3dde882eea91716c4f093a9788c8bd07ee08a77f59d06b1b6b"
+      },
+      "tests/pocket-source-placement.test.ts": {
+        "tests": 7,
+        "pass": 7,
+        "fail": 0,
+        "skipped": 0,
+        "cancelled": 0,
+        "sourceSha256": "f418cbc8b5fedea9a8560deb4fa475226272fdf192e5fee396478a83c75fa8ff",
+        "tapSha256": "8d70d7f9e955f4f2b2ce26b9ba971f2736ac42344e89e1742e63079b008877f1"
+      },
+      "tests/pocket-source-placement-render.test.ts": {
+        "tests": 6,
+        "pass": 6,
+        "fail": 0,
+        "skipped": 0,
+        "cancelled": 0,
+        "sourceSha256": "9edbac100e5ce6556a21e4a2f3d2db6606635ea2d79eafaa2832ddf46e62bdf9",
+        "tapSha256": "d3ef988fffdebdf580d89c5ca010d517814a473f587c05eb0889c2425315ec7a"
+      },
+      "tests/pocket-level-provenance.test.ts": {
+        "tests": 3,
+        "pass": 3,
+        "fail": 0,
+        "skipped": 0,
+        "cancelled": 0,
+        "sourceSha256": "1f34e426075cba6497d2d2848813b19639a900b8e5c6a206f7c125ed9254b6c7",
+        "tapSha256": "d6b22baf2edd79820228979a578f454a1ded4bc62a60d090c18083ca5361b6aa"
+      },
+      "tests/pocket-analysis-cancellation.test.ts": {
+        "tests": 2,
+        "pass": 2,
+        "fail": 0,
+        "skipped": 0,
+        "cancelled": 0,
+        "sourceSha256": "c09abb2c3d22f51e0447469303aaa3f076f14034da2f2e5801802482ff5b437e",
+        "tapSha256": "9a8b89c63a26ca82100fc37b6a7ee904b77c4b2781d98bbe8a57d2e9b40eb090"
+      }
+    },
+    "totals": {
+      "tests": 75,
+      "pass": 75,
+      "fail": 0,
+      "skipped": 0,
+      "cancelled": 0
+    }
+  },
+  "all22ManifestEntriesMatch": true,
+  "sourceManifestSha256": "d8ac2596538c05824275058f861179afa01fdc607901fe10568963327a9d4934",
+  "browserSourcePins": {
+    "app/pocket/OriginalChartEvidence.tsx": "5c19c5c5c92869f8cb5b91c34801128e5c458be1608debaf6094256a0e97f1c4",
+    "app/pocket/use-original-chart-measurement.ts": "3aa08b08a9e8bd8bec7ba3ef3654bd4b4cd2ca44bbf260dc1516f7fd6a97f260",
+    "app/pocket/source-placement.ts": "56d089b47b884b7527cb456db772298da6d33617dc708ce1e41dbf44a2ea5542",
+    "app/pocket/original-pixel-levels.ts": "cb292b9dca085363455c06fa161ffd0c78ac0a095141d0075841c6212949efe8",
+    "app/pocket/image-plot-region.ts": "819917bd5e09ed696a66cff61eaad6aa3e4d32940f18a38002850d4dfa523c48",
+    "app/pocket/image-axis-verification.ts": "91c639609ef9581d7536d2191a55c0b705e3b30cf501f60d2beff7856c890da3",
+    "app/pocket/source-price-candidates.ts": "11eae8db2659fb12f1bfadf0463249d05ade7ef9003a50e55a7163cc05049f50",
+    "app/pocket/original-pixel-geometry.ts": "c517c9e42c4323de5f5faaebedcbdacac46273c05511bb08fb6911a4da2b0dd1",
+    "app/pocket/axis-verification.ts": "6e0a2e2d53cc062c9275107494ac658b217cf03e4e6f74756c4f48ec01c9f252",
+    "app/pocket/axis-reading-bounds.ts": "ec55aeefa99e028d9ca874fae9efb3cc7e6ce67367ea36a641d9c577fe3e484a",
+    "app/pocket/chart-grid-rows.ts": "3e330814d35db34f2cc133f01682391887c5b9fdae222ed491d6df161eb326d8",
+    "app/pocket/candle-pixels.ts": "8d24704b57cdba0d4fc4dbe575cc2ebcb45014a763ac76c8b54a7906513b2361",
+    "tests/support/pocket-image-plot-raster.ts": "950fe76122ea9d28ff142a0b56964714d774606f32f3436dd1972e82032d390a",
+    "tests/support/pocket-image-recovery-browser.tsx": "e85b50c897346b0f19b853bf7f4f266d84ee68c260d84a008ed11a79ecd43e41",
+    "tests/run-pocket-image-recovery-browser.mjs": "32d840cc5b758d29e8685cb4d07aee34d10f83ae5834c358101f7b86f4a7c4b5",
+    "app/api/pocket/analysis-calibration.ts": "50f6b5dde09030422cc9ddbb71660b11bf902a58c0beea92b1b02c190e1360d5",
+    "app/pocket/browser-image-axis-ocr.ts": "1cc2d08baaef451619e6d6833b361ffadc5c53794fb4d24546e9bd754607683c",
+    "app/pocket/level-provenance.ts": "f7f22afb150b0cf69ad649d368a8c56358b5f252f27f9f5490286af00b6ccce3"
+  },
+  "browserSourcePinCount": 18,
+  "browserChecks": {
+    "legacy-browser.json": {
+      "checks": 12,
+      "sha256": "d459fb02dad1c7454e6ccc4467c8b29a76e71fbe14814f9ef0056cb190a49237",
+      "sourcePinCount": 4
+    },
+    "recovery-browser.json": {
+      "checks": 21,
+      "sha256": "bcc91a5b2ebcbf74fa778df6d28d2d9328a0229aae69e77fa0fe98b957062031",
+      "sourcePinCount": 15
+    }
+  },
+  "publicOcr": {
+    "receiptSha256": "f52f4d8201aabfe969700c4e58a7bafcdafd405d77868990b7eef0c53df92699",
+    "driverSha256": "e3ebd7e9a6e78f4e85f11e1ad6b344126e36bcdf5696e4d390695cd955e87f6e",
+    "candidateCount": 2,
+    "exactExpectedPrices": [
+      "115",
+      "118"
+    ],
+    "edgeErrors": {
+      "left": 0.5,
+      "right": 0.5,
+      "top": 0.5,
+      "bottom": 0.5
+    },
+    "levels": [
+      {
+        "price": "115",
+        "projectedEndpointCoordinateErrors": {
+          "x1": 0.5,
+          "x2": 0.5,
+          "y1": 0.5,
+          "y2": 0.5
+        },
+        "renderedEndpointCoordinateErrors": {
+          "x1": 0.5,
+          "x2": 0.5,
+          "y1": 0.5,
+          "y2": 0.5
+        },
+        "domProjectionDelta": 0
+      },
+      {
+        "price": "118",
+        "projectedEndpointCoordinateErrors": {
+          "x1": 0.5,
+          "x2": 0.5,
+          "y1": 0.5,
+          "y2": 0.5
+        },
+        "renderedEndpointCoordinateErrors": {
+          "x1": 0.5,
+          "x2": 0.5,
+          "y1": 0.5,
+          "y2": 0.5
+        },
+        "domProjectionDelta": 0
+      }
+    ],
+    "maximumCoordinateErrorPixels": 0.5,
+    "browser": "155.0.8059.39",
+    "node": "v24.19.0",
+    "playwright": "1.55.1",
+    "elapsedMs": 1019.6999999999971
+  },
+  "runProof": {
+    "AFFECTED": {
+      "runId": 40103559042,
+      "jobId": 120900470073,
+      "conclusion": "success",
+      "event": "push",
+      "actualCheckout": "a3b108d59d4cd530b326a0e9a106e671aaead265",
+      "completedAt": "2026-10-24T14:42:39Z",
+      "steps": [
+        {
+          "name": "Set up job",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+          "conclusion": "success"
+        },
+        {
+          "name": "Confirm exact source and disabled automatic deployment",
+          "conclusion": "success"
+        },
+        {
+          "name": "Install unchanged locked dependencies and local OCR assets",
+          "conclusion": "success"
+        },
+        {
+          "name": "Verify affected recovery and legacy consumers",
+          "conclusion": "success"
+        },
+        {
+          "name": "Check complete source integration",
+          "conclusion": "success"
+        },
+        {
+          "name": "Exercise both mounted image lifecycles and actual browser OCR",
+          "conclusion": "success"
+        },
+        {
+          "name": "Compile production Next application",
+          "conclusion": "success"
+        },
+        {
+          "name": "Retain exact-source acceptance receipts",
+          "conclusion": "success"
+        },
+        {
+          "name": "Post Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020",
+          "conclusion": "success"
+        },
+        {
+          "name": "Post Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683",
+          "conclusion": "success"
+        },
+        {
+          "name": "Complete job",
+          "conclusion": "success"
+        }
+      ]
+    },
+    "IMAGE": {
+      "runId": 40103564070,
+      "jobId": 120900485010,
+      "conclusion": "success",
+      "event": "pull_request",
+      "actualCheckout": "a9f864ec0854a807330fadfb4701dab8148fb1b8",
+      "completedAt": "2026-10-24T14:42:50Z",
+      "steps": [
+        {
+          "name": "Set up job",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run actions/setup-node@v4",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run chmod +x scripts/sites-env.sh scripts/install-ci.sh",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run npm run install:ci",
+          "conclusion": "success"
+        },
+        {
+          "name": "Verify native rasterization without provider calls",
+          "conclusion": "success"
+        },
+        {
+          "name": "Install free browser test runtime",
+          "conclusion": "success"
+        },
+        {
+          "name": "Verify real browser pixels, customer Canvas crop and same-origin OCR",
+          "conclusion": "success"
+        },
+        {
+          "name": "Verify mobile decision workflows without providers",
+          "conclusion": "success"
+        },
+        {
+          "name": "Verify actual redesign mobile intake and successful mocked report",
+          "conclusion": "success"
+        },
+        {
+          "name": "Verify customer Level Lab source isolation without providers",
+          "conclusion": "success"
+        },
+        {
+          "name": "Build the Vercel Next.js function traces",
+          "conclusion": "success"
+        },
+        {
+          "name": "Rasterize from isolated production trace",
+          "conclusion": "success"
+        },
+        {
+          "name": "Report live-scan execution path",
+          "conclusion": "success"
+        },
+        {
+          "name": "Run labelled image torture corpus",
+          "conclusion": "skipped"
+        },
+        {
+          "name": "Post Run actions/setup-node@v4",
+          "conclusion": "success"
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "conclusion": "success"
+        },
+        {
+          "name": "Complete job",
+          "conclusion": "success"
+        }
+      ]
+    }
+  },
+  "jobLogHashes": {
+    "OFFICIAL-AFFECTED-JOB.log": "ebf91b8123a59c09c2d6a345f4efee99b72f267794e77abfaf4deca4c06ce75a",
+    "OFFICIAL-IMAGE-JOB.log": "135db72d08c7d77d93bcafffc1936fecf6f15828710c7e5d9af7733948eef2fd"
+  },
+  "reviewerEffects": {
+    "polls": 0,
+    "tests": 0,
+    "browserRuns": 0,
+    "privateImageReads": 0,
+    "calibrationReads": 0,
+    "credentialReads": 0,
+    "providerCalls": 0,
+    "databaseCalls": 0,
+    "sourceEdits": 0,
+    "remoteMutations": 0
+  }
+}

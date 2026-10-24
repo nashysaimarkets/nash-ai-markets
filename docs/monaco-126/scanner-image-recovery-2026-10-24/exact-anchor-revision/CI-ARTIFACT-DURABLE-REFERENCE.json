@@ -1,0 +1,12 @@
+{
+  "kind": "OFFICIAL_CI_ARTIFACT_DURABLE_REFERENCE",
+  "sourceCommit": "a3b108d59d4cd530b326a0e9a106e671aaead265",
+  "runId": 40103559042,
+  "artifactId": 12563319937,
+  "libraryFileId": "libfile_5f46dc3138a08191a3dc77832dbcb58c",
+  "fileName": "Pocket-Bullseye-Combined-Image-Recovery-CI-2026-10-24.zip",
+  "bytes": 15208,
+  "sha256": "0426d184361f3cd09690d5a01936640498f644803074c0403652993e54e896a0",
+  "retainedZipUnmodified": true,
+  "temporaryDownloadReferencePublished": false
+}

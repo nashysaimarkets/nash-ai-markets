@@ -1,0 +1,1795 @@
+{
+  "kind": "FINAL_COMBINED_EXACT_ANCHOR_INDEPENDENT_ONE_PIXEL_REVIEW",
+  "reviewedAtUtc": "2026-10-24T14:40:34.626Z",
+  "reviewer": "precision_contract_fix",
+  "status": "PASS_ALL_13_ELIGIBLE_CANDIDATES_GEOMETRY_ONLY",
+  "sourceIdentity": {
+    "manifestSha256": "d8ac2596538c05824275058f861179afa01fdc607901fe10568963327a9d4934",
+    "sourceAcceptanceSha256": "c26e911e5c0d0ad1721fc219efc684a45b40335b640e659bb55c36666f5c8789",
+    "historicalCommit": "156417b4443068309a33c3364438948499775fad",
+    "candidateParentCommit": "7e8acec2d2f12734a4b570b0743f683be9c190d6",
+    "detectorSha256": "819917bd5e09ed696a66cff61eaad6aa3e4d32940f18a38002850d4dfa523c48",
+    "axisHelperSha256": "91c639609ef9581d7536d2191a55c0b705e3b30cf501f60d2beff7856c890da3",
+    "browserDriverSha256": "89901242f9e0c7e8eb0df38640e41464d2fdea81f37ec932a915b734faaba02b",
+    "sourceHashes": {
+      "app/api/pocket/analysis-calibration.ts": "50f6b5dde09030422cc9ddbb71660b11bf902a58c0beea92b1b02c190e1360d5",
+      "app/pocket/use-original-chart-measurement.ts": "3aa08b08a9e8bd8bec7ba3ef3654bd4b4cd2ca44bbf260dc1516f7fd6a97f260",
+      "app/pocket/source-placement.ts": "56d089b47b884b7527cb456db772298da6d33617dc708ce1e41dbf44a2ea5542",
+      "app/pocket/source-price-candidates.ts": "11eae8db2659fb12f1bfadf0463249d05ade7ef9003a50e55a7163cc05049f50",
+      "app/pocket/image-plot-region.ts": "819917bd5e09ed696a66cff61eaad6aa3e4d32940f18a38002850d4dfa523c48",
+      "app/pocket/image-axis-verification.ts": "91c639609ef9581d7536d2191a55c0b705e3b30cf501f60d2beff7856c890da3",
+      "app/pocket/browser-image-axis-ocr.ts": "1cc2d08baaef451619e6d6833b361ffadc5c53794fb4d24546e9bd754607683c",
+      "app/pocket/level-provenance.ts": "f7f22afb150b0cf69ad649d368a8c56358b5f252f27f9f5490286af00b6ccce3",
+      "app/pocket/OriginalChartEvidence.tsx": "5c19c5c5c92869f8cb5b91c34801128e5c458be1608debaf6094256a0e97f1c4"
+    },
+    "identityMeaning": "The exact recorded runtime snapshot is bound by the manifest and every observation; later workspace changes are not this scored revision."
+  },
+  "historicalComparison": {
+    "reviewSha256": "bd74c8d47980c1b7281eaf920e731e060b304c7b020ff1bd03a7210b0cfaf09a",
+    "sourceManifestSha256": "b9bebc8ba984ed94a30618eefaacca5cc6e1c4de000a9c10444c698cde20653f",
+    "priorPlacedCandidates": 11,
+    "priorCandidateHints": 13,
+    "priorOmittedCandidates": 2,
+    "recoveredBoundaryCandidates": [
+      {
+        "sourceCaseId": "d002",
+        "price": "84654.0416",
+        "kind": "resistance",
+        "previousFittedRowPixels": 124.8571437902082,
+        "finalObservedAnchorPixels": 125,
+        "finalRenderedRowPixels": 125,
+        "referenceRowPixels": 125,
+        "endpointErrorPixels": 2.2737367544323206e-13
+      },
+      {
+        "sourceCaseId": "d004",
+        "price": "779.2864",
+        "kind": "resistance",
+        "previousFittedRowPixels": 104.92857142858837,
+        "finalObservedAnchorPixels": 105,
+        "finalRenderedRowPixels": 105,
+        "referenceRowPixels": 105,
+        "endpointErrorPixels": 2.2737367544323206e-13
+      }
+    ],
+    "priorEvidenceModified": false
+  },
+  "method": {
+    "toleranceOriginalPixels": 1,
+    "calibrationLookup": "Exact numeric tick match, otherwise linear interpolation using unchanged calibration range and plot.",
+    "percentageConversion": "x * originalWidth / 100; y * originalHeight / 100.",
+    "endpointMetric": "Euclidean error of each endpoint, plus individual coordinate and row errors.",
+    "ocrMetric": "Numeric OCR readings associated to independently measured grid rows; glyph centres themselves are not asserted to be grid rows.",
+    "internalRenderCorrespondenceTolerancePixels": 1e-9,
+    "oracleToleranceWidened": false,
+    "pixelQuantizationAllowanceAdded": false,
+    "rawHintsEnumeration": "Pinned unchanged pure collector/parser only; no image or production projection rerun.",
+    "exactAnchorPlacementCheck": "Strict parsed numeric price equality to one retained verified anchor; unique original grid row inside plot; emitted percent equals that anchor. Reference coordinates remain independent.",
+    "referenceSha256": "06fd2b201ecefbda4c7746a24ea5c5470e8679fdee2740dcac81cd3c5f8dd424",
+    "protocolSha256": "4386a29b59718138437ddaf5d0a53b3c77f442acf161e8472aac45cee7773bf5",
+    "calibrationPassedToBrowser": false
+  },
+  "inputAdmissions": {
+    "retainedFiveSha256": "66c2513f7e795b0dbabe3a66353e6080b7d1c7f93d11eda931c382d98be2a9b0",
+    "preparationSha256": "a5b4a9f9b5a2651e01bb78d876af3c5479ea6f38e092d364b75a7f0f68b6fda9",
+    "planSha256": "cb2a6588759abd36b0cacf5972515dbd2a114d52c9e3224754d01af6b8a3e109"
+  },
+  "cases": [
+    {
+      "sourceCaseId": "d001",
+      "status": "PASS_EMITTED_GEOMETRY_ONLY",
+      "inputs": {
+        "observationPath": "scanner-image-geometry-repair-evidence/exact-anchor-revision/D001-RETAINED-BROWSER-OBSERVATION.json",
+        "observationSha256": "e21bc8563966e2edac7b89f69d2f969f71a06628374a06d491780609abd76db5",
+        "imageSha256": "6e12f80e278403b681583957555b312982fc2df7e76b3d0d576d717169a008ec",
+        "mainResponsePath": "private-six/results/v2-run40095819408/decrypted/provider-response-main.json",
+        "mainResponseSha256": "6a271af7026e5b6c6447437d32ce4c67a262965a1df9c962439d892575468f06",
+        "diagnosticPath": "private-six/results/v2-run40095819408/decrypted/diagnostic-output-final.json",
+        "diagnosticSha256": "4db39e031c3ed48b09f9a49e3b1cd79039b32922eec109709d076bbf17464250",
+        "bundlePath": "scanner-evaluation-v2-private/v2-d001.bundle.gz",
+        "bundleSha256": "91da0d22a88dcee0d27d342d524f77354d559312406d4f51fd579ba025e6f7a0",
+        "calibrationEntry": "artifacts/calibration",
+        "calibrationSha256": "e57e1420368b454f6751580d87641c052ca754c6abb6e2baf04109676f3171ae",
+        "dimensions": [
+          1400,
+          850
+        ],
+        "cropMapping": {
+          "kind": "identity",
+          "originalSize": [
+            1400,
+            850
+          ],
+          "precisionRect": null
+        }
+      },
+      "bindingChecks": {
+        "recordedSourceMatchesFrozenManifest": true,
+        "sourceAcceptanceMatchesFinalHelperAndUnchangedDetector": true,
+        "mainCompletedAndByteHashVerified": true,
+        "mainMatchesIndependentDiagnostic": true,
+        "imageMatchesObservationPlanBundleAndDiagnostic": true,
+        "calibrationMatchesPlanBundleAndDiagnostic": true,
+        "originalReferenceAndProtocolUnchanged": true,
+        "onlyCalibrationEntryDecoded": true
+      },
+      "legacy": {
+        "axis": {
+          "status": "held",
+          "reason": "Original model geometry is unavailable."
+        },
+        "pixelsNull": true,
+        "calibratedScaleReadable": false
+      },
+      "plotEdges": [
+        {
+          "edge": "left",
+          "measuredPixels": 90,
+          "referencePixels": 90,
+          "absoluteErrorPixels": 0
+        },
+        {
+          "edge": "right",
+          "measuredPixels": 1250,
+          "referencePixels": 1250,
+          "absoluteErrorPixels": 0
+        },
+        {
+          "edge": "top",
+          "measuredPixels": 125,
+          "referencePixels": 125,
+          "absoluteErrorPixels": 0
+        },
+        {
+          "edge": "bottom",
+          "measuredPixels": 650,
+          "referencePixels": 650,
+          "absoluteErrorPixels": 0
+        }
+      ],
+      "anchors": [
+        {
+          "price": 7757.31,
+          "measuredGridPixels": 125,
+          "percentRoundTripPixels": 125,
+          "referencePixels": 125,
+          "referenceMethod": "EXACT_REFERENCE_TICK",
+          "absoluteErrorPixels": 0,
+          "supportingOcrReadings": 1,
+          "minimumSupportingConfidence": 91.196419,
+          "maximumGlyphCentreToGridPixels": 2
+        },
+        {
+          "price": 7752.3317,
+          "measuredGridPixels": 212,
+          "percentRoundTripPixels": 212,
+          "referencePixels": 212.49941412788752,
+          "referenceMethod": "EXACT_REFERENCE_TICK",
+          "absoluteErrorPixels": 0.49941412788751904,
+          "supportingOcrReadings": 1,
+          "minimumSupportingConfidence": 92.17424,
+          "maximumGlyphCentreToGridPixels": 2
+        },
+        {
+          "price": 7747.3533,
+          "measuredGridPixels": 300.00000000000006,
+          "percentRoundTripPixels": 300.00000000000006,
+          "referencePixels": 300.0005858721125,
+          "referenceMethod": "EXACT_REFERENCE_TICK",
+          "absoluteErrorPixels": 0.0005858721124241129,
+          "supportingOcrReadings": 1,
+          "minimumSupportingConfidence": 91.659126,
+          "maximumGlyphCentreToGridPixels": 2.000000000000057
+        },
+        {
+          "price": 7742.375,
+          "measuredGridPixels": 388,
+          "percentRoundTripPixels": 388,
+          "referencePixels": 387.5,
+          "referenceMethod": "EXACT_REFERENCE_TICK",
+          "absoluteErrorPixels": 0.5,
+          "supportingOcrReadings": 1,
+          "minimumSupportingConfidence": 91.977989,
+          "maximumGlyphCentreToGridPixels": 2
+        },
+        {
+          "price": 7737.3967,
+          "measuredGridPixels": 475,
+          "percentRoundTripPixels": 475,
+          "referencePixels": 474.9994141278875,
+          "referenceMethod": "EXACT_REFERENCE_TICK",
+          "absoluteErrorPixels": 0.0005858721124809563,
+          "supportingOcrReadings": 1,
+          "minimumSupportingConfidence": 92.468521,
+          "maximumGlyphCentreToGridPixels": 2
+        },
+        {
+          "price": 7732.4183,
+          "measuredGridPixels": 563,
+          "percentRoundTripPixels": 563,
+          "referencePixels": 562.5005858721125,
+          "referenceMethod": "EXACT_REFERENCE_TICK",
+          "absoluteErrorPixels": 0.4994141278874622,
+          "supportingOcrReadings": 1,
+          "minimumSupportingConfidence": 90.14994,
+          "maximumGlyphCentreToGridPixels": 2
+        },
+        {
+          "price": 7727.44,
+          "measuredGridPixels": 650,
+          "percentRoundTripPixels": 650,
+          "referencePixels": 650,
+          "referenceMethod": "EXACT_REFERENCE_TICK",
+          "absoluteErrorPixels": 0,
+          "supportingOcrReadings": 1,
+          "minimumSupportingConfidence": 89.955124,
+          "maximumGlyphCentreToGridPixels": 2
+        }
+      ],
+      "projectedCandidates": [
+        {
+          "index": 0,
+          "price": "7752.3317",
+          "kind": "resistance",
+          "semanticProvenance": "UNVERIFIED",
+          "exactObservedAnchorPixels": 212,
+          "strictPriceAndForwardPercentMatch": true,
+          "actualPixels": {
+            "x1": 90,
+            "x2": 1250.0000000000002,
+            "y1": 212,
+            "y2": 212
+          },
+          "referencePixels": {
+            "x1": 90,
+            "x2": 1250,
+            "y1": 212.49941412788752,
+            "y2": 212.49941412788752
+          },
+          "referenceMethod": "EXACT_REFERENCE_TICK",
+          "absoluteErrorsPixels": {
+            "x1": 0,
+            "x2": 2.2737367544323206e-13,
+            "y1": 0.49941412788751904,
+            "y2": 0.49941412788751904
+          },
+          "maxCoordinateErrorPixels": 0.49941412788751904,
+          "maxEndpointDistancePixels": 0.49941412788751904,
+          "rowErrorPixels": 0.49941412788751904
+        },
+        {
+          "index": 1,
+          "price": "7747.3533",
+          "kind": "resistance",
+          "semanticProvenance": "UNVERIFIED",
+          "exactObservedAnchorPixels": 300.00000000000006,
+          "strictPriceAndForwardPercentMatch": true,
+          "actualPixels": {
+            "x1": 90,
+            "x2": 1250.0000000000002,
+            "y1": 300.00000000000006,
+            "y2": 300.00000000000006
+          },
+          "referencePixels": {
+            "x1": 90,
+            "x2": 1250,
+            "y1": 300.0005858721125,
+            "y2": 300.0005858721125
+          },
+          "referenceMethod": "EXACT_REFERENCE_TICK",
+          "absoluteErrorsPixels": {
+            "x1": 0,
+            "x2": 2.2737367544323206e-13,
+            "y1": 0.0005858721124241129,
+            "y2": 0.0005858721124241129
+          },
+          "maxCoordinateErrorPixels": 0.0005858721124241129,
+          "maxEndpointDistancePixels": 0.0005858721124241129,
+          "rowErrorPixels": 0.0005858721124241129
+        },
+        {
+          "index": 2,
+          "price": "7742.3750",
+          "kind": "support",
+          "semanticProvenance": "UNVERIFIED",
+          "exactObservedAnchorPixels": 388,
+          "strictPriceAndForwardPercentMatch": true,
+          "actualPixels": {
+            "x1": 90,
+            "x2": 1250.0000000000002,
+            "y1": 388,
+            "y2": 388
+          },
+          "referencePixels": {
+            "x1": 90,
+            "x2": 1250,
+            "y1": 387.5,
+            "y2": 387.5
+          },
+          "referenceMethod": "EXACT_REFERENCE_TICK",
+          "absoluteErrorsPixels": {
+            "x1": 0,
+            "x2": 2.2737367544323206e-13,
+            "y1": 0.5,
+            "y2": 0.5
+          },
+          "maxCoordinateErrorPixels": 0.5,
+          "maxEndpointDistancePixels": 0.5,
+          "rowErrorPixels": 0.5
+        },
+        {
+          "index": 3,
+          "price": "7732.4183",
+          "kind": "support",
+          "semanticProvenance": "UNVERIFIED",
+          "exactObservedAnchorPixels": 563,
+          "strictPriceAndForwardPercentMatch": true,
+          "actualPixels": {
+            "x1": 90,
+            "x2": 1250.0000000000002,
+            "y1": 563,
+            "y2": 563
+          },
+          "referencePixels": {
+            "x1": 90,
+            "x2": 1250,
+            "y1": 562.5005858721125,
+            "y2": 562.5005858721125
+          },
+          "referenceMethod": "EXACT_REFERENCE_TICK",
+          "absoluteErrorsPixels": {
+            "x1": 0,
+            "x2": 2.2737367544323206e-13,
+            "y1": 0.4994141278874622,
+            "y2": 0.4994141278874622
+          },
+          "maxCoordinateErrorPixels": 0.4994141278874622,
+          "maxEndpointDistancePixels": 0.4994141278874622,
+          "rowErrorPixels": 0.4994141278874622
+        }
+      ],
+      "renderedSvgLines": [
+        {
+          "index": 0,
+          "price": "7752.3317",
+          "actualPixels": {
+            "x1": 90,
+            "x2": 1250.0000000000002,
+            "y1": 212,
+            "y2": 212
+          },
+          "referencePixels": {
+            "x1": 90,
+            "x2": 1250,
+            "y1": 212.49941412788752,
+            "y2": 212.49941412788752
+          },
+          "referenceMethod": "EXACT_REFERENCE_TICK",
+          "absoluteErrorsPixels": {
+            "x1": 0,
+            "x2": 2.2737367544323206e-13,
+            "y1": 0.49941412788751904,
+            "y2": 0.49941412788751904
+          },
+          "maxCoordinateErrorPixels": 0.49941412788751904,
+          "maxEndpointDistancePixels": 0.49941412788751904,
+          "rowErrorPixels": 0.49941412788751904,
+          "maxPlacementDeltaPixels": 0
+        },
+        {
+          "index": 1,
+          "price": "7747.3533",
+          "actualPixels": {
+            "x1": 90,
+            "x2": 1250.0000000000002,
+            "y1": 300.00000000000006,
+            "y2": 300.00000000000006
+          },
+          "referencePixels": {
+            "x1": 90,
+            "x2": 1250,
+            "y1": 300.0005858721125,
+            "y2": 300.0005858721125
+          },
+          "referenceMethod": "EXACT_REFERENCE_TICK",
+          "absoluteErrorsPixels": {
+            "x1": 0,
+            "x2": 2.2737367544323206e-13,
+            "y1": 0.0005858721124241129,
+            "y2": 0.0005858721124241129
+          },
+          "maxCoordinateErrorPixels": 0.0005858721124241129,
+          "maxEndpointDistancePixels": 0.0005858721124241129,
+          "rowErrorPixels": 0.0005858721124241129,
+          "maxPlacementDeltaPixels": 0
+        },
+        {
+          "index": 2,
+          "price": "7742.3750",
+          "actualPixels": {
+            "x1": 90,
+            "x2": 1250.0000000000002,
+            "y1": 388,
+            "y2": 388
+          },
+          "referencePixels": {
+            "x1": 90,
+            "x2": 1250,
+            "y1": 387.5,
+            "y2": 387.5
+          },
+          "referenceMethod": "EXACT_REFERENCE_TICK",
+          "absoluteErrorsPixels": {
+            "x1": 0,
+            "x2": 2.2737367544323206e-13,
+            "y1": 0.5,
+            "y2": 0.5
+          },
+          "maxCoordinateErrorPixels": 0.5,
+          "maxEndpointDistancePixels": 0.5,
+          "rowErrorPixels": 0.5,
+          "maxPlacementDeltaPixels": 0
+        },
+        {
+          "index": 3,
+          "price": "7732.4183",
+          "actualPixels": {
+            "x1": 90,
+            "x2": 1250.0000000000002,
+            "y1": 563,
+            "y2": 563
+          },
+          "referencePixels": {
+            "x1": 90,
+            "x2": 1250,
+            "y1": 562.5005858721125,
+            "y2": 562.5005858721125
+          },
+          "referenceMethod": "EXACT_REFERENCE_TICK",
+          "absoluteErrorsPixels": {
+            "x1": 0,
+            "x2": 2.2737367544323206e-13,
+            "y1": 0.4994141278874622,
+            "y2": 0.4994141278874622
+          },
+          "maxCoordinateErrorPixels": 0.4994141278874622,
+          "maxEndpointDistancePixels": 0.4994141278874622,
+          "rowErrorPixels": 0.4994141278874622,
+          "maxPlacementDeltaPixels": 0
+        }
+      ],
+      "omittedCandidates": [],
+      "candidateInput": {
+        "levelInput": "PRESENT",
+        "axisInput": "PRESENT",
+        "rejectedLevels": 0,
+        "rejectedAxisPrices": 0
+      },
+      "summary": {
+        "candidateHints": 4,
+        "placedCandidates": 4,
+        "omittedCandidates": 0,
+        "plotEdges": 4,
+        "maxPlotEdgeErrorPixels": 0,
+        "ocrGridAnchors": 7,
+        "maxAnchorRowErrorPixels": 0.5,
+        "maxProjectedRowErrorPixels": 0.5,
+        "maxProjectedEndpointErrorPixels": 0.5,
+        "renderedLines": 4,
+        "maxRenderedRowErrorPixels": 0.5,
+        "maxRenderedEndpointErrorPixels": 0.5,
+        "maxRenderedPlacementDeltaPixels": 0,
+        "emittedGeometryWithinOnePixel": true,
+        "allEligibleCandidatesPlaced": true,
+        "semanticAccuracy": "UNSCORED"
+      }
+    },
+    {
+      "sourceCaseId": "d002",
+      "status": "PASS_EMITTED_GEOMETRY_ONLY",
+      "inputs": {
+        "observationPath": "scanner-image-geometry-repair-evidence/exact-anchor-revision/D002-RETAINED-BROWSER-OBSERVATION.json",
+        "observationSha256": "5200b80a971c8c334f655535285e1da8ab90eb3b244f4218e7cd2b7dc6e4b722",
+        "imageSha256": "e16074dc18ba7617c42e0eab0b2b148ee1f819e28a6049ce19bceaeacb0de856",
+        "mainResponsePath": "private-six/results/run40086015008/monaco-encrypted-40086015008-f3d86adeddff-d002-provider-response-main.json",
+        "mainResponseSha256": "5e6f4782358211fa3476e7e0e5874b7a10bca663890f49936a1955a15d918960",
+        "diagnosticPath": "private-six/results/run40086015008/monaco-encrypted-40086015008-f3d86adeddff-d002-diagnostic-output-final.json",
+        "diagnosticSha256": "a39c4fafd82d0a0ecfe99bbc011e7d89ef8c3254e58ef9a5c6f6eda7cc589bd0",
+        "bundlePath": "scanner-evaluation-v2-private/v2-d002.bundle.gz",
+        "bundleSha256": "99bc13004deeca722268467481b47dc3227d05afd90eb2df202d68476da648f1",
+        "calibrationEntry": "artifacts/calibration",
+        "calibrationSha256": "a209504af5d82a9bb07a43060ad5230e8292a3bd5af22a87c0414198871398a0",
+        "dimensions": [
+          1400,
+          850
+        ],
+        "cropMapping": {
+          "kind": "identity",
+          "originalSize": [
+            1400,
+            850
+          ],
+          "precisionRect": null
+        }
+      },
+      "bindingChecks": {
+        "recordedSourceMatchesFrozenManifest": true,
+        "sourceAcceptanceMatchesFinalHelperAndUnchangedDetector": true,
+        "mainCompletedAndByteHashVerified": true,
+        "mainMatchesIndependentDiagnostic": true,
+        "imageMatchesObservationPlanBundleAndDiagnostic": true,
+        "calibrationMatchesPlanBundleAndDiagnostic": true,
+        "originalReferenceAndProtocolUnchanged": true,
+        "onlyCalibrationEntryDecoded": true
+      },
+      "legacy": {
+        "axis": {
+          "status": "held",
+          "reason": "Original model geometry is unavailable."
+        },
+        "pixelsNull": true,
+        "calibratedScaleReadable": false
+      },
+      "plotEdges": [
+        {
+          "edge": "left",
+          "measuredPixels": 90,
+          "referencePixels": 90,
+          "absoluteErrorPixels": 0
+        },
+        {
+          "edge": "right",
+          "measuredPixels": 1250,
+          "referencePixels": 1250,
+          "absoluteErrorPixels": 0
+        },
+        {
+          "edge": "top",
+          "measuredPixels": 125,
+          "referencePixels": 125,
+          "absoluteErrorPixels": 0
+        },
+        {
+          "edge": "bottom",
+          "measuredPixels": 650,
+          "referencePixels": 650,
+          "absoluteErrorPixels": 0
+        }
+      ],
+      "anchors": [
+        {
+          "price": 84654.0416,
+          "measuredGridPixels": 125,
+          "percentRoundTripPixels": 125,
+          "referencePixels": 125,
+          "referenceMethod": "EXACT_REFERENCE_TICK",
+          "absoluteErrorPixels": 0,
+          "supportingOcrReadings": 1,
+          "minimumSupportingConfidence": 91.757942,
+          "maximumGlyphCentreToGridPixels": 2
+        },
+        {
+          "price": 83986.9411,
+          "measuredGridPixels": 212,
+          "percentRoundTripPixels": 212,
+          "referencePixels": 212.4999956278454,
+          "referenceMethod": "EXACT_REFERENCE_TICK",
+          "absoluteErrorPixels": 0.49999562784540785,
+          "supportingOcrReadings": 1,
+          "minimumSupportingConfidence": 92.41214,
+          "maximumGlyphCentreToGridPixels": 2
+        },
+        {
+          "price": 83319.8405,
+          "measuredGridPixels": 300.00000000000006,
+          "percentRoundTripPixels": 300.00000000000006,
+          "referencePixels": 300.0000043721546,
+          "referenceMethod": "EXACT_REFERENCE_TICK",
+          "absoluteErrorPixels": 0.000004372154535303707,
+          "supportingOcrReadings": 1,
+          "minimumSupportingConfidence": 90.604279,
+          "maximumGlyphCentreToGridPixels": 2.000000000000057
+        },
+        {
+          "price": 82652.74,
+          "measuredGridPixels": 388,
+          "percentRoundTripPixels": 388,
+          "referencePixels": 387.5,
+          "referenceMethod": "EXACT_REFERENCE_TICK",
+          "absoluteErrorPixels": 0.5,
+          "supportingOcrReadings": 1,
+          "minimumSupportingConfidence": 92.330498,
+          "maximumGlyphCentreToGridPixels": 2
+        },
+        {
+          "price": 81985.6395,
+          "measuredGridPixels": 475,
+          "percentRoundTripPixels": 475,
+          "referencePixels": 474.9999956278454,
+          "referenceMethod": "EXACT_REFERENCE_TICK",
+          "absoluteErrorPixels": 0.000004372154592147126,
+          "supportingOcrReadings": 1,
+          "minimumSupportingConfidence": 92.771431,
+          "maximumGlyphCentreToGridPixels": 2
+        },
+        {
+          "price": 81318.5389,
+          "measuredGridPixels": 563,
+          "percentRoundTripPixels": 563,
+          "referencePixels": 562.5000043721546,
+          "referenceMethod": "EXACT_REFERENCE_TICK",
+          "absoluteErrorPixels": 0.499995627845351,
+          "supportingOcrReadings": 1,
+          "minimumSupportingConfidence": 90.735939,
+          "maximumGlyphCentreToGridPixels": 2
+        },
+        {
+          "price": 80651.4384,
+          "measuredGridPixels": 650,
+          "percentRoundTripPixels": 650,
+          "referencePixels": 650,
+          "referenceMethod": "EXACT_REFERENCE_TICK",
+          "absoluteErrorPixels": 0,
+          "supportingOcrReadings": 1,
+          "minimumSupportingConfidence": 90.148651,
+          "maximumGlyphCentreToGridPixels": 2
+        }
+      ],
+      "projectedCandidates": [
+        {
+          "index": 0,
+          "price": "81318.5389",
+          "kind": "support",
+          "semanticProvenance": "UNVERIFIED",
+          "exactObservedAnchorPixels": 563,
+          "strictPriceAndForwardPercentMatch": true,
+          "actualPixels": {
+            "x1": 90,
+            "x2": 1250.0000000000002,
+            "y1": 563,
+            "y2": 563
+          },
+          "referencePixels": {
+            "x1": 90,
+            "x2": 1250,
+            "y1": 562.5000043721546,
+            "y2": 562.5000043721546
+          },
+          "referenceMethod": "EXACT_REFERENCE_TICK",
+          "absoluteErrorsPixels": {
+            "x1": 0,
+            "x2": 2.2737367544323206e-13,
+            "y1": 0.499995627845351,
+            "y2": 0.499995627845351
+          },
+          "maxCoordinateErrorPixels": 0.499995627845351,
+          "maxEndpointDistancePixels": 0.499995627845351,
+          "rowErrorPixels": 0.499995627845351
+        },
+        {
+          "index": 1,
+          "price": "83986.9411",
+          "kind": "resistance",
+          "semanticProvenance": "UNVERIFIED",
+          "exactObservedAnchorPixels": 212,
+          "strictPriceAndForwardPercentMatch": true,
+          "actualPixels": {
+            "x1": 90,
+            "x2": 1250.0000000000002,
+            "y1": 212,
+            "y2": 212
+          },
+          "referencePixels": {
+            "x1": 90,
+            "x2": 1250,
+            "y1": 212.4999956278454,
+            "y2": 212.4999956278454
+          },
+          "referenceMethod": "EXACT_REFERENCE_TICK",
+          "absoluteErrorsPixels": {
+            "x1": 0,
+            "x2": 2.2737367544323206e-13,
+            "y1": 0.49999562784540785,
+            "y2": 0.49999562784540785
+          },
+          "maxCoordinateErrorPixels": 0.49999562784540785,
+          "maxEndpointDistancePixels": 0.49999562784540785,
+          "rowErrorPixels": 0.49999562784540785
+        },
+        {
+          "index": 2,
+          "price": "84654.0416",
+          "kind": "resistance",
+          "semanticProvenance": "UNVERIFIED",
+          "exactObservedAnchorPixels": 125,
+          "strictPriceAndForwardPercentMatch": true,
+          "actualPixels": {
+            "x1": 90,
+            "x2": 1250.0000000000002,
+            "y1": 125,
+            "y2": 125
+          },
+          "referencePixels": {
+            "x1": 90,
+            "x2": 1250,
+            "y1": 125,
+            "y2": 125
+          },
+          "referenceMethod": "EXACT_REFERENCE_TICK",
+          "absoluteErrorsPixels": {
+            "x1": 0,
+            "x2": 2.2737367544323206e-13,
+            "y1": 0,
+            "y2": 0
+          },
+          "maxCoordinateErrorPixels": 2.2737367544323206e-13,
+          "maxEndpointDistancePixels": 2.2737367544323206e-13,
+          "rowErrorPixels": 0
+        }
+      ],
+      "renderedSvgLines": [
+        {
+          "index": 0,
+          "price": "81318.5389",
+          "actualPixels": {
+            "x1": 90,
+            "x2": 1250.0000000000002,
+            "y1": 563,
+            "y2": 563
+          },
+          "referencePixels": {
+            "x1": 90,
+            "x2": 1250,
+            "y1": 562.5000043721546,
+            "y2": 562.5000043721546
+          },
+          "referenceMethod": "EXACT_REFERENCE_TICK",
+          "absoluteErrorsPixels": {
+            "x1": 0,
+            "x2": 2.2737367544323206e-13,
+            "y1": 0.499995627845351,
+            "y2": 0.499995627845351
+          },
+          "maxCoordinateErrorPixels": 0.499995627845351,
+          "maxEndpointDistancePixels": 0.499995627845351,
+          "rowErrorPixels": 0.499995627845351,
+          "maxPlacementDeltaPixels": 0
+        },
+        {
+          "index": 1,
+          "price": "83986.9411",
+          "actualPixels": {
+            "x1": 90,
+            "x2": 1250.0000000000002,
+            "y1": 212,
+            "y2": 212
+          },
+          "referencePixels": {
+            "x1": 90,
+            "x2": 1250,
+            "y1": 212.4999956278454,
+            "y2": 212.4999956278454
+          },
+          "referenceMethod": "EXACT_REFERENCE_TICK",
+          "absoluteErrorsPixels": {
+            "x1": 0,
+            "x2": 2.2737367544323206e-13,
+            "y1": 0.49999562784540785,
+            "y2": 0.49999562784540785
+          },
+          "maxCoordinateErrorPixels": 0.49999562784540785,
+          "maxEndpointDistancePixels": 0.49999562784540785,
+          "rowErrorPixels": 0.49999562784540785,
+          "maxPlacementDeltaPixels": 0
+        },
+        {
+          "index": 2,
+          "price": "84654.0416",
+          "actualPixels": {
+            "x1": 90,
+            "x2": 1250.0000000000002,
+            "y1": 125,
+            "y2": 125
+          },
+          "referencePixels": {
+            "x1": 90,
+            "x2": 1250,
+            "y1": 125,
+            "y2": 125
+          },
+          "referenceMethod": "EXACT_REFERENCE_TICK",
+          "absoluteErrorsPixels": {
+            "x1": 0,
+            "x2": 2.2737367544323206e-13,
+            "y1": 0,
+            "y2": 0
+          },
+          "maxCoordinateErrorPixels": 2.2737367544323206e-13,
+          "maxEndpointDistancePixels": 2.2737367544323206e-13,
+          "rowErrorPixels": 0,
+          "maxPlacementDeltaPixels": 0
+        }
+      ],
+      "omittedCandidates": [],
+      "candidateInput": {
+        "levelInput": "PRESENT",
+        "axisInput": "PRESENT",
+        "rejectedLevels": 1,
+        "rejectedAxisPrices": 0
+      },
+      "summary": {
+        "candidateHints": 3,
+        "placedCandidates": 3,
+        "omittedCandidates": 0,
+        "plotEdges": 4,
+        "maxPlotEdgeErrorPixels": 0,
+        "ocrGridAnchors": 7,
+        "maxAnchorRowErrorPixels": 0.5,
+        "maxProjectedRowErrorPixels": 0.49999562784540785,
+        "maxProjectedEndpointErrorPixels": 0.49999562784540785,
+        "renderedLines": 3,
+        "maxRenderedRowErrorPixels": 0.49999562784540785,
+        "maxRenderedEndpointErrorPixels": 0.49999562784540785,
+        "maxRenderedPlacementDeltaPixels": 0,
+        "emittedGeometryWithinOnePixel": true,
+        "allEligibleCandidatesPlaced": true,
+        "semanticAccuracy": "UNSCORED"
+      }
+    },
+    {
+      "sourceCaseId": "d003",
+      "status": "PASS_EMITTED_GEOMETRY_ONLY",
+      "inputs": {
+        "observationPath": "scanner-image-geometry-repair-evidence/exact-anchor-revision/D003-RETAINED-BROWSER-OBSERVATION.json",
+        "observationSha256": "aeb5b3214abb478e889612b36e5cc6780577b71d3309c8434d4c5d0f4c86ea6b",
+        "imageSha256": "b381e53f95db0e82937db5fc0667f8fb9fd2052c1f1a8b1497602d6ff1e2edce",
+        "mainResponsePath": "private-six/results/run40086015008/monaco-encrypted-40086015008-f3d86adeddff-d003-provider-response-main.json",
+        "mainResponseSha256": "c9e1dd6873208e6669961cbfe509c89107aa6a19f1f89db56bd6d92571b5ad42",
+        "diagnosticPath": "private-six/results/run40086015008/monaco-encrypted-40086015008-f3d86adeddff-d003-diagnostic-output-final.json",
+        "diagnosticSha256": "aa551388e20cb45a2e822f867ea372ae405a69fe53ddb4a5cab73bddc864f61c",
+        "bundlePath": "scanner-evaluation-v2-private/v2-d003.bundle.gz",
+        "bundleSha256": "49a57fee34837f4fdaffba1415278823350cff786489d438e74a9433d1fa2aa1",
+        "calibrationEntry": "artifacts/calibration",
+        "calibrationSha256": "f952870c93060e0f630e9a694471fe82d39316cc995bd1aa850c98babf579ff9",
+        "dimensions": [
+          1400,
+          850
+        ],
+        "cropMapping": {
+          "kind": "identity",
+          "originalSize": [
+            1400,
+            850
+          ],
+          "precisionRect": null
+        }
+      },
+      "bindingChecks": {
+        "recordedSourceMatchesFrozenManifest": true,
+        "sourceAcceptanceMatchesFinalHelperAndUnchangedDetector": true,
+        "mainCompletedAndByteHashVerified": true,
+        "mainMatchesIndependentDiagnostic": true,
+        "imageMatchesObservationPlanBundleAndDiagnostic": true,
+        "calibrationMatchesPlanBundleAndDiagnostic": true,
+        "originalReferenceAndProtocolUnchanged": true,
+        "onlyCalibrationEntryDecoded": true
+      },
+      "legacy": {
+        "axis": {
+          "status": "held",
+          "reason": "Original model geometry is unavailable."
+        },
+        "pixelsNull": true,
+        "calibratedScaleReadable": false
+      },
+      "plotEdges": [
+        {
+          "edge": "left",
+          "measuredPixels": 90,
+          "referencePixels": 90,
+          "absoluteErrorPixels": 0
+        },
+        {
+          "edge": "right",
+          "measuredPixels": 1250,
+          "referencePixels": 1250,
+          "absoluteErrorPixels": 0
+        },
+        {
+          "edge": "top",
+          "measuredPixels": 125,
+          "referencePixels": 125,
+          "absoluteErrorPixels": 0
+        },
+        {
+          "edge": "bottom",
+          "measuredPixels": 650,
+          "referencePixels": 650,
+          "absoluteErrorPixels": 0
+        }
+      ],
+      "anchors": [
+        {
+          "price": 351.3292,
+          "measuredGridPixels": 125,
+          "percentRoundTripPixels": 125,
+          "referencePixels": 125,
+          "referenceMethod": "EXACT_REFERENCE_TICK",
+          "absoluteErrorPixels": 0,
+          "supportingOcrReadings": 1,
+          "minimumSupportingConfidence": 96.765678,
+          "maximumGlyphCentreToGridPixels": 2
+        },
+        {
+          "price": 349.3011,
+          "measuredGridPixels": 213.00000000000003,
+          "percentRoundTripPixels": 213.00000000000003,
+          "referencePixels": 212.50143815127706,
+          "referenceMethod": "EXACT_REFERENCE_TICK",
+          "absoluteErrorPixels": 0.4985618487229715,
+          "supportingOcrReadings": 1,
+          "minimumSupportingConfidence": 96.143799,
+          "maximumGlyphCentreToGridPixels": 2.0000000000000284
+        },
+        {
+          "price": 347.2731,
+          "measuredGridPixels": 300.00000000000006,
+          "percentRoundTripPixels": 300.00000000000006,
+          "referencePixels": 299.99856184872294,
+          "referenceMethod": "EXACT_REFERENCE_TICK",
+          "absoluteErrorPixels": 0.001438151277113775,
+          "supportingOcrReadings": 1,
+          "minimumSupportingConfidence": 95.661125,
+          "maximumGlyphCentreToGridPixels": 2.000000000000057
+        },
+        {
+          "price": 345.245,
+          "measuredGridPixels": 388,
+          "percentRoundTripPixels": 388,
+          "referencePixels": 387.5,
+          "referenceMethod": "EXACT_REFERENCE_TICK",
+          "absoluteErrorPixels": 0.5,
+          "supportingOcrReadings": 1,
+          "minimumSupportingConfidence": 96.528183,
+          "maximumGlyphCentreToGridPixels": 2
+        },
+        {
+          "price": 343.2169,
+          "measuredGridPixels": 475,
+          "percentRoundTripPixels": 475,
+          "referencePixels": 475.00143815127706,
+          "referenceMethod": "EXACT_REFERENCE_TICK",
+          "absoluteErrorPixels": 0.0014381512770569316,
+          "supportingOcrReadings": 1,
+          "minimumSupportingConfidence": 96.496689,
+          "maximumGlyphCentreToGridPixels": 2
+        },
+        {
+          "price": 341.1889,
+          "measuredGridPixels": 561.9999999999999,
+          "percentRoundTripPixels": 561.9999999999998,
+          "referencePixels": 562.4985618487229,
+          "referenceMethod": "EXACT_REFERENCE_TICK",
+          "absoluteErrorPixels": 0.49856184872317044,
+          "supportingOcrReadings": 1,
+          "minimumSupportingConfidence": 96.619553,
+          "maximumGlyphCentreToGridPixels": 1.9999999999998863
+        },
+        {
+          "price": 339.1608,
+          "measuredGridPixels": 650,
+          "percentRoundTripPixels": 650,
+          "referencePixels": 650,
+          "referenceMethod": "EXACT_REFERENCE_TICK",
+          "absoluteErrorPixels": 0,
+          "supportingOcrReadings": 1,
+          "minimumSupportingConfidence": 95.430573,
+          "maximumGlyphCentreToGridPixels": 2
+        }
+      ],
+      "projectedCandidates": [
+        {
+          "index": 0,
+          "price": "351.3292",
+          "kind": "resistance",
+          "semanticProvenance": "UNVERIFIED",
+          "exactObservedAnchorPixels": 125,
+          "strictPriceAndForwardPercentMatch": true,
+          "actualPixels": {
+            "x1": 90,
+            "x2": 1250.0000000000002,
+            "y1": 125,
+            "y2": 125
+          },
+          "referencePixels": {
+            "x1": 90,
+            "x2": 1250,
+            "y1": 125,
+            "y2": 125
+          },
+          "referenceMethod": "EXACT_REFERENCE_TICK",
+          "absoluteErrorsPixels": {
+            "x1": 0,
+            "x2": 2.2737367544323206e-13,
+            "y1": 0,
+            "y2": 0
+          },
+          "maxCoordinateErrorPixels": 2.2737367544323206e-13,
+          "maxEndpointDistancePixels": 2.2737367544323206e-13,
+          "rowErrorPixels": 0
+        },
+        {
+          "index": 1,
+          "price": "339.1608",
+          "kind": "support",
+          "semanticProvenance": "UNVERIFIED",
+          "exactObservedAnchorPixels": 650,
+          "strictPriceAndForwardPercentMatch": true,
+          "actualPixels": {
+            "x1": 90,
+            "x2": 1250.0000000000002,
+            "y1": 650,
+            "y2": 650
+          },
+          "referencePixels": {
+            "x1": 90,
+            "x2": 1250,
+            "y1": 650,
+            "y2": 650
+          },
+          "referenceMethod": "EXACT_REFERENCE_TICK",
+          "absoluteErrorsPixels": {
+            "x1": 0,
+            "x2": 2.2737367544323206e-13,
+            "y1": 0,
+            "y2": 0
+          },
+          "maxCoordinateErrorPixels": 2.2737367544323206e-13,
+          "maxEndpointDistancePixels": 2.2737367544323206e-13,
+          "rowErrorPixels": 0
+        }
+      ],
+      "renderedSvgLines": [
+        {
+          "index": 0,
+          "price": "351.3292",
+          "actualPixels": {
+            "x1": 90,
+            "x2": 1250.0000000000002,
+            "y1": 125,
+            "y2": 125
+          },
+          "referencePixels": {
+            "x1": 90,
+            "x2": 1250,
+            "y1": 125,
+            "y2": 125
+          },
+          "referenceMethod": "EXACT_REFERENCE_TICK",
+          "absoluteErrorsPixels": {
+            "x1": 0,
+            "x2": 2.2737367544323206e-13,
+            "y1": 0,
+            "y2": 0
+          },
+          "maxCoordinateErrorPixels": 2.2737367544323206e-13,
+          "maxEndpointDistancePixels": 2.2737367544323206e-13,
+          "rowErrorPixels": 0,
+          "maxPlacementDeltaPixels": 0
+        },
+        {
+          "index": 1,
+          "price": "339.1608",
+          "actualPixels": {
+            "x1": 90,
+            "x2": 1250.0000000000002,
+            "y1": 650,
+            "y2": 650
+          },
+          "referencePixels": {
+            "x1": 90,
+            "x2": 1250,
+            "y1": 650,
+            "y2": 650
+          },
+          "referenceMethod": "EXACT_REFERENCE_TICK",
+          "absoluteErrorsPixels": {
+            "x1": 0,
+            "x2": 2.2737367544323206e-13,
+            "y1": 0,
+            "y2": 0
+          },
+          "maxCoordinateErrorPixels": 2.2737367544323206e-13,
+          "maxEndpointDistancePixels": 2.2737367544323206e-13,
+          "rowErrorPixels": 0,
+          "maxPlacementDeltaPixels": 0
+        }
+      ],
+      "omittedCandidates": [],
+      "candidateInput": {
+        "levelInput": "PRESENT",
+        "axisInput": "PRESENT",
+        "rejectedLevels": 1,
+        "rejectedAxisPrices": 0
+      },
+      "summary": {
+        "candidateHints": 2,
+        "placedCandidates": 2,
+        "omittedCandidates": 0,
+        "plotEdges": 4,
+        "maxPlotEdgeErrorPixels": 0,
+        "ocrGridAnchors": 7,
+        "maxAnchorRowErrorPixels": 0.5,
+        "maxProjectedRowErrorPixels": 0,
+        "maxProjectedEndpointErrorPixels": 2.2737367544323206e-13,
+        "renderedLines": 2,
+        "maxRenderedRowErrorPixels": 0,
+        "maxRenderedEndpointErrorPixels": 2.2737367544323206e-13,
+        "maxRenderedPlacementDeltaPixels": 0,
+        "emittedGeometryWithinOnePixel": true,
+        "allEligibleCandidatesPlaced": true,
+        "semanticAccuracy": "UNSCORED"
+      }
+    },
+    {
+      "sourceCaseId": "d004",
+      "status": "PASS_EMITTED_GEOMETRY_ONLY",
+      "inputs": {
+        "observationPath": "scanner-image-geometry-repair-evidence/exact-anchor-revision/D004-RETAINED-BROWSER-OBSERVATION.json",
+        "observationSha256": "6e1fdc884c79f70eebdfc20a39e6c6250c588442680d4e389aa0e06afebde16a",
+        "imageSha256": "d2277fadcea7c84ab500614f9d69e1ae7a7acae4b28f4e8cc6ec428711a640f7",
+        "mainResponsePath": "private-six/results/run40086015008/monaco-encrypted-40086015008-f3d86adeddff-d004-provider-response-main.json",
+        "mainResponseSha256": "016a49518c06d5ae924201212076ac3145d611e5b297cd522863c55328ec0ad7",
+        "diagnosticPath": "private-six/results/run40086015008/monaco-encrypted-40086015008-f3d86adeddff-d004-diagnostic-output-final.json",
+        "diagnosticSha256": "66c8342e1ed98f757ee98210d7ae6972a1d6d88946decc1fb92a14e70f5f9a72",
+        "bundlePath": "scanner-evaluation-v2-private/v2-d004.bundle.gz",
+        "bundleSha256": "bb8932c6bbcb346373369ecca4c4bba08091abe9887db00d805f927950b144ac",
+        "calibrationEntry": "artifacts/calibration",
+        "calibrationSha256": "e34dda4f56c636f79315890ca9fd6b6611b3b1424387984e191fdd3af07864e4",
+        "dimensions": [
+          1400,
+          850
+        ],
+        "cropMapping": {
+          "kind": "identity",
+          "originalSize": [
+            1400,
+            850
+          ],
+          "precisionRect": null
+        }
+      },
+      "bindingChecks": {
+        "recordedSourceMatchesFrozenManifest": true,
+        "sourceAcceptanceMatchesFinalHelperAndUnchangedDetector": true,
+        "mainCompletedAndByteHashVerified": true,
+        "mainMatchesIndependentDiagnostic": true,
+        "imageMatchesObservationPlanBundleAndDiagnostic": true,
+        "calibrationMatchesPlanBundleAndDiagnostic": true,
+        "originalReferenceAndProtocolUnchanged": true,
+        "onlyCalibrationEntryDecoded": true
+      },
+      "legacy": {
+        "axis": {
+          "status": "held",
+          "reason": "The vision scan and independent price reader disagree."
+        },
+        "pixelsNull": false,
+        "calibratedScaleReadable": true
+      },
+      "plotEdges": [
+        {
+          "edge": "left",
+          "measuredPixels": 90,
+          "referencePixels": 90,
+          "absoluteErrorPixels": 0
+        },
+        {
+          "edge": "right",
+          "measuredPixels": 1250,
+          "referencePixels": 1250,
+          "absoluteErrorPixels": 0
+        },
+        {
+          "edge": "top",
+          "measuredPixels": 105,
+          "referencePixels": 105,
+          "absoluteErrorPixels": 0
+        },
+        {
+          "edge": "bottom",
+          "measuredPixels": 690,
+          "referencePixels": 690,
+          "absoluteErrorPixels": 0
+        }
+      ],
+      "anchors": [
+        {
+          "price": 779.2864,
+          "measuredGridPixels": 105,
+          "percentRoundTripPixels": 105,
+          "referencePixels": 105,
+          "referenceMethod": "EXACT_REFERENCE_TICK",
+          "absoluteErrorPixels": 0,
+          "supportingOcrReadings": 1,
+          "minimumSupportingConfidence": 96.282745,
+          "maximumGlyphCentreToGridPixels": 1
+        },
+        {
+          "price": 778.9326,
+          "measuredGridPixels": 202,
+          "percentRoundTripPixels": 202,
+          "referencePixels": 202.5,
+          "referenceMethod": "EXACT_REFERENCE_TICK",
+          "absoluteErrorPixels": 0.5,
+          "supportingOcrReadings": 1,
+          "minimumSupportingConfidence": 96.755241,
+          "maximumGlyphCentreToGridPixels": 1
+        },
+        {
+          "price": 778.5788,
+          "measuredGridPixels": 300.00000000000006,
+          "percentRoundTripPixels": 300.00000000000006,
+          "referencePixels": 300,
+          "referenceMethod": "EXACT_REFERENCE_TICK",
+          "absoluteErrorPixels": 5.684341886080802e-14,
+          "supportingOcrReadings": 1,
+          "minimumSupportingConfidence": 96.586395,
+          "maximumGlyphCentreToGridPixels": 1.0000000000000568
+        },
+        {
+          "price": 778.225,
+          "measuredGridPixels": 398,
+          "percentRoundTripPixels": 398,
+          "referencePixels": 397.5,
+          "referenceMethod": "EXACT_REFERENCE_TICK",
+          "absoluteErrorPixels": 0.5,
+          "supportingOcrReadings": 1,
+          "minimumSupportingConfidence": 95.96759,
+          "maximumGlyphCentreToGridPixels": 1
+        },
+        {
+          "price": 777.8712,
+          "measuredGridPixels": 495.00000000000006,
+          "percentRoundTripPixels": 495.00000000000006,
+          "referencePixels": 495,
+          "referenceMethod": "EXACT_REFERENCE_TICK",
+          "absoluteErrorPixels": 5.684341886080802e-14,
+          "supportingOcrReadings": 1,
+          "minimumSupportingConfidence": 95.645813,
+          "maximumGlyphCentreToGridPixels": 1.0000000000000568
+        },
+        {
+          "price": 777.5174,
+          "measuredGridPixels": 591.9999999999999,
+          "percentRoundTripPixels": 591.9999999999999,
+          "referencePixels": 592.5,
+          "referenceMethod": "EXACT_REFERENCE_TICK",
+          "absoluteErrorPixels": 0.5000000000001137,
+          "supportingOcrReadings": 1,
+          "minimumSupportingConfidence": 95.16954,
+          "maximumGlyphCentreToGridPixels": 0.9999999999998863
+        },
+        {
+          "price": 777.1636,
+          "measuredGridPixels": 690,
+          "percentRoundTripPixels": 690,
+          "referencePixels": 690,
+          "referenceMethod": "EXACT_REFERENCE_TICK",
+          "absoluteErrorPixels": 0,
+          "supportingOcrReadings": 1,
+          "minimumSupportingConfidence": 96.397385,
+          "maximumGlyphCentreToGridPixels": 1
+        }
+      ],
+      "projectedCandidates": [
+        {
+          "index": 0,
+          "price": "779.2864",
+          "kind": "resistance",
+          "semanticProvenance": "UNVERIFIED",
+          "exactObservedAnchorPixels": 105,
+          "strictPriceAndForwardPercentMatch": true,
+          "actualPixels": {
+            "x1": 90,
+            "x2": 1250.0000000000002,
+            "y1": 105,
+            "y2": 105
+          },
+          "referencePixels": {
+            "x1": 90,
+            "x2": 1250,
+            "y1": 105,
+            "y2": 105
+          },
+          "referenceMethod": "EXACT_REFERENCE_TICK",
+          "absoluteErrorsPixels": {
+            "x1": 0,
+            "x2": 2.2737367544323206e-13,
+            "y1": 0,
+            "y2": 0
+          },
+          "maxCoordinateErrorPixels": 2.2737367544323206e-13,
+          "maxEndpointDistancePixels": 2.2737367544323206e-13,
+          "rowErrorPixels": 0
+        },
+        {
+          "index": 1,
+          "price": "777.1636",
+          "kind": "support",
+          "semanticProvenance": "UNVERIFIED",
+          "exactObservedAnchorPixels": 690,
+          "strictPriceAndForwardPercentMatch": true,
+          "actualPixels": {
+            "x1": 90,
+            "x2": 1250.0000000000002,
+            "y1": 690,
+            "y2": 690
+          },
+          "referencePixels": {
+            "x1": 90,
+            "x2": 1250,
+            "y1": 690,
+            "y2": 690
+          },
+          "referenceMethod": "EXACT_REFERENCE_TICK",
+          "absoluteErrorsPixels": {
+            "x1": 0,
+            "x2": 2.2737367544323206e-13,
+            "y1": 0,
+            "y2": 0
+          },
+          "maxCoordinateErrorPixels": 2.2737367544323206e-13,
+          "maxEndpointDistancePixels": 2.2737367544323206e-13,
+          "rowErrorPixels": 0
+        }
+      ],
+      "renderedSvgLines": [
+        {
+          "index": 0,
+          "price": "779.2864",
+          "actualPixels": {
+            "x1": 90,
+            "x2": 1250.0000000000002,
+            "y1": 105,
+            "y2": 105
+          },
+          "referencePixels": {
+            "x1": 90,
+            "x2": 1250,
+            "y1": 105,
+            "y2": 105
+          },
+          "referenceMethod": "EXACT_REFERENCE_TICK",
+          "absoluteErrorsPixels": {
+            "x1": 0,
+            "x2": 2.2737367544323206e-13,
+            "y1": 0,
+            "y2": 0
+          },
+          "maxCoordinateErrorPixels": 2.2737367544323206e-13,
+          "maxEndpointDistancePixels": 2.2737367544323206e-13,
+          "rowErrorPixels": 0,
+          "maxPlacementDeltaPixels": 0
+        },
+        {
+          "index": 1,
+          "price": "777.1636",
+          "actualPixels": {
+            "x1": 90,
+            "x2": 1250.0000000000002,
+            "y1": 690,
+            "y2": 690
+          },
+          "referencePixels": {
+            "x1": 90,
+            "x2": 1250,
+            "y1": 690,
+            "y2": 690
+          },
+          "referenceMethod": "EXACT_REFERENCE_TICK",
+          "absoluteErrorsPixels": {
+            "x1": 0,
+            "x2": 2.2737367544323206e-13,
+            "y1": 0,
+            "y2": 0
+          },
+          "maxCoordinateErrorPixels": 2.2737367544323206e-13,
+          "maxEndpointDistancePixels": 2.2737367544323206e-13,
+          "rowErrorPixels": 0,
+          "maxPlacementDeltaPixels": 0
+        }
+      ],
+      "omittedCandidates": [],
+      "candidateInput": {
+        "levelInput": "PRESENT",
+        "axisInput": "PRESENT",
+        "rejectedLevels": 1,
+        "rejectedAxisPrices": 0
+      },
+      "summary": {
+        "candidateHints": 2,
+        "placedCandidates": 2,
+        "omittedCandidates": 0,
+        "plotEdges": 4,
+        "maxPlotEdgeErrorPixels": 0,
+        "ocrGridAnchors": 7,
+        "maxAnchorRowErrorPixels": 0.5000000000001137,
+        "maxProjectedRowErrorPixels": 0,
+        "maxProjectedEndpointErrorPixels": 2.2737367544323206e-13,
+        "renderedLines": 2,
+        "maxRenderedRowErrorPixels": 0,
+        "maxRenderedEndpointErrorPixels": 2.2737367544323206e-13,
+        "maxRenderedPlacementDeltaPixels": 0,
+        "emittedGeometryWithinOnePixel": true,
+        "allEligibleCandidatesPlaced": true,
+        "semanticAccuracy": "UNSCORED"
+      }
+    },
+    {
+      "sourceCaseId": "d006",
+      "status": "PASS_EMITTED_GEOMETRY_ONLY",
+      "inputs": {
+        "observationPath": "scanner-image-geometry-repair-evidence/exact-anchor-revision/D006-RETAINED-BROWSER-OBSERVATION.json",
+        "observationSha256": "06cadb2dd97f9b3056b0c32392c742e1bcc35af8d3012a64e56e482ff61b3d42",
+        "imageSha256": "9029b022e8fa31139bf0abd98998a75c5e70948f40b1e66c634bda927b592eef",
+        "mainResponsePath": "private-six/results/run40086015008/monaco-encrypted-40086015008-f3d86adeddff-d006-provider-response-main.json",
+        "mainResponseSha256": "fced81e7db1382663b3110115641ba1353c5dc51bd22fe4e49f535d5e5762f17",
+        "diagnosticPath": "private-six/results/run40086015008/monaco-encrypted-40086015008-f3d86adeddff-d006-diagnostic-output-final.json",
+        "diagnosticSha256": "4a665147a71494f17c2bb4d8bc03dcbfb2851d97a9d4c57aebd52d25a0fd73b2",
+        "bundlePath": "scanner-evaluation-v2-private/v2-d006.bundle.gz",
+        "bundleSha256": "0c78f838c996aa2be3f6f2157c2efc2e85befba3c17298df0b293806ec6a48f5",
+        "calibrationEntry": "artifacts/calibration",
+        "calibrationSha256": "e97131915a680f15211a870b17745387230e65ba2fec5580fec4e7624d16bdfc",
+        "dimensions": [
+          1400,
+          850
+        ],
+        "cropMapping": {
+          "kind": "identity",
+          "originalSize": [
+            1400,
+            850
+          ],
+          "precisionRect": null
+        }
+      },
+      "bindingChecks": {
+        "recordedSourceMatchesFrozenManifest": true,
+        "sourceAcceptanceMatchesFinalHelperAndUnchangedDetector": true,
+        "mainCompletedAndByteHashVerified": true,
+        "mainMatchesIndependentDiagnostic": true,
+        "imageMatchesObservationPlanBundleAndDiagnostic": true,
+        "calibrationMatchesPlanBundleAndDiagnostic": true,
+        "originalReferenceAndProtocolUnchanged": true,
+        "onlyCalibrationEntryDecoded": true
+      },
+      "legacy": {
+        "axis": {
+          "status": "held",
+          "reason": "Original model geometry is unavailable."
+        },
+        "pixelsNull": true,
+        "calibratedScaleReadable": false
+      },
+      "plotEdges": [
+        {
+          "edge": "left",
+          "measuredPixels": 90,
+          "referencePixels": 90,
+          "absoluteErrorPixels": 0
+        },
+        {
+          "edge": "right",
+          "measuredPixels": 1250,
+          "referencePixels": 1250,
+          "absoluteErrorPixels": 0
+        },
+        {
+          "edge": "top",
+          "measuredPixels": 105,
+          "referencePixels": 105,
+          "absoluteErrorPixels": 0
+        },
+        {
+          "edge": "bottom",
+          "measuredPixels": 690,
+          "referencePixels": 690,
+          "absoluteErrorPixels": 0
+        }
+      ],
+      "anchors": [
+        {
+          "price": 778.7792,
+          "measuredGridPixels": 105,
+          "percentRoundTripPixels": 105,
+          "referencePixels": 105,
+          "referenceMethod": "EXACT_REFERENCE_TICK",
+          "absoluteErrorPixels": 0,
+          "supportingOcrReadings": 1,
+          "minimumSupportingConfidence": 95.639404,
+          "maximumGlyphCentreToGridPixels": 1
+        },
+        {
+          "price": 778.5878,
+          "measuredGridPixels": 202,
+          "percentRoundTripPixels": 202,
+          "referencePixels": 202.5,
+          "referenceMethod": "EXACT_REFERENCE_TICK",
+          "absoluteErrorPixels": 0.5,
+          "supportingOcrReadings": 1,
+          "minimumSupportingConfidence": 96.672134,
+          "maximumGlyphCentreToGridPixels": 1
+        },
+        {
+          "price": 778.3964,
+          "measuredGridPixels": 300.00000000000006,
+          "percentRoundTripPixels": 300.00000000000006,
+          "referencePixels": 300,
+          "referenceMethod": "EXACT_REFERENCE_TICK",
+          "absoluteErrorPixels": 5.684341886080802e-14,
+          "supportingOcrReadings": 1,
+          "minimumSupportingConfidence": 96.846077,
+          "maximumGlyphCentreToGridPixels": 1.0000000000000568
+        },
+        {
+          "price": 778.205,
+          "measuredGridPixels": 398,
+          "percentRoundTripPixels": 398,
+          "referencePixels": 397.5,
+          "referenceMethod": "EXACT_REFERENCE_TICK",
+          "absoluteErrorPixels": 0.5,
+          "supportingOcrReadings": 1,
+          "minimumSupportingConfidence": 96.496208,
+          "maximumGlyphCentreToGridPixels": 1
+        },
+        {
+          "price": 778.0136,
+          "measuredGridPixels": 495.00000000000006,
+          "percentRoundTripPixels": 495.00000000000006,
+          "referencePixels": 495,
+          "referenceMethod": "EXACT_REFERENCE_TICK",
+          "absoluteErrorPixels": 5.684341886080802e-14,
+          "supportingOcrReadings": 1,
+          "minimumSupportingConfidence": 95.814362,
+          "maximumGlyphCentreToGridPixels": 1.0000000000000568
+        },
+        {
+          "price": 777.8222,
+          "measuredGridPixels": 591.9999999999999,
+          "percentRoundTripPixels": 591.9999999999999,
+          "referencePixels": 592.5,
+          "referenceMethod": "EXACT_REFERENCE_TICK",
+          "absoluteErrorPixels": 0.5000000000001137,
+          "supportingOcrReadings": 1,
+          "minimumSupportingConfidence": 93.905769,
+          "maximumGlyphCentreToGridPixels": 0.9999999999998863
+        },
+        {
+          "price": 777.6308,
+          "measuredGridPixels": 690,
+          "percentRoundTripPixels": 690,
+          "referencePixels": 690,
+          "referenceMethod": "EXACT_REFERENCE_TICK",
+          "absoluteErrorPixels": 0,
+          "supportingOcrReadings": 1,
+          "minimumSupportingConfidence": 95.662521,
+          "maximumGlyphCentreToGridPixels": 1
+        }
+      ],
+      "projectedCandidates": [
+        {
+          "index": 0,
+          "price": "778.3964",
+          "kind": "resistance",
+          "semanticProvenance": "UNVERIFIED",
+          "exactObservedAnchorPixels": 300.00000000000006,
+          "strictPriceAndForwardPercentMatch": true,
+          "actualPixels": {
+            "x1": 90,
+            "x2": 1250.0000000000002,
+            "y1": 300.00000000000006,
+            "y2": 300.00000000000006
+          },
+          "referencePixels": {
+            "x1": 90,
+            "x2": 1250,
+            "y1": 300,
+            "y2": 300
+          },
+          "referenceMethod": "EXACT_REFERENCE_TICK",
+          "absoluteErrorsPixels": {
+            "x1": 0,
+            "x2": 2.2737367544323206e-13,
+            "y1": 5.684341886080802e-14,
+            "y2": 5.684341886080802e-14
+          },
+          "maxCoordinateErrorPixels": 2.2737367544323206e-13,
+          "maxEndpointDistancePixels": 2.3437142008433856e-13,
+          "rowErrorPixels": 5.684341886080802e-14
+        },
+        {
+          "index": 1,
+          "price": "777.8222",
+          "kind": "support",
+          "semanticProvenance": "UNVERIFIED",
+          "exactObservedAnchorPixels": 591.9999999999999,
+          "strictPriceAndForwardPercentMatch": true,
+          "actualPixels": {
+            "x1": 90,
+            "x2": 1250.0000000000002,
+            "y1": 591.9999999999999,
+            "y2": 591.9999999999999
+          },
+          "referencePixels": {
+            "x1": 90,
+            "x2": 1250,
+            "y1": 592.5,
+            "y2": 592.5
+          },
+          "referenceMethod": "EXACT_REFERENCE_TICK",
+          "absoluteErrorsPixels": {
+            "x1": 0,
+            "x2": 2.2737367544323206e-13,
+            "y1": 0.5000000000001137,
+            "y2": 0.5000000000001137
+          },
+          "maxCoordinateErrorPixels": 0.5000000000001137,
+          "maxEndpointDistancePixels": 0.5000000000001137,
+          "rowErrorPixels": 0.5000000000001137
+        }
+      ],
+      "renderedSvgLines": [
+        {
+          "index": 0,
+          "price": "778.3964",
+          "actualPixels": {
+            "x1": 90,
+            "x2": 1250.0000000000002,
+            "y1": 300.00000000000006,
+            "y2": 300.00000000000006
+          },
+          "referencePixels": {
+            "x1": 90,
+            "x2": 1250,
+            "y1": 300,
+            "y2": 300
+          },
+          "referenceMethod": "EXACT_REFERENCE_TICK",
+          "absoluteErrorsPixels": {
+            "x1": 0,
+            "x2": 2.2737367544323206e-13,
+            "y1": 5.684341886080802e-14,
+            "y2": 5.684341886080802e-14
+          },
+          "maxCoordinateErrorPixels": 2.2737367544323206e-13,
+          "maxEndpointDistancePixels": 2.3437142008433856e-13,
+          "rowErrorPixels": 5.684341886080802e-14,
+          "maxPlacementDeltaPixels": 0
+        },
+        {
+          "index": 1,
+          "price": "777.8222",
+          "actualPixels": {
+            "x1": 90,
+            "x2": 1250.0000000000002,
+            "y1": 591.9999999999999,
+            "y2": 591.9999999999999
+          },
+          "referencePixels": {
+            "x1": 90,
+            "x2": 1250,
+            "y1": 592.5,
+            "y2": 592.5
+          },
+          "referenceMethod": "EXACT_REFERENCE_TICK",
+          "absoluteErrorsPixels": {
+            "x1": 0,
+            "x2": 2.2737367544323206e-13,
+            "y1": 0.5000000000001137,
+            "y2": 0.5000000000001137
+          },
+          "maxCoordinateErrorPixels": 0.5000000000001137,
+          "maxEndpointDistancePixels": 0.5000000000001137,
+          "rowErrorPixels": 0.5000000000001137,
+          "maxPlacementDeltaPixels": 0
+        }
+      ],
+      "omittedCandidates": [],
+      "candidateInput": {
+        "levelInput": "PRESENT",
+        "axisInput": "PRESENT",
+        "rejectedLevels": 1,
+        "rejectedAxisPrices": 0
+      },
+      "summary": {
+        "candidateHints": 2,
+        "placedCandidates": 2,
+        "omittedCandidates": 0,
+        "plotEdges": 4,
+        "maxPlotEdgeErrorPixels": 0,
+        "ocrGridAnchors": 7,
+        "maxAnchorRowErrorPixels": 0.5000000000001137,
+        "maxProjectedRowErrorPixels": 0.5000000000001137,
+        "maxProjectedEndpointErrorPixels": 0.5000000000001137,
+        "renderedLines": 2,
+        "maxRenderedRowErrorPixels": 0.5000000000001137,
+        "maxRenderedEndpointErrorPixels": 0.5000000000001137,
+        "maxRenderedPlacementDeltaPixels": 0,
+        "emittedGeometryWithinOnePixel": true,
+        "allEligibleCandidatesPlaced": true,
+        "semanticAccuracy": "UNSCORED"
+      }
+    }
+  ],
+  "summary": {
+    "casesScored": 5,
+    "candidateHints": 13,
+    "placedCandidates": 13,
+    "omittedCandidates": 0,
+    "plotEdges": 20,
+    "ocrGridAnchors": 35,
+    "renderedLines": 13,
+    "maxPlotEdgeErrorPixels": 0,
+    "maxAnchorRowErrorPixels": 0.5000000000001137,
+    "maxProjectedEndpointErrorPixels": 0.5000000000001137,
+    "maxRenderedEndpointErrorPixels": 0.5000000000001137,
+    "maxRenderedPlacementDeltaPixels": 0,
+    "allEmittedGeometryWithinOnePixel": true,
+    "allEligibleCandidatesPlaced": true
+  },
+  "d005": {
+    "disposition": "HOLD_BEFORE_OCR_UNCHANGED",
+    "inputsAvailable": true,
+    "reason": "Support/resistance prices explicitly use approximation markers (approximately 776.18 and 773.0); strict exact-price parsing rejects them. The approximate pivot is also an unsupported kind.",
+    "supportResistanceKindsAbsent": false,
+    "exactEligibleCandidates": 0,
+    "geometry": "UNMEASURED",
+    "semantics": "UNSCORED",
+    "verifiedAbsence": false,
+    "calibrationRead": false
+  },
+  "acceptance": {
+    "emittedOriginalPixelGeometry": true,
+    "completeEligibleCandidateCoverageInTheseFiveReceipts": true,
+    "semanticTradingAccuracy": false,
+    "patterns": false,
+    "liquidity": false,
+    "verifiedAbsence": false,
+    "heldOutGeneralization": false,
+    "physicalDeviceLatency": false,
+    "deployedHttpLatency": false
+  },
+  "effects": {
+    "browserRuns": 0,
+    "imageDecodes": 0,
+    "detectorCalls": 0,
+    "ocrCalls": 0,
+    "productionProjectionCalls": 0,
+    "pureMetadataCollectorCalls": 5,
+    "calibrationEntriesDecoded": 5,
+    "providerCalls": 0,
+    "databaseCalls": 0,
+    "privateKeyReads": 0,
+    "decryptionOperations": 0,
+    "heldOutReads": 0,
+    "sourceChanges": 0,
+    "oracleChanges": 0,
+    "networkCalls": 0
+  },
+  "reproducibility": {
+    "comparatorSha256": "7a2b0e16f50798766526e9eb2d80d03b8cd701cc0062037fc403a05fbb06db01",
+    "node": "v24.22.1",
+    "command": "node scanner-image-geometry-repair-evidence/exact-anchor-revision/compare-exact-anchor-revision.mjs <workspace> <new-output-directory>",
+    "existingOutputOverwriteAllowed": false
+  },
+  "limitations": [
+    "These are five previously used development images; no held-out or broader scanner accuracy claim follows.",
+    "The emitted lines, plot edges and axis rows pass a geometric comparison only; support/resistance meaning remains unverified.",
+    "All 13 eligible exact candidates from these five retained MAIN responses are placed. This is not a claim of complete chart-level recall or semantic correctness.",
+    "The prior 11/13 review and its two boundary omissions remain unchanged historical evidence; only this separately frozen final revision has 13/13 placement.",
+    "d004 legacy pixels are non-null because its existing model-quality gate passed; its legacy axis remains held and its scored horizontal lines use IMAGE_AXIS.",
+    "d005 remains held because price text is approximate, not because support/resistance kinds are absent.",
+    "All prior failing or held observations remain historical evidence. This comparison does not authorize paid cases or deployment."
+  ]
+}

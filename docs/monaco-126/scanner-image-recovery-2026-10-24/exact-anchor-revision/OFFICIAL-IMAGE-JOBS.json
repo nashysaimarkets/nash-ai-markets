@@ -1,0 +1,177 @@
+{
+  "total_count": 1,
+  "jobs": [
+    {
+      "id": 120900485010,
+      "run_id": 40103564070,
+      "workflow_name": "Bullseye image torture",
+      "head_branch": "monaco-scanner-image-geometry-126-20261024",
+      "run_url": "https://api.github.com/repos/nashysaimarkets/nash-ai-markets/actions/runs/40103564070",
+      "run_attempt": 1,
+      "node_id": "CR_kwDOTWGF-c8AAAAcJjr_kg",
+      "head_sha": "a3b108d59d4cd530b326a0e9a106e671aaead265",
+      "url": "https://api.github.com/repos/nashysaimarkets/nash-ai-markets/actions/jobs/120900485010",
+      "html_url": "https://github.com/nashysaimarkets/nash-ai-markets/actions/runs/40103564070/job/120900485010",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-10-24T14:40:39Z",
+      "started_at": "2026-10-24T14:40:42Z",
+      "completed_at": "2026-10-24T14:42:50Z",
+      "name": "image-torture",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-10-24T14:40:42Z",
+          "completed_at": "2026-10-24T14:40:43Z"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-10-24T14:40:43Z",
+          "completed_at": "2026-10-24T14:40:45Z"
+        },
+        {
+          "name": "Run actions/setup-node@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-10-24T14:40:45Z",
+          "completed_at": "2026-10-24T14:40:48Z"
+        },
+        {
+          "name": "Run chmod +x scripts/sites-env.sh scripts/install-ci.sh",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-10-24T14:40:48Z",
+          "completed_at": "2026-10-24T14:40:48Z"
+        },
+        {
+          "name": "Run npm run install:ci",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5,
+          "started_at": "2026-10-24T14:40:48Z",
+          "completed_at": "2026-10-24T14:41:22Z"
+        },
+        {
+          "name": "Verify native rasterization without provider calls",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6,
+          "started_at": "2026-10-24T14:41:22Z",
+          "completed_at": "2026-10-24T14:41:24Z"
+        },
+        {
+          "name": "Install free browser test runtime",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7,
+          "started_at": "2026-10-24T14:41:24Z",
+          "completed_at": "2026-10-24T14:41:48Z"
+        },
+        {
+          "name": "Verify real browser pixels, customer Canvas crop and same-origin OCR",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8,
+          "started_at": "2026-10-24T14:41:48Z",
+          "completed_at": "2026-10-24T14:41:59Z"
+        },
+        {
+          "name": "Verify mobile decision workflows without providers",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 9,
+          "started_at": "2026-10-24T14:41:59Z",
+          "completed_at": "2026-10-24T14:42:03Z"
+        },
+        {
+          "name": "Verify actual redesign mobile intake and successful mocked report",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 10,
+          "started_at": "2026-10-24T14:42:03Z",
+          "completed_at": "2026-10-24T14:42:09Z"
+        },
+        {
+          "name": "Verify customer Level Lab source isolation without providers",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 11,
+          "started_at": "2026-10-24T14:42:09Z",
+          "completed_at": "2026-10-24T14:42:13Z"
+        },
+        {
+          "name": "Build the Vercel Next.js function traces",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 12,
+          "started_at": "2026-10-24T14:42:13Z",
+          "completed_at": "2026-10-24T14:42:47Z"
+        },
+        {
+          "name": "Rasterize from isolated production trace",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 13,
+          "started_at": "2026-10-24T14:42:47Z",
+          "completed_at": "2026-10-24T14:42:48Z"
+        },
+        {
+          "name": "Report live-scan execution path",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 14,
+          "started_at": "2026-10-24T14:42:48Z",
+          "completed_at": "2026-10-24T14:42:48Z"
+        },
+        {
+          "name": "Run labelled image torture corpus",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 15,
+          "started_at": "2026-10-24T14:42:48Z",
+          "completed_at": "2026-10-24T14:42:48Z"
+        },
+        {
+          "name": "Post Run actions/setup-node@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 29,
+          "started_at": "2026-10-24T14:42:48Z",
+          "completed_at": "2026-10-24T14:42:48Z"
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 30,
+          "started_at": "2026-10-24T14:42:48Z",
+          "completed_at": "2026-10-24T14:42:48Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 31,
+          "started_at": "2026-10-24T14:42:48Z",
+          "completed_at": "2026-10-24T14:42:48Z"
+        }
+      ],
+      "check_run_url": "https://api.github.com/repos/nashysaimarkets/nash-ai-markets/check-runs/120900485010",
+      "labels": [
+        "ubuntu-latest"
+      ],
+      "runner_id": 1000000635,
+      "runner_name": "GitHub Actions 1000000635",
+      "runner_group_id": 0,
+      "runner_group_name": "GitHub Actions"
+    }
+  ]
+}
