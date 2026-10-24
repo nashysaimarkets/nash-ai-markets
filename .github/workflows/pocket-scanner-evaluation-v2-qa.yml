@@ -1,0 +1,82 @@
+name: Pocket scanner evaluation v2 free acceptance
+
+on:
+  push:
+    branches: [monaco-scanner-evaluation-v2-126-20261024]
+    paths:
+      - 'scripts/*scanner-evaluation-v2*'
+      - 'database/neon/proposed/20261024-scanner-evaluation-v2.sql'
+      - 'tests/*scanner-evaluation-v2*'
+      - 'tests/support/*scanner-evaluation-v2*'
+      - 'docs/monaco-126/scanner-evaluation-v2-2026-10-24/**'
+      - '.github/actions/pocket-scanner-evaluation-v2/**'
+      - '.github/workflows/pocket-scanner-evaluation-v2-qa.yml'
+      - 'vercel.json'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pocket-scanner-evaluation-v2-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  evaluation-v2:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      CI: 'true'
+      GIT_COMMIT_SHA: ${{ github.sha }}
+      POCKET_EVALUATION_QA_OUTPUT: qa/scanner-evaluation-v2-ci
+      POCKET_BENCHMARK_PILOT_ENABLED: 'false'
+      POCKET_REAL_BENCHMARK_DISPATCH: 'false'
+      POCKET_BENCHMARK_RUNTIME_METADATA_ENABLED: 'false'
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd pg_isready --health-interval 2s
+          --health-timeout 5s --health-retries 15
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24.19.0'
+      - name: Verify exact source and disabled automatic deployment
+        run: |
+          test "$(git rev-parse HEAD)" = "$GIT_COMMIT_SHA"
+          test "$(node --version)" = v24.19.0
+          node -e "if(require('./vercel.json').git.deploymentEnabled['monaco-scanner-evaluation-v2-126-20261024']!==false)process.exit(1)"
+      - name: Install accepted isolated runtime from its unchanged lock
+        run: |
+          mkdir -p "$RUNNER_TEMP/monaco-first-six-runtime"
+          cp tools/monaco-first-six-runtime/package.json tools/monaco-first-six-runtime/package-lock.json "$RUNNER_TEMP/monaco-first-six-runtime/"
+          npm ci --prefix "$RUNNER_TEMP/monaco-first-six-runtime" --ignore-scripts --no-audit --no-fund --fetch-retries=0 --fetch-timeout=15000
+      - name: Run offline request, status, transport and approval boundaries
+        run: node scripts/verify-pocket-scanner-evaluation-v2.mjs
+      - name: Verify atomic accounting on disposable PostgreSQL 17
+        env:
+          MONACO_QA_DISPOSABLE_POSTGRES: 'true'
+        run: MONACO_QA_PG_MODULE="$RUNNER_TEMP/monaco-first-six-runtime/node_modules/pg/lib/index.js" node scripts/verify-pocket-scanner-evaluation-v2.mjs --postgres
+      - name: Confirm source remains unchanged
+        run: |
+          git diff --check
+          git diff --exit-code HEAD
+          test -z "$(git status --porcelain --untracked-files=no)"
+      - name: Retain free acceptance receipts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pocket-scanner-evaluation-v2-${{ github.sha }}
+          path: ${{ env.POCKET_EVALUATION_QA_OUTPUT }}
+          if-no-files-found: error
+          retention-days: 30
+
+# No protected environment, provider/hosted-database secrets, paid dispatch,
+# production deployment, scheduled trigger, corpus payload or model request.

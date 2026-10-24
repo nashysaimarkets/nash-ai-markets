@@ -1,0 +1,249 @@
+{
+  "kind": "POCKET_SCANNER_EVALUATION_V2_PREPARED_MATERIAL",
+  "status": "OFFLINE_PREPARED",
+  "scopeId": "pocket-scanner-evaluation-v2-20261024",
+  "planSha256": "cb2a6588759abd36b0cacf5972515dbd2a114d52c9e3224754d01af6b8a3e109",
+  "bundles": [
+    {
+      "caseId": "v2-d001",
+      "sourceCaseId": "d001",
+      "path": "v2-d001.bundle.gz",
+      "bytes": 528090,
+      "sha256": "91da0d22a88dcee0d27d342d524f77354d559312406d4f51fd579ba025e6f7a0",
+      "requestPins": [
+        {
+          "slot": "main",
+          "requestId": "v2-d001-main-17b26f3b09a97a71",
+          "requestSha256": "17b26f3b09a97a71ba7dea6cbbcc4c524b887db031ba4db7d50b7c4eca6e38cc",
+          "fingerprint": "e93220c8132bdf5c330792a2d710d9d19a28d5236fc8570ceffc6f3b93891fbe",
+          "maxOutputTokens": 7000,
+          "costBoundMicroUsd": 114000,
+          "model": "gpt-5-mini-2025-08-07",
+          "serviceTier": "default"
+        },
+        {
+          "slot": "primary_precision",
+          "requestId": "v2-d001-primary_precision-49e111df97816cc5",
+          "requestSha256": "49e111df97816cc59b7486f4668dab4ef41c654305d0495382522997abe5fc93",
+          "fingerprint": "3f3395ddd597ad1bc3afcac85b32215d602cbab9cc56394307cfdd0157f025f5",
+          "maxOutputTokens": 4000,
+          "costBoundMicroUsd": 108000,
+          "model": "gpt-5-mini-2025-08-07",
+          "serviceTier": "default"
+        },
+        {
+          "slot": "rescue_precision",
+          "requestId": "v2-d001-rescue_precision-9b5edc72cc5ed49d",
+          "requestSha256": "9b5edc72cc5ed49d6ee5ce606d57bd20620657dfc7a6cbb7938361639cf205bb",
+          "fingerprint": "b30acc1ee43d694ed6817f2b5253a52c5713e6d2661ca900c30c50a2b73f6a86",
+          "maxOutputTokens": 4000,
+          "costBoundMicroUsd": 108000,
+          "model": "gpt-5-mini-2025-08-07",
+          "serviceTier": "default"
+        }
+      ]
+    },
+    {
+      "caseId": "v2-d002",
+      "sourceCaseId": "d002",
+      "path": "v2-d002.bundle.gz",
+      "bytes": 782618,
+      "sha256": "99bc13004deeca722268467481b47dc3227d05afd90eb2df202d68476da648f1",
+      "requestPins": [
+        {
+          "slot": "main",
+          "requestId": "v2-d002-main-2a5a3eb40c635e70",
+          "requestSha256": "2a5a3eb40c635e7030f71bc792220ea4d3f80d726d7fa0efbe065a1102cfec76",
+          "fingerprint": "661b5ad27df69a887b6aac1a9b1365efcab0be17c73607a0bd56669338486488",
+          "maxOutputTokens": 7000,
+          "costBoundMicroUsd": 114000,
+          "model": "gpt-5-mini-2025-08-07",
+          "serviceTier": "default"
+        },
+        {
+          "slot": "primary_precision",
+          "requestId": "v2-d002-primary_precision-55aba81625d4ae64",
+          "requestSha256": "55aba81625d4ae641a737698127b59e7eaae1c3473728b2cc375f44cc2a98cfa",
+          "fingerprint": "af01d2aa8a11b6eba8c5987ae4139d420a7cfdab4b4ef4195d3a6e9cf3a34471",
+          "maxOutputTokens": 4000,
+          "costBoundMicroUsd": 108000,
+          "model": "gpt-5-mini-2025-08-07",
+          "serviceTier": "default"
+        },
+        {
+          "slot": "rescue_precision",
+          "requestId": "v2-d002-rescue_precision-4e7529d88cf5d859",
+          "requestSha256": "4e7529d88cf5d8591c20facd937be1eb301692c4c79a9fe4fc6f60a1c20204b8",
+          "fingerprint": "1321e10e57a516828b3e1773c071646fa6c6a9c13ca3818d8de9942638a87cc3",
+          "maxOutputTokens": 4000,
+          "costBoundMicroUsd": 108000,
+          "model": "gpt-5-mini-2025-08-07",
+          "serviceTier": "default"
+        }
+      ]
+    },
+    {
+      "caseId": "v2-d003",
+      "sourceCaseId": "d003",
+      "path": "v2-d003.bundle.gz",
+      "bytes": 475218,
+      "sha256": "49a57fee34837f4fdaffba1415278823350cff786489d438e74a9433d1fa2aa1",
+      "requestPins": [
+        {
+          "slot": "main",
+          "requestId": "v2-d003-main-807048716f1af99a",
+          "requestSha256": "807048716f1af99a15274601d2042862a1ed969de51ee4d9d259c1be64fe9045",
+          "fingerprint": "0cdfc26d28995f73eca477893107b72c4966a23e09eef65cecfec0302eec3e80",
+          "maxOutputTokens": 7000,
+          "costBoundMicroUsd": 114000,
+          "model": "gpt-5-mini-2025-08-07",
+          "serviceTier": "default"
+        },
+        {
+          "slot": "primary_precision",
+          "requestId": "v2-d003-primary_precision-c86fd9fc5ea9d287",
+          "requestSha256": "c86fd9fc5ea9d287db317d0b826b4e0238afa53a14af503c35dac9afd8a4de98",
+          "fingerprint": "d9790b011fd2a3137555e9d94ded3b6bb9d960ebd602f97129e49c90422506af",
+          "maxOutputTokens": 4000,
+          "costBoundMicroUsd": 108000,
+          "model": "gpt-5-mini-2025-08-07",
+          "serviceTier": "default"
+        },
+        {
+          "slot": "rescue_precision",
+          "requestId": "v2-d003-rescue_precision-4858027d39ef4f8e",
+          "requestSha256": "4858027d39ef4f8e55ce97895f98d2d853d4d98c464f5f9bb315e958e2de935b",
+          "fingerprint": "c80ef66b838b378d968e9381aae13db17672827f4626fedca97a77de05097eb0",
+          "maxOutputTokens": 4000,
+          "costBoundMicroUsd": 108000,
+          "model": "gpt-5-mini-2025-08-07",
+          "serviceTier": "default"
+        }
+      ]
+    },
+    {
+      "caseId": "v2-d004",
+      "sourceCaseId": "d004",
+      "path": "v2-d004.bundle.gz",
+      "bytes": 464743,
+      "sha256": "bb8932c6bbcb346373369ecca4c4bba08091abe9887db00d805f927950b144ac",
+      "requestPins": [
+        {
+          "slot": "main",
+          "requestId": "v2-d004-main-431b755f741c1caa",
+          "requestSha256": "431b755f741c1caa5fbb0476515793db0384adaa913642d44222fefcb41e0e0b",
+          "fingerprint": "75cf8302ac9f26e849bfa39d0b59e39525bca07632d5a456a9e8da1cc85dee62",
+          "maxOutputTokens": 7000,
+          "costBoundMicroUsd": 114000,
+          "model": "gpt-5-mini-2025-08-07",
+          "serviceTier": "default"
+        },
+        {
+          "slot": "primary_precision",
+          "requestId": "v2-d004-primary_precision-d1ea4e6b0c05f818",
+          "requestSha256": "d1ea4e6b0c05f818cac94941e62b9066f8184d9d68b80e8b0de3c7524e2daa84",
+          "fingerprint": "bd0a20f54de69ecb33deb406e82fca539a60c0cf1375d7e9e8ae8a1b614a0ddc",
+          "maxOutputTokens": 4000,
+          "costBoundMicroUsd": 108000,
+          "model": "gpt-5-mini-2025-08-07",
+          "serviceTier": "default"
+        },
+        {
+          "slot": "rescue_precision",
+          "requestId": "v2-d004-rescue_precision-bf0c936c1bec942a",
+          "requestSha256": "bf0c936c1bec942a3bb3827917227fb0a728ee4c5fc3f2f9134ed006f2b8e509",
+          "fingerprint": "106fef123c1a0521af01f3048480c9e46c0ae30c62ec8448a74d9b92574302d3",
+          "maxOutputTokens": 4000,
+          "costBoundMicroUsd": 108000,
+          "model": "gpt-5-mini-2025-08-07",
+          "serviceTier": "default"
+        }
+      ]
+    },
+    {
+      "caseId": "v2-d005",
+      "sourceCaseId": "d005",
+      "path": "v2-d005.bundle.gz",
+      "bytes": 457147,
+      "sha256": "abe2949e9b26429d44c76cb775b37afc42d8d38630165f1b751598d0f1f4388b",
+      "requestPins": [
+        {
+          "slot": "main",
+          "requestId": "v2-d005-main-e6b8fa4a559b1aa7",
+          "requestSha256": "e6b8fa4a559b1aa751c765428900198ce03725dcafe5ad9e3d4b09d461cab59c",
+          "fingerprint": "79363f22442658d65bca698fa754f95aa1b30966a238fe8f41c1b43ccb6efca8",
+          "maxOutputTokens": 7000,
+          "costBoundMicroUsd": 114000,
+          "model": "gpt-5-mini-2025-08-07",
+          "serviceTier": "default"
+        },
+        {
+          "slot": "primary_precision",
+          "requestId": "v2-d005-primary_precision-e6a1f67418b06550",
+          "requestSha256": "e6a1f67418b06550ec28b4f57033ecbc5789041fcc85c2d563f3024b4255517c",
+          "fingerprint": "738ad4874c4efbe657a65cf7578aa870856394ae2503c475f87f3e44de02c849",
+          "maxOutputTokens": 4000,
+          "costBoundMicroUsd": 108000,
+          "model": "gpt-5-mini-2025-08-07",
+          "serviceTier": "default"
+        },
+        {
+          "slot": "rescue_precision",
+          "requestId": "v2-d005-rescue_precision-cbf492efa208a4f1",
+          "requestSha256": "cbf492efa208a4f1023d79669a74c0d84a2421a07fb6e10bc94ed435a6ff64ba",
+          "fingerprint": "d6cde76335fd7b05ed9911e3698c768b562bfc42e3c95ea3a6677c11f5eefd9b",
+          "maxOutputTokens": 4000,
+          "costBoundMicroUsd": 108000,
+          "model": "gpt-5-mini-2025-08-07",
+          "serviceTier": "default"
+        }
+      ]
+    },
+    {
+      "caseId": "v2-d006",
+      "sourceCaseId": "d006",
+      "path": "v2-d006.bundle.gz",
+      "bytes": 464482,
+      "sha256": "0c78f838c996aa2be3f6f2157c2efc2e85befba3c17298df0b293806ec6a48f5",
+      "requestPins": [
+        {
+          "slot": "main",
+          "requestId": "v2-d006-main-b03bf9eb613dd0db",
+          "requestSha256": "b03bf9eb613dd0db2c7510bef89f6f006f26c0b0e7fda5b20fe8e4ca05d728ed",
+          "fingerprint": "25543b25cb54d36e559f433e5ac54fadb549b2bf7939ead6692c82d07cbd6b17",
+          "maxOutputTokens": 7000,
+          "costBoundMicroUsd": 114000,
+          "model": "gpt-5-mini-2025-08-07",
+          "serviceTier": "default"
+        },
+        {
+          "slot": "primary_precision",
+          "requestId": "v2-d006-primary_precision-ef220e16148b70eb",
+          "requestSha256": "ef220e16148b70ebfc699c362ea77e493e8d56263bcf49ce195d254a1ff0c508",
+          "fingerprint": "500cd6fe73cee9fee7706506aa91be22e83ba20404e54c61deb4d979f606d94a",
+          "maxOutputTokens": 4000,
+          "costBoundMicroUsd": 108000,
+          "model": "gpt-5-mini-2025-08-07",
+          "serviceTier": "default"
+        },
+        {
+          "slot": "rescue_precision",
+          "requestId": "v2-d006-rescue_precision-8f0fb5e7ea25be21",
+          "requestSha256": "8f0fb5e7ea25be21da91afe53a1a848386010743028978a1c27b0b1253abc408",
+          "fingerprint": "b094dba321a9a99cb64b9d44d0a7843d8d642fa070f5fb1dd33c5eb4ad415d71",
+          "maxOutputTokens": 4000,
+          "costBoundMicroUsd": 108000,
+          "model": "gpt-5-mini-2025-08-07",
+          "serviceTier": "default"
+        }
+      ]
+    }
+  ],
+  "originalCommitmentsMicroUsd": 1506400,
+  "maximumNewMicroUsd": 1980000,
+  "maximumCumulativeMicroUsd": 3486400,
+  "providerCalls": 0,
+  "databaseCalls": 0,
+  "heldOutPayloadsRead": 0,
+  "paidDispatchAuthorised": false
+}
