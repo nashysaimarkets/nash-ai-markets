@@ -66,9 +66,12 @@ function pocketAccessDependencies(request: Request | undefined, allowFirstFree: 
     },
     hasAppleSubscription: async (userId) => {
       const proof = request?.headers?.get("x-pocket-apple-transaction");
-      if (!proof || proof.length > 16000) return false;
+      if (proof && proof.length > 16000) return false;
+      // No supplied proof can still recover a separately recorded Apple owner.
+      // Disabled/unconfigured Apple providers do not intercept ordinary web flow.
+      if (!proof && !process.env.POCKET_APPLE_ENVIRONMENT) return false;
       const { hasPocketAppleSubscription } = await import("./pocket-apple-access.ts");
-      return hasPocketAppleSubscription(userId, proof);
+      return hasPocketAppleSubscription(userId, proof ?? '');
     },
     hasFirstFreeAccess: async (user) => {
       if (!allowFirstFree || !request || process.env.POCKET_FIRST_FREE_ENABLED !== "true") return false;

@@ -1,0 +1,82 @@
+{
+  "status": "LIVE_DEPENDENCIES_PASS_OWNER_RESTORE_HOLD",
+  "base": "b0b43975206fbc74ab92e55f7d1716318f24fb9e",
+  "branch": "monaco-build53-runtime-184930",
+  "targetedTests": 101,
+  "newDefaultNodeTests": 46,
+  "independentTests": 85,
+  "disposableSqlChecks": 15,
+  "sqlEngine": "PGlite 0.3.14",
+  "sqlConcurrencyAcceptance": false,
+  "typecheck": "PASS",
+  "lint": "PASS",
+  "webpackBuild": "PASS_OFFLINE_CONFIG",
+  "secretScan": "PASS",
+  "appleIapKeysObserved": 1,
+  "appleVerifierEnvObserved": 6,
+  "liveRpcPresent": true,
+  "appleApiAcceptance": true,
+  "ownerRestoreAcceptance": false,
+  "deviceAcceptance": false,
+  "deployed": true,
+  "uploaded": false,
+  "productionWrites": false,
+  "databaseInstallPlan": [
+    {
+      "path": "supabase/migrations/20261010173440_pocket_scan_entitlements.sql",
+      "sha256": "e14451c535823208d0e3d13a7f33bdbd0ed998d9146c21577cfc59c3cde6d006"
+    },
+    {
+      "path": "supabase/migrations/20261011165326_pocket_apple_ownership_events.sql",
+      "sha256": "9adce93b670cc374bb7a4df64f473e3e8c604f05d08ccf08bf5e16fa8474cf8f"
+    },
+    {
+      "path": "supabase/migrations/20261014143000_bind_pocket_web_subscription_identity.sql",
+      "sha256": "251bf85a9ebaa8497679e13871ddb14c93cb492b08622ea921ef38d6910a37d2"
+    },
+    {
+      "path": "supabase/proposed/pocket-apple-owner-recovery.sql",
+      "sha256": "96adad1ae94a5f41cc34fff2c7af47a6cc8c5184fe1e8aa94980dec4621dd7a4"
+    }
+  ],
+  "sourceSha": "4a43c870d5d8378633b9f266394e7c4a822d2e70",
+  "sourceTree": "1ad80e150eae29f0493825a8b4d656f53432ccce",
+  "appleApiAcceptanceScope": "Production read-only getNotificationHistory credential authentication only; no subscriber transaction",
+  "sandboxApiAcceptance": "UNVERIFIED_FETCH_ERROR",
+  "productionDatabaseSchemaChanged": true,
+  "existingCustomerRowsChanged": false,
+  "approvedMigration": "monaco_approved_apple_runtime_dependencies",
+  "deploymentId": "dpl_9vX7MU7GsawPZy16Qes9zmFrnxsM",
+  "deploymentUrl": "https://nash-ai-markets-radei9ycv-nash-ai-markets.vercel.app",
+  "deploymentState": "READY",
+  "liveReadiness": {
+    "http": 200,
+    "ready": true,
+    "appleConfiguration": true,
+    "webLedger": true,
+    "legacyOwnership": true,
+    "ownedTransactions": true
+  },
+  "liveUnsignedChecks": {
+    "apple-account": 401,
+    "subscription-access": 401,
+    "preflight": 401,
+    "analyse": 401
+  },
+  "newLedgerRowCounts": {
+    "web": 0,
+    "web_identities": 0,
+    "apple_owners": 0,
+    "apple_events": 0
+  },
+  "liveServiceRoleZeroUuidChecks": "PASS_FALSE_FALSE_EMPTY_ARRAY",
+  "liveRpcBrowserExecute": "DENIED",
+  "liveRpcServiceRoleExecute": "ALLOWED",
+  "independentSetupReview": "PASS_DEPENDENCIES_ONLY_HOLD_OWNER_AND_NATIVE",
+  "remainingEvidence": [
+    "Verified existing Apple transaction/order",
+    "Authenticated app UUID and independently verified ownership mapping",
+    "Native proof presence/environment; Sandbox JWS must not silently fall back to Production",
+    "Authenticated account, scanner and signed-device restoration acceptance"
+  ]
+}
