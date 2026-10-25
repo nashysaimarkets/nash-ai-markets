@@ -2,7 +2,7 @@
 import { pocketAuthenticatedFetch } from "./apple-storekit";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { validateChartPreflight, canLockChartFacts, type ChartConfirmation, type ChartPreflight, type PreflightStatus } from "./chart-preflight";
+import { validateChartPreflight, automaticChartConfirmation, type ChartConfirmation, type ChartPreflight, type PreflightStatus } from "./chart-preflight";
 
 type ChartPreflightPanelProps = {
   image: string;
@@ -32,8 +32,7 @@ function ChartPreflightPanelForImage({ image, contextImage, onStatus, onConfirma
   const [instrument, setInstrument] = useState("");
   const [timeframe, setTimeframe] = useState("");
   const [currentPrice, setCurrentPrice] = useState("");
-  const [contextAcknowledged, setContextAcknowledged] = useState(false);
-  const [priceScaleConfirmed, setPriceScaleConfirmed] = useState(false);
+  const [attempt, setAttempt] = useState(0);
   const statusHandler = useRef(onStatus);
   const confirmationHandler = useRef(onConfirmation);
   useEffect(() => { statusHandler.current = onStatus; }, [onStatus]);
@@ -54,8 +53,10 @@ function ChartPreflightPanelForImage({ image, contextImage, onStatus, onConfirma
         setInstrument(next.instrumentConfidence === "UNKNOWN" ? "" : next.instrument);
         setTimeframe(next.timeframeConfidence === "UNKNOWN" ? "" : next.timeframe);
         setCurrentPrice(next.currentPriceConfidence === "UNKNOWN" ? "" : next.currentPrice);
-        const nextStatus: PreflightStatus = next.status === "RETAKE" ? "RETAKE" : "AWAITING_CONFIRMATION";
+        const confirmation = automaticChartConfirmation(next, Boolean(contextImage));
+        const nextStatus: PreflightStatus = confirmation ? "LOCKED" : next.status === "RETAKE" ? "RETAKE" : "AWAITING_CONFIRMATION";
         setStatus(nextStatus); statusHandler.current(nextStatus);
+        confirmationHandler.current(confirmation);
       } catch (error) {
         if (!active) return;
         if (error instanceof Error && error.name === "AbortError") return;
@@ -64,46 +65,34 @@ function ChartPreflightPanelForImage({ image, contextImage, onStatus, onConfirma
       }
     }, 300);
     return () => { active = false; window.clearTimeout(timer); controller.abort(); };
-  }, [image, contextImage]);
+  }, [image, contextImage, attempt]);
 
-  if (status === "CHECKING") return <section className="psPreflight" data-status="CHECKING"><header><span>◉ AUTOMATIC CHART PREFLIGHT</span><strong>CHECKING BEFORE ANALYSIS…</strong></header><div className="psPreflightScan"><i /></div><p>Reading labels, scale, candles and visible history.</p></section>;
-  if (!result && status !== "UNAVAILABLE" && status !== "LOCKED" && status !== "AWAITING_CONFIRMATION") return null;
-
-  const locked = status === "LOCKED";
-  const valid = canLockChartFacts({ instrument, timeframe, currentPrice, hasContext: Boolean(contextImage),
-    sameInstrument: result?.sameInstrument ?? null, contextAcknowledged, priceScaleConfirmed,
-    retake: result?.status === "RETAKE" || result?.priceScaleVisible === false, candlesReadable: result?.candlesReadable });
-  const lock = () => {
-    if (!canLockChartFacts({ instrument, timeframe, currentPrice, hasContext: Boolean(contextImage),
-      sameInstrument: result?.sameInstrument ?? null, contextAcknowledged, priceScaleConfirmed,
-      retake: result?.status === "RETAKE" || result?.priceScaleVisible === false, candlesReadable: result?.candlesReadable })) return;
-    const confirmation: ChartConfirmation = {
-      instrument: instrument.trim().slice(0, 40),
-      timeframe: timeframe.trim().slice(0, 30),
-      currentPrice: currentPrice.trim().slice(0, 30),
-      contextMatch: contextImage ? "MATCHED" : "NOT_PROVIDED",
-    };
-    setStatus("LOCKED"); statusHandler.current("LOCKED"); confirmationHandler.current(confirmation);
+  const retry = () => {
+    setStatus("CHECKING"); setResult(null); setMessage("");
+    statusHandler.current("CHECKING"); confirmationHandler.current(null);
+    setAttempt(value => value + 1);
   };
-  const edit = () => { setStatus("AWAITING_CONFIRMATION"); statusHandler.current("AWAITING_CONFIRMATION"); confirmationHandler.current(null); };
-
-  return <section className="psPreflight" data-status={status} data-locked={locked}>
-    <header><span>◉ PREFLIGHT CONFIRMATION LOCK</span><strong>{result?.status === "RETAKE" ? "RETAKE RECOMMENDED" : locked ? "CHART FACTS LOCKED" : result?.status === "LIMITED" ? "CHECK & CONFIRM" : "CONFIRM BEFORE ANALYSIS"}</strong></header>
-    <div className="psConfirmGrid">
-      <label><span>INSTRUMENT</span><input value={instrument} disabled={locked || result?.status === "RETAKE"} maxLength={40} placeholder="e.g. US 500" onChange={(event) => setInstrument(event.target.value)} /></label>
-      <label><span>TIMEFRAME</span><input value={timeframe} disabled={locked || result?.status === "RETAKE"} maxLength={30} placeholder="e.g. 30m" onChange={(event) => setTimeframe(event.target.value)} /></label>
-      <label><span>CURRENT PRICE</span><input inputMode="decimal" value={currentPrice} disabled={locked || result?.status === "RETAKE"} maxLength={30} placeholder="e.g. 7658.01" onChange={(event) => setCurrentPrice(event.target.value)} /></label>
-      <article data-pass={!contextImage || result?.sameInstrument === true}><span>CONTEXT CHART</span><strong>{!contextImage ? "NOT ADDED" : result?.sameInstrument === true ? "MATCHED" : result?.sameInstrument === false ? "MISMATCH" : locked && contextAcknowledged ? "TRADER CONFIRMED" : "UNCONFIRMED"}</strong></article>
-    </div>
-    {!result ? <p>{message} Confirm the chart facts manually before analysis.</p> : null}
-    {contextImage && result?.sameInstrument === false ? <p>Remove or replace the context chart: it shows a different instrument.</p> : null}
-    {!locked && result?.status !== "RETAKE" ? <>
-      <label><input type="checkbox" checked={priceScaleConfirmed} onChange={(event) => setPriceScaleConfirmed(event.target.checked)} /> I can read the price scale and candles on this chart.</label>
-      {contextImage && result?.sameInstrument == null ? <label><input type="checkbox" checked={contextAcknowledged} onChange={(event) => setContextAcknowledged(event.target.checked)} /> I checked that both charts show the same instrument.</label> : null}
-    </> : null}
-    {result?.issues.length ? <ul>{result.issues.map((issue) => <li key={issue}>{issue}</li>)}</ul> : null}
-    <p>{result?.status === "RETAKE" ? result.guidance : "Check these detected facts against your broker chart. Correct anything wrong, then lock them for the analysis."}</p>
-    {result?.status !== "RETAKE" ? <div className="psConfirmActions">{locked ? <><span>✓ CONFIRMED INPUTS WILL OVERRIDE AI LABEL GUESSES</span><button type="button" onClick={edit}>EDIT</button></> : <button type="button" disabled={!valid} onClick={lock}>CONFIRM & LOCK CHART FACTS</button>}</div> : null}
-    <footer>{result?.status === "RETAKE" ? "FULL ANALYSIS PAUSED TO AVOID WASTING YOUR REQUEST" : locked ? "LOCKED · READY FOR FULL ANALYSIS" : "FULL ANALYSIS WILL NOT START UNTIL CONFIRMED"}</footer>
+  const locked = status === "LOCKED";
+  const correction = result ? automaticChartConfirmation(result, Boolean(contextImage), { instrument, timeframe, currentPrice }) : null;
+  const applyCorrection = () => {
+    if (!correction) return;
+    setStatus("LOCKED"); statusHandler.current("LOCKED"); confirmationHandler.current(correction);
+  };
+  const readable = result && result.status !== "RETAKE" && result.priceScaleVisible && result.candlesReadable && result.enoughHistory
+    && (!contextImage || result.sameInstrument === true);
+  return <section className="psPreflight pnAutoPreflight" data-status={status} data-locked={locked} aria-label="Automatic chart check">
+    <p role="status">{status === "CHECKING" ? "Reading chart labels and price scale…" : locked
+      ? `${instrument} · ${timeframe} · ${currentPrice}`
+      : status === "UNAVAILABLE" ? "Chart check unavailable. Retry after checking account access, or explore the demo."
+      : !readable ? "Use a clearer chart with readable labels, price scale and candles. Remove any unmatched context chart."
+      : "Check the unclear detail below against your chart."}</p>
+    {status === "UNAVAILABLE" && message ? <small>{message}</small> : null}
+    {!locked && readable ? <div className="psConfirmActions">
+      {result.instrumentConfidence !== "HIGH" ? <label>Instrument<input aria-label="Correct unclear instrument" maxLength={40} value={instrument} onChange={e => setInstrument(e.target.value)} /></label> : null}
+      {result.timeframeConfidence !== "HIGH" ? <label>Timeframe<input aria-label="Correct unclear timeframe" maxLength={30} value={timeframe} onChange={e => setTimeframe(e.target.value)} /></label> : null}
+      {result.currentPriceConfidence !== "HIGH" ? <label>Visible last price<input aria-label="Correct unclear last price" inputMode="decimal" maxLength={30} value={currentPrice} onChange={e => setCurrentPrice(e.target.value)} /></label> : null}
+      <button type="button" disabled={!correction} onClick={applyCorrection}>Use corrected detail</button>
+    </div> : null}
+    {status !== "CHECKING" ? <button type="button" onClick={retry}>{locked ? "Recheck chart" : "Retry chart check"}</button> : null}
   </section>;
 }

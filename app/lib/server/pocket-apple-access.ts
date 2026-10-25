@@ -68,10 +68,16 @@ export async function createPocketAppleVerifier() {
 }
 
 export async function hasPocketAppleSubscription(userId: string, proof: string): Promise<boolean> {
-  const { verifier, client, environment } = await createPocketAppleVerifier();
+  let setup: Awaited<ReturnType<typeof createPocketAppleVerifier>>;
+  try { setup = await createPocketAppleVerifier(); }
+  catch { throw Object.assign(new Error("Apple verifier configuration unavailable"), {code:"POCKET_APPLE_CONFIGURATION"}); }
+  const { verifier, client, environment } = setup;
   return verifyPocketAppleAccess(userId, proof, {
     environment, now: Date.now,
-    verifyTransaction: jws => verifier.verifyAndDecodeTransaction(jws),
+    verifyTransaction: async jws => {
+      try { return await verifier.verifyAndDecodeTransaction(jws); }
+      catch { throw Object.assign(new Error("Apple transaction verification unavailable"), {code:"POCKET_APPLE_VERIFICATION_UNAVAILABLE"}); }
+    },
     verifyRenewal: jws => verifier.verifyAndDecodeRenewalInfo(jws),
     getStatuses: id => client.getAllSubscriptionStatuses(id),
     isLegacyOwner: async (originalTransactionId, id) => {
@@ -79,7 +85,7 @@ export async function hasPocketAppleSubscription(userId: string, proof: string):
       const { data, error } = await createAdminClient().rpc("is_pocket_apple_legacy_owner", {
         p_environment: environment, p_original_transaction_id: originalTransactionId, p_user_id: id,
       });
-      if (error || typeof data !== "boolean") throw new Error("Legacy Apple ownership lookup unavailable");
+      if (error || typeof data !== "boolean") throw Object.assign(new Error("Legacy Apple ownership lookup unavailable"), {code:"POCKET_APPLE_OWNERSHIP_UNAVAILABLE"});
       return data;
     },
   });

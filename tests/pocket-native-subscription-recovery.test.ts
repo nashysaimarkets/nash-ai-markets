@@ -132,7 +132,7 @@ test("actual bridge pending → rejection keeps local entitlement cleared and ex
   assert.equal(fixture.state.status?.entitled, false);
   const view = nativeSubscriptionView(fixture.state.status, fixture.state.phase);
   assert.equal(view.showPurchase, false); assert.equal(view.showRetry, true);
-  assert.match(fixture.state.message, /Contact support before purchasing again/);
+  assert.match(fixture.state.message, /contact support; do not purchase again/i);
   fixture.cleanup();
 });
 

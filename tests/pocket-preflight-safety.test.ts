@@ -26,17 +26,10 @@ test('manual fallback needs visible scale, valid facts, and readable chart', () 
   }
   assert.equal(canLock({ ...facts, currentPrice: '6,725.50' }), true);
 });
-test('actual lock callback never confirms mismatched or unacknowledged context', async () => {
-  const panel = await readFile(new URL('../app/pocket/ChartPreflightPanel.tsx', import.meta.url), 'utf8');
-  const source = panel.slice(panel.indexOf('  const lock = () => {'), panel.indexOf('  const edit ='));
-  for (const sameInstrument of [false, null]) {
-    const updates: unknown[] = [];
-    const record = (value: unknown) => updates.push(value);
-    const bindings = { valid: true, result: { status: 'READY', sameInstrument }, contextImage: 'B', instrument: 'US 500', timeframe: '5m', currentPrice: '6725.50', canLockChartFacts: canLock, contextAcknowledged: false, priceScaleConfirmed: true, setStatus: record, statusHandler: { current: record }, confirmationHandler: { current: record } };
-    const lock = new Function(...Object.keys(bindings), stripTypeScriptTypes(source) + '\nreturn lock;')(...Object.values(bindings));
-    lock();
-    assert.deepEqual(updates, []);
-  }
+test('automatic admission cannot label unknown or mismatched context as matched', () => {
+  const result = {status:'READY', instrument:'US 500', instrumentConfidence:'HIGH', timeframe:'5m', timeframeConfidence:'HIGH', currentPrice:'6725.50', currentPriceConfidence:'HIGH', priceScaleVisible:true, candlesReadable:true, enoughHistory:true, sameInstrument:null, issues:[], guidance:''};
+  for (const sameInstrument of [false, null]) assert.equal(guards.automaticChartConfirmation({...result,sameInstrument},true),null);
+  assert.equal(guards.automaticChartConfirmation({...result,sameInstrument:true},true)?.contextMatch,'MATCHED');
 });
 
 test('direct analysis dispatch cannot bypass an unavailable preflight', async () => {

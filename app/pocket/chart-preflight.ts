@@ -69,3 +69,24 @@ export function completedChartPreflight(response: {status?: unknown; output_text
   }
   return validateChartPreflight(JSON.parse(response.output_text));
 }
+
+/** Auto-admission uses detected evidence only. Corrections are limited to uncertain
+ * printed labels; they cannot override unreadable geometry or a context mismatch. */
+export function automaticChartConfirmation(
+  value: unknown, hasContext: boolean,
+  corrections?: Partial<Pick<ChartConfirmation, "instrument" | "timeframe" | "currentPrice">>,
+): ChartConfirmation | null {
+  let facts: ChartPreflight;
+  try { facts = validateChartPreflight(value); } catch { return null; }
+  if (facts.status === "RETAKE" || !facts.priceScaleVisible || !facts.candlesReadable || !facts.enoughHistory
+      || (hasContext && facts.sameInstrument !== true)) return null;
+  const read = (field: "instrument" | "timeframe" | "currentPrice", max: number) => {
+    const detected = facts[`${field}Confidence`] === "HIGH";
+    const text = (detected ? facts[field] : corrections?.[field])?.trim();
+    return text && text.length <= max && !/^(unknown|n\/a|unreadable)$/i.test(text) ? text : "";
+  };
+  const instrument = read("instrument", 40), timeframe = read("timeframe", 30), currentPrice = read("currentPrice", 30);
+  if (!canLockChartFacts({instrument, timeframe, currentPrice, hasContext, sameInstrument: facts.sameInstrument,
+    contextAcknowledged: false, priceScaleConfirmed: facts.priceScaleVisible, candlesReadable: facts.candlesReadable})) return null;
+  return {instrument, timeframe, currentPrice, contextMatch: hasContext ? "MATCHED" : "NOT_PROVIDED"};
+}

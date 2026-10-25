@@ -255,7 +255,7 @@ export default function PocketNext({macroContext=UNAVAILABLE_MACRO,igDemoAvailab
   const uploading = uploadingSlots.some(Boolean);
   const sourceStatus = uploadingSlots[activeChart] ? "READING IMAGE" : workspaceSlotLabel(activeSlot);
   const analysisHold = !image ? "Add a source chart to begin." : !privacy ? "Confirm that personal details are removed from every uploaded chart."
-    : !preflightAllowsAnalysis(activeSlot.status) || !activeSlot.confirmation ? "Check and lock this chart's instrument, timeframe and current price before analysis."
+    : !preflightAllowsAnalysis(activeSlot.status) || !activeSlot.confirmation ? "Chart checks are pending. Follow the short guidance below or explore the demo."
     : busy ? `Chart ${Number(busyChart) + 1} is being analysed. You can cancel it below.` : "Ready for evidence-based analysis.";
 
   useEffect(() => {
@@ -473,7 +473,7 @@ export default function PocketNext({macroContext=UNAVAILABLE_MACRO,igDemoAvailab
     <a className="pnSkip" href="#pn-intake">Skip to chart workspace</a>
     <header className="pnTop">
       <div className="pnBrand"><span className="pnMark">{POCKET_PRODUCT.shortName}</span><div><strong>{POCKET_PRODUCT.name.toUpperCase()}</strong><small>{POCKET_PRODUCT.tagline}</small></div></div>
-      <div className="pnEngine"><i/> YOUR PRE-TRADE WORKSPACE</div>
+      <div className="pnEngine"><button type="button" onClick={openDemo}>Explore demo</button><a href="/pocket/login">Account</a></div>
     </header>
 
     <section className="pnStart">
@@ -502,7 +502,7 @@ export default function PocketNext({macroContext=UNAVAILABLE_MACRO,igDemoAvailab
             <b>{CHART_SLOT_HINTS[index]}</b><small>{uploadingSlots[index] ? "READING" : slot.confirmation?.timeframe || workspaceSlotLabel(slot)}</small>
           </button>)}
         </div>
-        <p className="pnSlotHint">Suggested slots only. Confirm each image’s actual instrument and timeframe below.</p>
+        <p className="pnSlotHint">Suggested slots only. Each chart’s printed labels are checked automatically.</p>
 
         <div className="pnBias">
           <small>BIAS TO CHALLENGE</small>
@@ -540,7 +540,7 @@ export default function PocketNext({macroContext=UNAVAILABLE_MACRO,igDemoAvailab
 
       <section className="pnCentre" ref={centreRef} id="pn-chart-workspace" aria-label="Chart evidence workspace">
         {demoMode ? <p className="pnDemoBanner" role="status">INTERFACE DEMO · synthetic sample · no uploaded chart analysed · no credits used</p> : <section className="pnSourceControls" aria-label="Source and analysis controls">
-          {activeSlot.confirmation && preflightAllowsAnalysis(activeSlot.status) ? <section className="pnLockedFacts" aria-label="Locked source chart facts"><div><span>SOURCE FACTS LOCKED</span><strong>{activeSlot.confirmation.instrument} · {activeSlot.confirmation.timeframe} · {activeSlot.confirmation.currentPrice}</strong></div><button type="button" onClick={()=>changePreflight(activeChart,activeSlot.revision,"IDLE")}>Edit chart facts</button></section> : <ChartPreflightPanel key={`${activeChart}:${activeSlot.revision}`} image={image??""} onStatus={status => changePreflight(activeChart,activeSlot.revision,status)} onConfirmation={confirmation => changeConfirmation(activeChart,activeSlot.revision,confirmation)} />}
+          {activeSlot.confirmation && preflightAllowsAnalysis(activeSlot.status) ? <section className="pnLockedFacts" aria-label="Locked source chart facts"><div><span>SOURCE CHART FACTS</span><strong>{activeSlot.confirmation.instrument} · {activeSlot.confirmation.timeframe} · {activeSlot.confirmation.currentPrice}</strong></div><button type="button" onClick={()=>changePreflight(activeChart,activeSlot.revision,"IDLE")}>Recheck chart facts</button></section> : <ChartPreflightPanel key={`${activeChart}:${activeSlot.revision}`} image={image??""} onStatus={status => changePreflight(activeChart,activeSlot.revision,status)} onConfirmation={confirmation => changeConfirmation(activeChart,activeSlot.revision,confirmation)} />}
           {!privacy ? <label className="pnPrivacy"><input type="checkbox" checked={privacy} onChange={e=>setPrivacy(e.target.checked)}/><span><strong>Confirm upload privacy</strong>Personal details are removed from every uploaded chart.</span></label> : null}
           <div className="pnSourceActions"><button type="button" disabled={busy || uploading || !privacy || !activeSlot.confirmation || !preflightAllowsAnalysis(activeSlot.status)} onClick={() => void analyseChart(activeChart)}>{busyChart===activeChart ? "ANALYSING CHART "+(activeChart+1) : "RECHECK THIS CHART"}</button>
           {busy ? <button className="pnCancel" type="button" onClick={()=>invalidate()}>CANCEL CHART {Number(busyChart)+1}</button> : null}

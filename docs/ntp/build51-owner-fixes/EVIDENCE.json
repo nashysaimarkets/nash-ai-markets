@@ -1,0 +1,64 @@
+{
+  "source": "917aad9e84387882406efd5b4be89f522ab12ab7",
+  "sourceTree": "88d183e6ae540c0b8c26b3a28df6aba0a227a3f6",
+  "base": "d28a4eb746b029e0bafde4737a4deb6cdc4326f6",
+  "branch": "monaco-build51-owner-fixes-184930",
+  "pr": 149,
+  "timestampUtc": "2026-10-25T14:26:18.193616+00:00",
+  "status": "OFFLINE_REPAIRS_PASS_INTERNAL_UPLOAD_HOLD",
+  "tests": {
+    "targeted": {
+      "passed": 143,
+      "failed": 0,
+      "skipped": 0
+    },
+    "independentReview": {
+      "passed": 95,
+      "failed": 0,
+      "skipped": 0,
+      "sourceReview": "PASS"
+    },
+    "browser": {
+      "passed": 18,
+      "realProviderCalls": 0,
+      "viewports": [
+        390,
+        1440
+      ]
+    },
+    "typescript": "PASS",
+    "changedFileLint": "PASS_ZERO_WARNINGS",
+    "secretScan": "PASS",
+    "nextWebpackBuild": "PASS_OFFLINE_FIXTURE_CONFIG"
+  },
+  "build51": {
+    "preparedSignedArchive": false,
+    "uploaded": false,
+    "reason": "Actual Apple runtime config/environment/legacy ownership and exact-SHA hosted acceptance unresolved; owner signed-device failure remains FAIL until retested."
+  },
+  "configurationEvidence": {
+    "project": "prj_cSvZGGsWRUSLQ6TNMZ3JCuqjZlOw",
+    "metadataOnly": true,
+    "decrypted": false,
+    "appleProjectVariableNamesFound": [],
+    "deployment": "dpl_2HLtay9qkgdUbjgLkFdDe75A8QnD",
+    "deploymentSource": "f79462745add4d07a6e9a68cb189e0c5be3cc41e",
+    "deploymentTarget": "staging",
+    "runtimeLogQuery": "apple-account, preceding2h, zero results",
+    "limitation": "Project metadata is not a runtime probe; no claim about deployment-specific secret overrides or successful Apple verification."
+  },
+  "preserved": [
+    "main",
+    "production",
+    "pricing",
+    "customer records",
+    "Apple credentials",
+    "Build50/Codemagic pins",
+    "44 held-out cases",
+    "schedules"
+  ],
+  "screenshots": {
+    "viewport-1440.jpg": "df07efec8e11e55ad9d06d3c71abb27d03fa2d9c92b297ae873f63ed6a3291fb",
+    "viewport-390.jpg": "d28962a43cc60351f72cb3287e94fcdae4bedc966633b4ae8e45319cd2d9b9fb"
+  }
+}
