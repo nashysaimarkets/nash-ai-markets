@@ -1,0 +1,91 @@
+workflows:
+  pocket-bullseye-ios-testflight:
+    name: NTP 2.0 — signed candidate, manual upload
+    instance_type: mac_mini_m2
+    max_build_duration: 30
+    integrations:
+      app_store_connect: Pocket Bullseye App Store
+    environment:
+      node: 24
+      xcode: latest
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.nashaimarkets.pocketbullseye
+      vars:
+        NTP_VERSION: '2.0.0'
+        NTP_BUILD: '49'
+    # Manual only. No automatic trigger, upload, review submission or release.
+    # Supply EXPECTED_NATIVE_REVISION, CAPACITOR_SERVER_URL and
+    # CAPACITOR_SERVER_REVISION only after exact-source/backend acceptance.
+    scripts:
+      - name: Verify reviewed source and accepted backend identity
+        script: |
+          set -euo pipefail
+          test -n "${EXPECTED_NATIVE_REVISION:-}"
+          test "$(git rev-parse HEAD)" = "$EXPECTED_NATIVE_REVISION"
+          test -n "${CAPACITOR_SERVER_URL:-}"
+          test -n "${CAPACITOR_SERVER_REVISION:-}"
+          node scripts/verify-capacitor-server.mjs
+      - name: Install locked dependencies and sync the pinned iOS shell
+        script: |
+          set -euo pipefail
+          npm ci --ignore-scripts --no-audit --no-fund
+          node node_modules/@capacitor/cli/bin/capacitor sync ios
+          node --input-type=module - <<'JS'
+          import fs from 'node:fs';
+          import assert from 'node:assert/strict';
+          const c = JSON.parse(fs.readFileSync('ios/App/App/capacitor.config.json', 'utf8'));
+          const u = new URL(process.env.CAPACITOR_SERVER_URL);
+          assert.equal(c.appId, 'com.nashaimarkets.pocketbullseye');
+          assert.equal(c.appName, 'NTP');
+          assert.equal(c.server.url, u.toString());
+          assert.equal(c.server.cleartext, false);
+          assert.deepEqual(c.server.allowNavigation, [u.hostname]);
+          JS
+      - name: Apply existing App Store profile and build signed candidate
+        script: |
+          set -euo pipefail
+          xcode-project use-profiles
+          xcode-project build-ipa --project ios/App/App.xcodeproj --scheme App \
+            --no-show-build-settings \
+            --archive-xcargs="MARKETING_VERSION=$NTP_VERSION CURRENT_PROJECT_VERSION=$NTP_BUILD"
+      - name: Verify exported identity, backend pin and distribution signature
+        script: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import glob, hashlib, json, os, pathlib, plistlib, subprocess, zipfile
+          ipas = glob.glob('build/ios/ipa/*.ipa')
+          assert len(ipas) == 1, 'Expected one IPA'
+          with zipfile.ZipFile(ipas[0]) as z:
+              plists = [n for n in z.namelist() if n.startswith('Payload/') and n.count('/') == 2 and n.endswith('/Info.plist')]
+              assert len(plists) == 1
+              root = plists[0].rsplit('/', 1)[0] + '/'
+              info = plistlib.loads(z.read(plists[0]))
+              assert info['CFBundleIdentifier'] == 'com.nashaimarkets.pocketbullseye'
+              assert info['CFBundleDisplayName'] == 'NTP'
+              assert info['CFBundleShortVersionString'] == os.environ['NTP_VERSION']
+              assert info['CFBundleVersion'] == os.environ['NTP_BUILD']
+              config = json.loads(z.read(root + 'capacitor.config.json'))
+              assert config['server']['url'].rstrip('/') == os.environ['CAPACITOR_SERVER_URL'].rstrip('/')
+              assert config['server']['cleartext'] is False
+              assert root + 'embedded.mobileprovision' in z.namelist()
+              assert isinstance(plistlib.loads(z.read(root + 'PrivacyInfo.xcprivacy')), dict)
+          apps = glob.glob('build/ios/xcarchive/*.xcarchive/Products/Applications/*.app')
+          assert len(apps) == 1
+          subprocess.run(['codesign', '--verify', '--deep', '--strict', apps[0]], check=True)
+          ent = subprocess.run(['codesign', '-d', '--entitlements', ':-', apps[0]], check=True, capture_output=True).stdout
+          ent = plistlib.loads(ent)
+          assert ent.get('get-task-allow') is False
+          assert ent['application-identifier'] == '2KU8KN7F8F.com.nashaimarkets.pocketbullseye'
+          assert ent['com.apple.developer.team-identifier'] == '2KU8KN7F8F'
+          receipt = {'nativeRevision': os.environ['EXPECTED_NATIVE_REVISION'],
+              'backendRevision': os.environ['CAPACITOR_SERVER_REVISION'],
+              'backendUrl': os.environ['CAPACITOR_SERVER_URL'], 'version': os.environ['NTP_VERSION'],
+              'build': os.environ['NTP_BUILD'], 'ipaSha256': hashlib.sha256(pathlib.Path(ipas[0]).read_bytes()).hexdigest(),
+              'uploaded': False, 'deviceAcceptance': False}
+          pathlib.Path('build/ios/receipt.json').write_text(json.dumps(receipt, indent=2) + '\n')
+          print('Signed candidate package verified; no upload or physical-device acceptance claimed.')
+          PY
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - build/ios/receipt.json
