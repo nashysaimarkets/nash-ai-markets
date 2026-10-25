@@ -47,7 +47,7 @@ export async function POST(request: Request) {
   if (!valid(image) || (contextImage && !valid(contextImage))) return NextResponse.json({ error: "Please use valid chart images under 8 MB." }, { status: 400 });
 
   const budget = takePocketBudget(request, "preflight");
-  if (!budget.allowed) return NextResponse.json({ error: "Preflight needs a short reset. You may continue to analysis." }, { status: 429, headers: pocketBudgetHeaders(budget) });
+  if (!budget.allowed) return NextResponse.json({ error: "Preflight needs a short reset. Please retry the chart check." }, { status: 429, headers: pocketBudgetHeaders(budget) });
   const client = createOpenAIClient(undefined, 25_000);
   if (!client) return NextResponse.json({ error: "Preflight is temporarily unavailable." }, { status: 503, headers: pocketBudgetHeaders(budget) });
 
@@ -77,7 +77,7 @@ export async function POST(request: Request) {
     }, { signal: request.signal });
     return NextResponse.json({ preflight: completedChartPreflight(response) }, { headers: pocketBudgetHeaders(budget) });
   } catch {
-    return NextResponse.json({ error: "Preflight could not complete. You may continue to analysis." }, { status: 503, headers: pocketBudgetHeaders(budget) });
+    return NextResponse.json({ error: "Preflight could not complete. Please retry the chart check." }, { status: 503, headers: pocketBudgetHeaders(budget) });
   }
   });
 }

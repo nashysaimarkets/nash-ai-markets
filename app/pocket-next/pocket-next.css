@@ -715,3 +715,15 @@
 .pnApp .pnDecision .psRiskDesk>footer :is(b,span){color:#425063;font-size:12px;letter-spacing:normal}
 .pnApp .pnDecision .psRiskStatus{color:#21563b;font-size:12px;letter-spacing:normal}
 .pnApp .pnDecision .psRiskDesk :is(input,select,button):focus-visible{outline:2px solid #84652f;outline-offset:-3px}
+
+/* Build 51: chart checks are compact, non-modal and never block navigation. */
+.pnApp .pnAutoPreflight { padding: 12px; margin: 12px 0; min-width: 0; }
+.pnApp .pnAutoPreflight p { margin: 0 0 8px; overflow-wrap: anywhere; }
+.pnApp .pnAutoPreflight .psConfirmActions { display: grid; gap: 8px; }
+.pnApp .pnAutoPreflight label { display: grid; gap: 4px; }
+.pnApp .pnAutoPreflight input { box-sizing: border-box; width: 100%; min-width: 0; min-height: 44px; }
+.pnApp .pnAutoPreflight button, .pnStartApp .pnEngine button, .pnStartApp .pnEngine a { min-height: 44px; padding: 10px 12px; border: 1px solid currentColor; border-radius: 6px; background: transparent; color: inherit; font: inherit; }
+.pnStartApp .pnEngine a { display: inline-flex; align-items: center; box-sizing: border-box; text-decoration: none; }
+.pnApp .pnAutoPreflight button:focus-visible, .pnStartApp .pnEngine :focus-visible { outline: 2px solid #b38539; outline-offset: 3px; }
+.pnStartApp .pnEngine { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+@media(max-width:600px) { .pnStartApp .pnTop { height: auto; min-height: 58px; flex-wrap: wrap; gap: 8px; padding: 8px 12px; } }

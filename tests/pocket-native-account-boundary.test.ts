@@ -26,7 +26,7 @@ test('account rejects oversized and malformed JSON bodies',async()=>{
  for(const body of ['x'.repeat(17000),'{broken'])await assert.rejects(account(async()=>new Response(body))());
 });
 test('account refuses upstream error content and invalid proof without disclosure',async()=>{
- await assert.rejects(account(async()=>new Response('secret',{status:500}))(),/Sign in to verify/);
+ await assert.rejects(account(async()=>new Response('secret',{status:500}))(),/Subscription verification is unavailable/);
  let calls=0;await assert.rejects(account(async()=>{calls++;return Response.json(valid);})('bad\r\nproof'));assert.equal(calls,0);
 });
 function native(getStatus:()=>Promise<unknown>){let calls=0;const fn=new Function('isAppleNativeApp','native','APPLE_MONTHLY_PRODUCT_ID','fetch','setTimeout','const isGoogleNativeApp=()=>false;'+proofCode+';return pocketAuthenticatedFetch;')(()=>true,{getStatus},'fixture',async()=>{calls++;return new Response('{}');},clock);return {fn,calls:()=>calls};}
@@ -68,3 +68,9 @@ test('second listener timeout does not wait forever on first listener cleanup',a
  {addListener:async()=>({remove:async()=>new Promise(()=>{})})},{addListener:async()=>new Promise(()=>{})},async()=>({}),()=>true,{entitled:false},'fixture',clock);
  await assert.rejects(subscribe(()=>{}),/timed out/);
 });
+test('server error codes survive bounded transport with no raw provider content',async()=>{
+ for(const [status,code,expected] of [[401,'POCKET_LOGIN_REQUIRED',/Sign in to your existing/],[503,'POCKET_APPLE_CONFIGURATION',/not configured/],[503,'POCKET_APPLE_OWNERSHIP_UNAVAILABLE',/linking could not/],[503,'INVENTED_SECRET_CODE',/Subscription verification is unavailable/]] as const){
+  await assert.rejects(account(async()=>Response.json({code,error:'PRIVATE RECEIPT'}, {status}))(),expected);
+ }
+});
+test('client rejects proof above server limit before transport',async()=>{let calls=0;await assert.rejects(account(async()=>{calls++;return Response.json(valid);})('x'.repeat(16001)));assert.equal(calls,0);});

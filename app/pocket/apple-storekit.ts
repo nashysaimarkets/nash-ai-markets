@@ -1,12 +1,11 @@
 "use client";
-import { POCKET_PRODUCT } from "../lib/product-brand.ts";
 import {isGoogleNativeApp,playAuthenticatedFetch} from "./play-billing";
 import { Capacitor, registerPlugin } from "@capacitor/core";
 import { App } from "@capacitor/app";
 import type { PluginListenerHandle } from "@capacitor/core";
 
 export const APPLE_MONTHLY_PRODUCT_ID = "com.nashaimarkets.pocketbullseye.monthly";
-export type AppleAccessStatus = { isNative: boolean; entitled: boolean; freeUseConsumed: boolean; productId: string; displayName: string; displayPrice: string; productAvailable?: boolean; signedTransactionInfo?: string };
+export type AppleAccessStatus = { isNative: boolean; entitled: boolean; freeUseConsumed: boolean; productId: string; displayName: string; displayPrice: string; productAvailable?: boolean; signedTransactionInfo?: string; accessSource?: "web" | "apple" | "none"; verificationMessage?: string };
 export type AppleAccessVerificationPhase = "VERIFYING" | "VERIFIED" | "ERROR";
 type NativePlugin = {
   getStatus(options: { productId: string }): Promise<AppleAccessStatus>;
@@ -41,14 +40,24 @@ async function account(proof?: string) {
   });
   let reader: ReadableStreamDefaultReader<Uint8Array> | undefined;
   try {
-    if (proof !== undefined && (typeof proof !== "string" || proof.length > 24000 || /[\r\n\0]/.test(proof))) throw new Error("Invalid Apple account evidence.");
+    if (proof !== undefined && (typeof proof !== "string" || proof.length > 16000 || /[\r\n\0]/.test(proof))) throw new Error("Invalid Apple account evidence.");
     const transport = fetch("/api/pocket/apple-account", {
       cache: "no-store", redirect: "error", credentials: "same-origin", signal: controller.signal,
       headers: proof ? { "x-pocket-apple-transaction": proof } : {},
     });
     void transport.then(response => { if (controller.signal.aborted) void response.body?.cancel().catch(() => {}); }, () => {});
     const response = await wait(transport);
-    if (!response.ok || !response.body) throw new Error(`Sign in to verify your ${POCKET_PRODUCT.shortName} account.`);
+    const failure = (code?: unknown) => {
+      const messages: Record<string, string> = {
+        POCKET_LOGIN_REQUIRED: "Sign in to your existing account, then retry Restore Purchases.",
+        POCKET_APPLE_CONFIGURATION: "Apple verification is not configured for this test build. Contact support; do not purchase again.",
+        POCKET_APPLE_VERIFICATION_UNAVAILABLE: "Apple receipt verification is unavailable for this build. Retry or contact support; do not purchase again.",
+        POCKET_APPLE_OWNERSHIP_UNAVAILABLE: "Existing Apple purchase linking could not be checked. Contact support; do not purchase again.",
+        POCKET_APPLE_PROOF_INVALID: "Apple purchase evidence could not be read. Retry Restore Purchases.",
+      };
+      return new Error(typeof code === "string" && Object.hasOwn(messages, code) ? messages[code] : "Subscription verification is unavailable. Retry or contact support; do not purchase again.");
+    };
+    if (!response.body) throw failure(response.status === 401 ? "POCKET_LOGIN_REQUIRED" : undefined);
     reader = response.body.getReader();
     const chunks: Uint8Array[] = []; let size = 0;
     while (true) {
@@ -59,7 +68,11 @@ async function account(proof?: string) {
     }
     const bytes = new Uint8Array(size); let offset = 0;
     for (const chunk of chunks) { bytes.set(chunk, offset); offset += chunk.length; }
-    const body = JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(bytes)) as { appAccountToken?: string; entitled?: boolean };
+    let body: {appAccountToken?: string; entitled?: boolean; accessSource?: "web" | "apple" | "none"; code?: unknown};
+    try { body = JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(bytes)); }
+    catch { if (!response.ok) throw failure(); throw new Error("Invalid Apple account response."); }
+    if (!response.ok) throw failure(response.status === 401 ? "POCKET_LOGIN_REQUIRED" : body?.code);
+    if (body?.accessSource !== undefined && !["web", "apple", "none"].includes(body.accessSource)) throw new Error("Invalid Apple account response.");
     if (!body || typeof body.appAccountToken !== "string" || !/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(body.appAccountToken) || typeof body.entitled !== "boolean") throw new Error("Invalid Apple account response.");
     return body;
   } finally {
@@ -74,7 +87,7 @@ async function verifyStatus(status: AppleAccessStatus): Promise<AppleAccessStatu
   // not bypass the subscription bridge's unknown/background presentation hold.
   const currentAppState = await nativeMetadata(App.getState());
   if (currentAppState?.isActive !== true) throw new Error("Return to the app and retry the Apple access check.");
-  return { ...status, entitled: verified.entitled === true };
+  return { ...status, entitled: verified.entitled === true, accessSource: verified.accessSource };
 }
 export async function getAppleProductStatus(): Promise<AppleAccessStatus> {
   if (!isAppleNativeApp()) return webStatus;
@@ -87,7 +100,10 @@ export async function getAppleAccessStatus(): Promise<AppleAccessStatus> {
 }
 export async function purchaseAppleSubscription(): Promise<AppleAccessStatus> {
   if (!isAppleNativeApp()) throw new Error("Apple purchases are available in the iPhone app.");
-  const identity = await account();
+  const existing = await nativeMetadata(native.getStatus({ productId: APPLE_MONTHLY_PRODUCT_ID }));
+  const identity = await account(existing.signedTransactionInfo);
+  if (identity.entitled) throw new Error("Your existing subscription is already active. No new purchase is needed.");
+  if (existing.signedTransactionInfo) throw new Error("An existing Apple purchase needs account verification. Restore or contact support; do not purchase again.");
   return verifyStatus(await native.purchase({ productId: APPLE_MONTHLY_PRODUCT_ID, appAccountToken: identity.appAccountToken! }));
 }
 export async function restoreAppleSubscription(): Promise<AppleAccessStatus> {
@@ -115,8 +131,11 @@ export async function subscribeAppleAccessChanges(onStatus: (status: AppleAccess
       return verifyStatus(status);
     }).then(verified => {
       if (verified && active && foreground && current === revision) onStatus(verified, "VERIFIED");
-    }).catch(() => {
-      if (active && foreground && current === revision) onStatus({ ...latest, entitled: false }, "ERROR");
+    }).catch((error) => {
+      // Only our bounded account helper's fixed messages may cross into UI.
+      const allowed = ["Sign in to your existing account, then retry Restore Purchases.", "Apple verification is not configured for this test build. Contact support; do not purchase again.", "Apple receipt verification is unavailable for this build. Retry or contact support; do not purchase again.", "Existing Apple purchase linking could not be checked. Contact support; do not purchase again.", "Apple purchase evidence could not be read. Retry Restore Purchases."];
+      const verificationMessage = error instanceof Error && allowed.includes(error.message) ? error.message : "Subscription verification is unavailable. Retry or contact support; do not purchase again.";
+      if (active && foreground && current === revision) onStatus({ ...latest, entitled: false, verificationMessage }, "ERROR");
     });
   };
   // The bridge owns foreground admission from the first synchronous callback.
@@ -205,7 +224,7 @@ export async function pocketAuthenticatedFetch(input: string, init: RequestInit 
     });
   } finally { clearTimeout(timer); options.signal?.removeEventListener("abort", cancel); }
   options.signal?.throwIfAborted();
-  if (!status || (status.signedTransactionInfo !== undefined && (typeof status.signedTransactionInfo !== "string" || status.signedTransactionInfo.length > 24000 || /[\r\n\0]/.test(status.signedTransactionInfo)))) throw new Error("Invalid Apple account evidence.");
+  if (!status || (status.signedTransactionInfo !== undefined && (typeof status.signedTransactionInfo !== "string" || status.signedTransactionInfo.length > 16000 || /[\r\n\0]/.test(status.signedTransactionInfo)))) throw new Error("Invalid Apple account evidence.");
   if (status.signedTransactionInfo) headers.set("x-pocket-apple-transaction", status.signedTransactionInfo);
   // An API redirect must never forward signed evidence to another origin.
   return fetch(input, { ...options, redirect: "error", credentials: "same-origin" });
