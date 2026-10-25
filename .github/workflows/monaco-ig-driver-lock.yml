@@ -1,0 +1,63 @@
+name: NTP one-off IG driver lock
+on:
+  push:
+    branches: [monaco-ntp-integration-20261025-ad6]
+    paths: [.github/workflows/monaco-ig-driver-lock.yml]
+permissions:
+  contents: read
+jobs:
+  lock:
+    if: github.event.repository.private == false && github.repository == 'nashysaimarkets/nash-ai-markets'
+    permissions:
+      contents: write
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with: {node-version: '24'}
+      - name: Generate pinned driver lock without executing package scripts
+        run: |
+          cp package.json /tmp/ntp-package-before.json
+          cp package-lock.json /tmp/ntp-lock-before.json
+          npm install --package-lock-only --ignore-scripts --no-audit --no-fund --save-exact pg@8.23.1
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          import {readFileSync} from 'node:fs';
+          const read=p=>JSON.parse(readFileSync(p,'utf8'));
+          const old=read('/tmp/ntp-package-before.json'),next=read('package.json');
+          assert.equal(next.dependencies.pg,'8.23.1');
+          delete next.dependencies.pg;delete old.dependencies.pg;assert.deepEqual(next,old);
+          const before=read('/tmp/ntp-lock-before.json'),after=read('package-lock.json');
+          for(const [name,value] of Object.entries(before.packages)){
+            if(!name)continue;
+            assert.ok(after.packages[name],`Removed existing package: ${name}`);
+            for(const key of ['version','resolved','integrity'])assert.equal(after.packages[name][key],value[key],`Existing package changed: ${name} ${key}`);
+          }
+          assert.equal(after.packages['node_modules/pg'].version,'8.23.1');
+          assert.ok(after.packages['node_modules/pg'].integrity.startsWith('sha512-'));
+          console.log('Existing dependency versions and integrity preserved; pg 8.23.1 pinned.');
+          JS
+          npm ci --ignore-scripts --no-audit --no-fund
+          node --input-type=module -e "import pg from 'pg'; if(typeof pg.Pool!=='function')process.exit(1); console.log('PG_DRIVER_IMPORT_PASS; no database connections');"
+      - name: Save only generated dependency files under exact branch lease
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EXPECTED_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          branch=monaco-ntp-integration-20261025-ad6
+          helper='!f() { printf "username=x-access-token\npassword=%s\n" "$GH_TOKEN"; }; f'
+          actual="$(git -c credential.helper="$helper" ls-remote origin "refs/heads/$branch" | cut -f1)"
+          test "$actual" = "$EXPECTED_SHA"
+          test "$(git diff --name-only | sort | tr '\n' ' ')" = 'package-lock.json package.json '
+          git diff --check
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- package.json package-lock.json
+          git commit -m 'build(ig-demo): lock pg 8.23.1 without upgrading existing dependencies [skip ci]'
+          git -c credential.helper="$helper" push origin "HEAD:refs/heads/$branch"
+          printf 'PINNED_DEPENDENCY_COMMIT %s\n' "$(git rev-parse HEAD)"
