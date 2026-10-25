@@ -6,6 +6,8 @@ workflows:
     integrations:
       app_store_connect: Pocket Bullseye App Store
     environment:
+      groups:
+        - ntp-candidate-pin
       node: 24
       xcode: latest
       ios_signing:
