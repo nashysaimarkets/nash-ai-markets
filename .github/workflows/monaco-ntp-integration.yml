@@ -23,6 +23,16 @@ jobs:
         run: npm ci --ignore-scripts --no-audit --no-fund
       - name: Bounded local image reading and replacement recovery
         run: node --import tsx --test tests/pocket-workspace-image-timeout.test.ts
+      - name: Crop and screenshot comparison deadlines, synthetic only
+        run: |
+          node --import tsx --test tests/pocket-client-deadlines.test.mjs
+          node --input-type=module <<'JS'
+          import {readdirSync,readFileSync} from 'node:fs';
+          import {spawnSync} from 'node:child_process';
+          const files=readdirSync('tests').filter(name=>/\.test\.(ts|mjs)$/.test(name)&&name!=='pocket-client-deadlines.test.mjs').map(name=>'tests/'+name).filter(path=>/screenshot-comparison-session|precision-reading-crop/.test(readFileSync(path,'utf8')));
+          console.log('Existing directly affected regression files:',JSON.stringify(files));
+          if(files.length)process.exit(spawnSync(process.execPath,['--import','tsx','--test',...files],{stdio:'inherit'}).status??1);
+          JS
       - name: Affected integration and security cases, synthetic ports only
         run: |
           node --import tsx --test --test-isolation=none tests/pocket-ig-demo-binding.test.ts tests/render/ig-demo-workspace.test.ts tests/ig-demo-workspace.test.ts tests/ig-demo-client.test.ts tests/pocket-google-acknowledgement.test.mjs tests/pocket-google-notification-adapters.test.mjs tests/pocket-google-notification-route.test.ts tests/pocket-google-finish.test.ts tests/pocket-google-runtime.test.mjs tests/pocket-next-integration.test.ts tests/pocket-workflow-plan.test.ts tests/launch-email-readiness.test.ts tests/resend-launch-email.test.ts tests/pocket-native-manifest.test.mjs
