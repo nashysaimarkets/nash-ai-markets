@@ -1,5 +1,6 @@
 import { pocketTestProviderProject } from "../../api/pocket/torture/provider-spend.ts";
 import { rememberPocketFirstFreeIdentity } from "./pocket-first-free.ts";
+import { POCKET_PRODUCT } from "../product-brand.ts";
 
 type Identity = { id?: string; email?: string; email_confirmed_at?: string; is_anonymous?: boolean };
 type AccessDependencies = {
@@ -15,7 +16,7 @@ type AccessDependencies = {
 export async function checkPocketScanAccess(deps: AccessDependencies): Promise<Response | null> {
   try {
     const user = await deps.authenticate();
-    if (!user?.id || !user.email || !user.email_confirmed_at || user.is_anonymous) return Response.json({ error: "Sign in with your verified Pocket account to scan.", code: "POCKET_LOGIN_REQUIRED" }, { status: 401 });
+    if (!user?.id || !user.email || !user.email_confirmed_at || user.is_anonymous) return Response.json({ error: `Sign in with your verified ${POCKET_PRODUCT.shortName} account to scan.`, code: "POCKET_LOGIN_REQUIRED" }, { status: 401 });
     let webUnavailable = false;
     try { if (await deps.hasSubscription(user.id)) return null; }
     catch { webUnavailable = true; }
@@ -25,9 +26,9 @@ export async function checkPocketScanAccess(deps: AccessDependencies): Promise<R
     // A web outage must never become first-free permission or a false expiry.
     if (webUnavailable) throw new Error("Pocket web subscription lookup unavailable");
     if (user.id && deps.hasFirstFreeAccess && await deps.hasFirstFreeAccess(user)) return null;
-    return Response.json({ error: "An active Pocket subscription is required to scan.", code: "POCKET_SUBSCRIPTION_REQUIRED" }, { status: 403 });
+    return Response.json({ error: `An active ${POCKET_PRODUCT.shortName} subscription is required to scan.`, code: "POCKET_SUBSCRIPTION_REQUIRED" }, { status: 403 });
   } catch {
-    return Response.json({ error: "Pocket access could not be verified. Please retry shortly.", code: "POCKET_ACCESS_UNAVAILABLE" }, { status: 503 });
+    return Response.json({ error: `${POCKET_PRODUCT.shortName} access could not be verified. Please retry shortly.`, code: "POCKET_ACCESS_UNAVAILABLE" }, { status: 503 });
   }
 }
 

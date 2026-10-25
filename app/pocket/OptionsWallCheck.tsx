@@ -1,4 +1,5 @@
 "use client";
+import { POCKET_PRODUCT } from "../lib/product-brand.ts";
 import { type ChangeEvent } from "react";
 import { isOptionsWallResult, type OptionsWallResult } from "./options-wall";
 import { exactAxisPrice } from "./axis-verification";
@@ -27,7 +28,7 @@ function OptionsWallSession({ ticker, levels }: { ticker: string; levels: { kind
 
   return <section className="psOptionsWall" aria-live="polite" aria-busy={busy}>
     <header><div><span>◉ OPTIONS WALL CROSS-CHECK</span><small>OPTIONAL · SCREENSHOT EVIDENCE</small></div><b>{reading ? "OPENING…" : busy ? "READING…" : result?.status === "MATCHED" ? "OVERLAP FOUND" : result ? "CHECK COMPLETE" : image ? "READY" : "ADD PROFILE"}</b></header>
-    <p>Add an options <strong>volume-by-strike</strong> screenshot for the same listed symbol. Bullseye checks whether visible volume concentrations sit near verified price levels.</p>
+    <p>Add an options <strong>volume-by-strike</strong> screenshot for the same listed symbol. {POCKET_PRODUCT.shortName} checks whether visible volume concentrations sit near verified price levels.</p>
     {!readyForComparison ? <p className="psOptionsWallNotice">Available when the chart has a confirmed listed ticker and a verified numeric price level.</p> : <div className="psOptionsWallActions"><label>{image ? "CHANGE SCREENSHOT" : "＋ ADD OPTIONS SCREENSHOT"}<input type="file" accept="image/jpeg,image/png,image/webp" aria-label="Add options volume profile screenshot" onChange={attach} /></label><button type="button" onClick={check} disabled={!image || busy || reading}>{busy ? "CHECKING…" : "CHECK OPTIONS WALL"}</button>{busy || reading ? <button type="button" onClick={cancel}>CANCEL CHECK</button> : null}</div>}
     {image ? <small className="psOptionsWallFile">{fileName}</small> : null}
     {error ? <p role="alert" className="psOptionsWallError">{error}</p> : null}

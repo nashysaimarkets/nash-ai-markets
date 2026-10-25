@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
+import { POCKET_PRODUCT } from "../lib/product-brand.ts";
 import { redirect } from "next/navigation";
 import { campaignAttribution, campaignQuery } from "../lib/marketing-attribution.ts";
 
 export const metadata: Metadata = {
-  title: "Join Pocket Bullseye",
+  title: `Join ${POCKET_PRODUCT.name}`,
   robots: { index: false, follow: false },
 };
 

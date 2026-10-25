@@ -1,4 +1,5 @@
 "use client";
+import { POCKET_PRODUCT } from "../lib/product-brand.ts";
 import {isGoogleNativeApp,playAuthenticatedFetch} from "./play-billing";
 import { Capacitor, registerPlugin } from "@capacitor/core";
 import { App } from "@capacitor/app";
@@ -47,7 +48,7 @@ async function account(proof?: string) {
     });
     void transport.then(response => { if (controller.signal.aborted) void response.body?.cancel().catch(() => {}); }, () => {});
     const response = await wait(transport);
-    if (!response.ok || !response.body) throw new Error("Sign in to verify your Pocket account.");
+    if (!response.ok || !response.body) throw new Error(`Sign in to verify your ${POCKET_PRODUCT.shortName} account.`);
     reader = response.body.getReader();
     const chunks: Uint8Array[] = []; let size = 0;
     while (true) {

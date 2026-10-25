@@ -1,4 +1,5 @@
 "use client";
+import { POCKET_PRODUCT } from "../lib/product-brand.ts";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import AndroidSubscriptionControls from "./AndroidSubscriptionControls";
 import {isGoogleNativeApp} from "./play-billing";
@@ -60,7 +61,7 @@ export default function NativeSubscriptionControls() {
       if (!mounted.current || current !== revision.current) return;
       setStatus(next);
       setPhase("READY");
-      setMessage(next.entitled ? "Your Apple subscription is verified for this Pocket account." : "Apple access could not be linked to this Pocket account. Existing purchases may need verified account linking. Contact support before purchasing again.");
+      setMessage(next.entitled ? `Your Apple subscription is verified for this ${POCKET_PRODUCT.shortName} account.` : `Apple access could not be linked to this ${POCKET_PRODUCT.shortName} account. Existing purchases may need verified account linking. Contact support before purchasing again.`);
     } catch (error) {
       if (mounted.current && current === revision.current) { setPhase("ERROR"); setMessage(error instanceof Error ? error.message : "Apple access could not be verified. Try Restore Purchases."); }
     } finally { actionRunning.current = false; if (mounted.current) setBusy(false); }
@@ -68,8 +69,8 @@ export default function NativeSubscriptionControls() {
   const retry = () => { if (actionRunning.current) return; revision.current++; setPhase("CHECKING"); setMessage(""); setAttempt(value => value + 1); };
   return <section className="psPreflight" aria-label="Apple subscription access" aria-busy={busy || phase === "CHECKING"}>
     <header><strong>{view.heading}</strong></header>
-    {view.productLabel ? <p>{view.productLabel}</p> : <p role="status">{phase === "CHECKING" ? "Checking the Apple product and your Pocket account. You can restore an existing purchase below." : "Apple product or access verification is unavailable. Restore an existing purchase or retry; no purchase is offered while this check is unresolved."}</p>}
-    <p>Sign in to your Pocket account to verify access. Subscriptions renew automatically until cancelled in your Apple Account settings.</p>
+    {view.productLabel ? <p>{view.productLabel}</p> : <p role="status">{phase === "CHECKING" ? `Checking the Apple product and your ${POCKET_PRODUCT.shortName} account. You can restore an existing purchase below.` : "Apple product or access verification is unavailable. Restore an existing purchase or retry; no purchase is offered while this check is unresolved."}</p>}
+    <p>Sign in to your {POCKET_PRODUCT.shortName} account to verify access. Subscriptions renew automatically until cancelled in your Apple Account settings.</p>
     <div><a href="/pocket/login">Sign in</a>{" · "}<a href="/terms">Terms</a>{" · "}<a href="/privacy">Privacy</a></div>
     {view.showPurchase ? <button type="button" disabled={busy} onClick={() => void run("purchase")}>Subscribe with Apple</button> : null}{" "}
     <button type="button" disabled={busy} onClick={() => void run("restore")}>{busy ? "Checking Apple…" : "Restore Purchases"}</button>

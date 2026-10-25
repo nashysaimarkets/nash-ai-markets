@@ -1,8 +1,9 @@
 'use client';
+import {POCKET_PRODUCT} from '../lib/product-brand.ts';
 import {useEffect,useRef,useState} from 'react';
 import {restorePlaySubscription} from './play-billing';
 export default function AndroidSubscriptionControls(){
- const [busy,setBusy]=useState(false),[message,setMessage]=useState('Restore an existing Google Play purchase to check this Pocket account.');
+ const [busy,setBusy]=useState(false),[message,setMessage]=useState(`Restore an existing Google Play purchase to check this ${POCKET_PRODUCT.shortName} account.`);
  const pending=useRef<AbortController|null>(null);
  const cancel=()=>{pending.current?.abort();pending.current=null;setBusy(false);setMessage('Check cancelled. Access remains unverified.');};
  useEffect(()=>{const hide=()=>{pending.current?.abort();pending.current=null;setBusy(false);setMessage('Return and restore to verify current access.');};window.addEventListener('pagehide',hide);document.addEventListener('visibilitychange',hide);return()=>{pending.current?.abort();pending.current=null;window.removeEventListener('pagehide',hide);document.removeEventListener('visibilitychange',hide);};},[]);

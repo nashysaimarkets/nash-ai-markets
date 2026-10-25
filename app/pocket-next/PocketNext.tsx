@@ -588,7 +588,7 @@ export default function PocketNext({macroContext=UNAVAILABLE_MACRO,igDemoAvailab
         <div className="pnChart" ref={chartRef} data-focus={chartFocus ? "true" : "false"} role={chartFocus?"dialog":undefined} aria-modal={chartFocus?true:undefined} aria-label={chartFocus?"Focused source chart":undefined}>
           {demoMode ? <img ref={chartImageRef} src={image ?? ""} alt="Synthetic interface demo chart"/> : <OriginalChartEvidence measurement={claimMeasurement} layer={active === "patterns" ? "patterns" : active === "liquidity" ? "liquidity" : "levels"} image={image ?? ""} report={analysis} identityConfirmed={Boolean(activeSlot.confirmation) && preflightAllowsAnalysis(activeSlot.status)} /> }
           <button className="pnFocusButton" type="button" onClick={()=>setChartFocus(v=>!v)} aria-pressed={chartFocus}>{chartFocus ? "CLOSE" : "FOCUS"}</button>
-          {demoMode && <svg style={overlayStyle} viewBox="0 0 100 100" preserveAspectRatio="none" aria-label="Pocket evidence overlay">
+          {demoMode && <svg style={overlayStyle} viewBox="0 0 100 100" preserveAspectRatio="none" aria-label={`${POCKET_PRODUCT.shortName} evidence overlay`}>
             <defs>
               <clipPath id="pnPlotClip">
                 <rect x={plotBounds.left} y={plotBounds.top} width={Math.max(1,plotBounds.right-plotBounds.left)} height={Math.max(1,plotBounds.bottom-plotBounds.top)}/>
@@ -636,7 +636,7 @@ export default function PocketNext({macroContext=UNAVAILABLE_MACRO,igDemoAvailab
             <div className="pnTriptych"><article><small>NOW</small><strong>{analysis.nextSequence.now}</strong></article><article><small>CONFIRMS</small><strong>{analysis.nextSequence.confirmation}</strong></article><article><small>FAILS</small><strong>{analysis.nextSequence.failure}</strong></article></div>
             <section className="pnMiss"><small>STRONGEST COUNTER-EVIDENCE</small><strong>{analysis.whatYouMayBeMissing[0] || analysis.contradictions[0] || "No strong contradiction was returned."}</strong></section>
           </>}
-          <div className="pnRows pnMultiChart"><article><span>MULTI-CHART CONTEXT</span><strong>{multiChart.ready}/{multiChart.loaded || 1} reports returned</strong><small>{demoMode ? "Synthetic example only; your charts have not been compared." : workspaceContext(charts)}</small></article><article><span>PRICE CONFLUENCE</span><strong>{multiChart.verifiedScales>=2 ? "Multiple model scales reported; original-pixel verification required" : "No verified price confluence established"}</strong><small>Pocket will only claim cross-timeframe price confluence when numeric scales are independently verified.</small></article></div>
+          <div className="pnRows pnMultiChart"><article><span>MULTI-CHART CONTEXT</span><strong>{multiChart.ready}/{multiChart.loaded || 1} reports returned</strong><small>{demoMode ? "Synthetic example only; your charts have not been compared." : workspaceContext(charts)}</small></article><article><span>PRICE CONFLUENCE</span><strong>{multiChart.verifiedScales>=2 ? "Multiple model scales reported; original-pixel verification required" : "No verified price confluence established"}</strong><small>{POCKET_PRODUCT.shortName} will only claim cross-timeframe price confluence when numeric scales are independently verified.</small></article></div>
         </> : null}
 
         {active==="levels" ? <>
@@ -644,7 +644,7 @@ export default function PocketNext({macroContext=UNAVAILABLE_MACRO,igDemoAvailab
           <div className="pnDecisionLabel">REPORTED PRICE REFERENCES</div>
           <h2>{levels.length ? levels.length+" structural levels" : "Precision held"}</h2>
           <p>{analysis.levelStory}</p>
-          <div className="pnRows">{levels.length ? levels.map((l,i)=><article key={i}><span>{l.kind.toUpperCase()} · UNVERIFIED</span><strong>{l.price || "NO NUMERIC PRICE"}</strong><small>Reported candidate; see price-position checks above.</small></article>) : <article><span>NO VERIFIED LEVEL</span><strong>—</strong><small>Pocket withheld numeric precision.</small></article>}</div>
+          <div className="pnRows">{levels.length ? levels.map((l,i)=><article key={i}><span>{l.kind.toUpperCase()} · UNVERIFIED</span><strong>{l.price || "NO NUMERIC PRICE"}</strong><small>Reported candidate; see price-position checks above.</small></article>) : <article><span>NO VERIFIED LEVEL</span><strong>—</strong><small>{POCKET_PRODUCT.shortName} withheld numeric precision.</small></article>}</div>
         </> : null}
 
         {active==="structure" ? <>
@@ -665,7 +665,7 @@ export default function PocketNext({macroContext=UNAVAILABLE_MACRO,igDemoAvailab
           {!demoMode && !deviceOnly ? <CryptoDerivativesCheck key={`crypto-${activeChart}-${activeSlot.revision}`} ticker={analysis.ticker !== "UNKNOWN" ? analysis.ticker : analysis.instrument} structure={analysis.marketStructure} /> : null}
           <div className="pnDecisionLabel">LIQUIDITY GUARD</div>
           <h2>{liquidity?.state==="NONE" || !liquidity ? "LIQUIDITY HOLD" : "UNVERIFIED LIQUIDITY CLAIMS"}</h2>
-          <p>{liquidity?.evidence || "Pocket does not infer hidden orders or stop placement from ordinary price noise."}</p>
+          <p>{liquidity?.evidence || `${POCKET_PRODUCT.shortName} does not infer hidden orders or stop placement from ordinary price noise.`}</p>
           <div className="pnRows"><article><span>STATE</span><strong>UNVERIFIED</strong><small>Model claim; no hidden-order proof</small></article><article><span>CONFIRMS</span><strong>{liquidity?.confirmation || "No defensible trigger."}</strong></article><article><span>INVALIDATES</span><strong>{liquidity?.invalidation || "No defensible invalidation."}</strong></article></div>
         </> : null}
 

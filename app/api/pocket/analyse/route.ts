@@ -1,4 +1,5 @@
 import {prepareScannerReport} from "../../../pocket/scanner-claims";
+import { POCKET_PRODUCT } from "../../../lib/product-brand.ts";
 import { withPocketFirstFreeRequest } from "../../../lib/server/pocket-first-free";
 import { requirePocketScanAccess } from "../../../lib/server/pocket-scan-access";
 import type { ResponseCreateParamsNonStreaming } from "openai/resources/responses/responses";
@@ -525,7 +526,7 @@ export async function POST(request: Request) {
       ? "The chart analysis took too long to finish. Please retry once."
       : incomplete
         ? "The analysis report was interrupted before it finished. Your chart is still loaded—please retry once."
-        : "Bullseye could not verify enough chart detail safely. Please use a clearer screenshot." }, { status: 503 });
+        : `${POCKET_PRODUCT.shortName} could not verify enough chart detail safely. Please use a clearer screenshot.` }, { status: 503 });
   }
   });
 }

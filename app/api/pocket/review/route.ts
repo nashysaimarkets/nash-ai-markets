@@ -1,4 +1,5 @@
 import { requirePocketScanAccess } from "../../../lib/server/pocket-scan-access";
+import { POCKET_PRODUCT } from "../../../lib/product-brand.ts";
 import { NextResponse } from "next/server";
 import { createOpenAIClient, OPENAI_DEFAULT_MODEL } from "../../../lib/server/openai";
 import { pocketBudgetHeaders, takePocketBudget } from "../../../lib/server/pocket-request-budget";
@@ -73,6 +74,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ review: JSON.parse(output) }, { headers: pocketBudgetHeaders(budget) });
   } catch (error) {
     console.error("[pocket-bullseye] review unavailable", error instanceof Error ? error.name : "Error");
-    return NextResponse.json({ error: "Bullseye could not complete the comparison safely." }, { status: 503 });
+    return NextResponse.json({ error: `${POCKET_PRODUCT.shortName} could not complete the comparison safely.` }, { status: 503 });
   }
 }

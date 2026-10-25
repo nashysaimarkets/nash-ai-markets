@@ -1,4 +1,5 @@
 "use client";
+import { POCKET_PRODUCT } from "../lib/product-brand.ts";
 
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
@@ -202,7 +203,7 @@ export default function StagingLoginForm({
 
   return (
     <form ref={formRef} className="accessForm" onSubmit={submit} data-auth-redirect-ready="false">
-      <label htmlFor="email">{existingAccountOnly ? "Pocket account email" : "Membership email"}</label>
+      <label htmlFor="email">{existingAccountOnly ? `${POCKET_PRODUCT.shortName} account email` : "Membership email"}</label>
       <div className="accessInputWrap">
         <span aria-hidden="true">@</span>
         <input
@@ -219,7 +220,7 @@ export default function StagingLoginForm({
           required
         />
       </div>
-      <p id="email-guidance">{existingAccountOnly ? "Use the email address for your existing Pocket account." : "Use the same address you used for your NASH AI membership."}</p>
+      <p id="email-guidance">{existingAccountOnly ? `Use the email address for your existing ${POCKET_PRODUCT.shortName} account.` : "Use the same address you used for your NASH AI membership."}</p>
       <button type="submit" disabled={loading || cooldown > 0} aria-busy={loading}>
         <span>{loading ? "Requesting secure link…" : cooldown > 0 ? `Retry available in ${cooldown}s` : "Email me a secure sign-in link"}</span>
         <i aria-hidden="true">↗</i>

@@ -1,3 +1,4 @@
+import {POCKET_PRODUCT} from '../lib/product-brand.ts';
 import {normalizeLockedDecision,normalizeLockedDecisions,type CompatibleLockedDecision} from './decision-compatibility.ts';
 // Same database/version as the established customer view: no isolated redesign history.
 function openVault():Promise<IDBDatabase>{
@@ -8,7 +9,7 @@ function openVault():Promise<IDBDatabase>{
    if(!request.result.objectStoreNames.contains('analyses'))request.result.createObjectStore('analyses',{keyPath:'key'});
   };
   request.onsuccess=()=>resolve(request.result);request.onerror=()=>reject(request.error);
-  request.onblocked=()=>reject(new Error('Close another Pocket tab before opening history.'));
+  request.onblocked=()=>reject(new Error(`Close another ${POCKET_PRODUCT.shortName} tab before opening history.`));
  });
 }
 export async function listPocketDecisions():Promise<CompatibleLockedDecision[]>{

@@ -1,4 +1,5 @@
 import { requirePocketScanAccess } from "../../../lib/server/pocket-scan-access";
+import { POCKET_PRODUCT } from "../../../lib/product-brand.ts";
 import { NextResponse } from "next/server";
 import { createOpenAIClient, OPENAI_DEFAULT_MODEL } from "../../../lib/server/openai";
 import { pocketBudgetHeaders, takePocketBudget } from "../../../lib/server/pocket-request-budget";
@@ -40,12 +41,12 @@ export async function POST(request: Request) {
 
   const budget = takePocketBudget(request, "follow-up");
   if (!budget.allowed) return NextResponse.json(
-    { error: "Your Ask Bullseye beta allowance needs a short reset. No request was sent to the AI provider." },
+    { error: `Your Ask ${POCKET_PRODUCT.shortName} beta allowance needs a short reset. No request was sent to the AI provider.` },
     { status: 429, headers: pocketBudgetHeaders(budget) },
   );
 
   const client = createOpenAIClient(undefined, 25_000);
-  if (!client) return NextResponse.json({ error: "Ask Bullseye is not connected in this environment." }, { status: 503 });
+  if (!client) return NextResponse.json({ error: `Ask ${POCKET_PRODUCT.shortName} is not connected in this environment.` }, { status: 503 });
 
   try {
     const response = await client.responses.create({
@@ -66,6 +67,6 @@ export async function POST(request: Request) {
     if (!output) throw new Error("empty");
     return NextResponse.json({ reply: JSON.parse(output) }, { headers: pocketBudgetHeaders(budget) });
   } catch {
-    return NextResponse.json({ error: "Ask Bullseye could not answer safely. Please retry once." }, { status: 503 });
+    return NextResponse.json({ error: `Ask ${POCKET_PRODUCT.shortName} could not answer safely. Please retry once.` }, { status: 503 });
   }
 }
