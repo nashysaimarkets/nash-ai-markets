@@ -1,0 +1,74 @@
+{
+  "scope": "Independent optional chart-crop and screenshot-comparison deadline repair; not broker runtime wiring",
+  "claim": "Issue126/6396615653",
+  "branch": "monaco-ntp-integration-20261025-ad6",
+  "parent": "4fd015e5169892b51cbd993c0ab1f3d21f0f3f26",
+  "application_change": "e56915094ead7f6fe607a28572b77643b5883ec2",
+  "accepted_source": "7c2f97d95d7b74e577cbfd9801b3a6e60f1b8012",
+  "accepted_tree": "144dfc7d3b41ccf9952120f5b3cafa76939c8d04",
+  "source_files": [
+    {"path":"app/pocket/precision-reading-crop.ts","bytes":2112,"git_blob":"646935060d7ee36a9e0acab4d4fedfbcc4fe9f51","sha256":"e1f622acb219e70b49538c5e524e0715a29d689a5e1843fee1a48260638e40cd"},
+    {"path":"app/pocket/screenshot-comparison-session.ts","bytes":6909,"git_blob":"5642412da2d6373b05bd04ea61e7e380134702e8","sha256":"e6d2eb58b7c52a923832ec128f72646e7f821f7ae7d4ddf4ef768be40c308e74"},
+    {"path":"tests/pocket-client-deadlines.test.mjs","bytes":12185,"git_blob":"38529621b9be99de35b77ebb0d69b1c2bd106554","sha256":"3d0522a9f343a9158f86746a4980d89864337794939367d98b3b611bc8fa5a53"}
+  ],
+  "changes": [
+    "Optional reading crop settles null after8000ms, detaches decoder callbacks, rejects invalid/excessive canvas dimensions, and preserves existing geometry/JPEG settings and original chart bytes.",
+    "Shared screenshot read has30000ms deadline; comparison transport and JSON parsing share one65000ms deadline.",
+    "Cancellation/disposal/replacement settle non-cooperative promises, suppress late results, and clean up readers/listeners. No automatic retry.",
+    "Existing iOS source-extraction fixture now supplies pre-existing Android-platform dependencies; all assertions retained and two explicit no-error assertions added. No application change was needed for that fixture correction."
+  ],
+  "local": {
+    "node":"22.16.0",
+    "command":"node --experimental-strip-types --test tests/pocket-client-deadlines.test.mjs",
+    "baseline":{"passed":6,"failed":19,"skipped":0},
+    "repaired":{"passed":25,"failed":0,"skipped":0},
+    "targeted_strict_typescript":"PASS",
+    "scope":"Synthetic Image/FileReader/fetch/body callbacks and fake timers; no native device or genuine provider acceptance.",
+    "earlier_20_case_subset":"5pass/15fail before repair,20pass after repair; included in final25, not additional passes."
+  },
+  "first_ci_failure": {
+    "run":40186004139,"job":121146805336,"attempt":1,
+    "source":"e56915094ead7f6fe607a28572b77643b5883ec2","conclusion":"failure",
+    "new_deadline_tests":{"passed":25,"failed":0},
+    "existing_upload_tests":{"passed":18,"failed":0},
+    "directly_affected_tests":{"passed":15,"failed":1},
+    "failing_test":"the real shared comparison transport adds fresh native JWS and preserves cancellation",
+    "assertion":"0 !== 2 at tests/pocket-native-server-bridge.test.ts:47:10",
+    "diagnosis":"Extracted real pocketAuthenticatedFetch checks isGoogleNativeApp first, but the old iOS fixture did not bind it. The session caught ReferenceError; dispatch count was zero.",
+    "local_differential":"Both baseline and repaired comparison modules produce isGoogleNativeApp is not defined with the incomplete fixture. With explicit iOS platform fixtures both produce two fresh synthetic-proof requests, zero Google calls and no dispatch after pre-cancellation.",
+    "assertions_removed":false,"tests_disabled":false,
+    "builds":{"Worker":"PASS","Next":"PASS","Android_debug":"PASS"},
+    "later_test_steps":"Skipped after failed regression; not counted as pass.",
+    "url":"https://github.com/nashysaimarkets/nash-ai-markets/actions/runs/40186004139"
+  },
+  "final_ci": {
+    "run":40186382160,"job":121147945432,"attempt":1,
+    "source":"7c2f97d95d7b74e577cbfd9801b3a6e60f1b8012",
+    "job_status":"completed","job_conclusion":"success",
+    "existing_upload_recovery":"PASS",
+    "new_25_deadline_tests_and_existing_comparison_native_tests":"PASS",
+    "integration_and_loopback_HTTP":"PASS",
+    "full_typescript_hygiene_secret_scan":"PASS",
+    "actual_phone_sized_component_interaction_accessibility":"PASS",
+    "Sites_Worker_build":"PASS",
+    "separate_Next_build_external_services_blocked":"PASS",
+    "Android_debug_compile_synthetic_backend_pin":"PASS",
+    "signed_device_acceptance":false,
+    "evidence_basis":"Completed GitHub job and every required step read back as success. First-run failure log was read for diagnosis; final full image-containing log was not downloaded again.",
+    "url":"https://github.com/nashysaimarkets/nash-ai-markets/actions/runs/40186382160"
+  },
+  "verified_change_scope":"GitHub comparison from4fd015e to7c2f97d: two application modules, one new test, one corrected existing test and one workflow change only. Broker/server/auth/subscription behavior, native packages, premium layout and deployment controls unchanged.",
+  "limitations": [
+    "Normal browser timers can be throttled during suspension. A client timeout does not prove already-started server/provider work or billing has stopped.",
+    "No response byte-budget implementation, full historical scanner-latency resolution or semantic trading accuracy is claimed.",
+    "No genuine broker, account, subscription or signed-device acceptance.",
+    "No separate independent reviewer this session."
+  ],
+  "broker_publication_block_resolved":false,
+  "blocked_host_consent_payload_retried":false,
+  "browser_context":"Browser.list_tabs requires originating connected-browser context; unavailable in this chat. Separate from the specific broker source-write rejection.",
+  "remaining_release_gates_reference":"Issue126/6396423963",
+  "application_deployed":false,"database_changed":false,"credentials_accessed_or_created":false,
+  "real_broker_google_model_calls":0,"main_merged":false,"heldouts_touched":0,"stores_prices_or_schedules_changed":false,
+  "rollback":"Candidate-only revert of application repaire569150 if required. No live rollback; do not recreate or revert accepted staging tables."
+}
