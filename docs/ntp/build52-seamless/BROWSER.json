@@ -1,0 +1,28 @@
+{
+  "status": "PASS",
+  "checks": [
+    "390:upload stays local; zero chart-check UI or confirmations",
+    "390:single click reaches real report UI with automatic provenance",
+    "390:expired session clears previous report, preserves chart, shows in-place sign-in",
+    "390:email return persists server session without navigation or image loss",
+    "390:unclear chart produces one useful error and no analysis",
+    "390:outage recovers through same Analyse action",
+    "390:cancel suppresses late preflight and analysis",
+    "390:unmounted email exchange cannot invoke server session bridge",
+    "390:five sources selectable without extra network requests",
+    "390:no horizontal overflow",
+    "1440:upload stays local; zero chart-check UI or confirmations",
+    "1440:single click reaches real report UI with automatic provenance",
+    "1440:expired session clears previous report, preserves chart, shows in-place sign-in",
+    "1440:email return persists server session without navigation or image loss",
+    "1440:unclear chart produces one useful error and no analysis",
+    "1440:outage recovers through same Analyse action",
+    "1440:cancel suppresses late preflight and analysis",
+    "1440:unmounted email exchange cannot invoke server session bridge",
+    "1440:five sources selectable without extra network requests",
+    "1440:no horizontal overflow"
+  ],
+  "errors": [],
+  "realProviderCalls": 0,
+  "scope": "Actual React/CSS; intercepted synthetic HTTP and auth; not device acceptance"
+}
