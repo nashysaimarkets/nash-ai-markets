@@ -691,3 +691,27 @@
 .pnIgDemo > p { font-size: 13px; line-height: 1.6; color: #c6cbd1; }
 .pnIgDemo button { min-height: 44px; padding: 10px 12px; margin: 4px; border: 1px solid #b9a87a77; border-radius: 8px; background: transparent; color: inherit; }
 .pnIgDemo :is(button,input,a):focus-visible { outline: 2px solid #e6d9b5; outline-offset: 3px; }
+
+/* The risk desk lives in a narrow report rail, regardless of viewport width. */
+.pnApp .pnDecision .psRiskDesk{min-width:0;border:1px solid #b6b1a7;border-radius:4px;background:#faf8f3;color:#172232}
+.pnApp .pnDecision .psRiskDesk>header{flex-wrap:wrap;padding:14px;background:#ece9e1;border-color:#b6b1a7}
+.pnApp .pnDecision .psRiskDesk>header>div{min-width:0;flex:1 1 160px}
+.pnApp .pnDecision .psRiskDesk>header :is(span,small,strong){color:#425063;overflow-wrap:anywhere;letter-spacing:normal}
+.pnApp .pnDecision .psRiskDeskBody{display:grid;grid-template-columns:minmax(0,1fr);gap:0;background:transparent}
+.pnApp .pnDecision .psRiskDesk form{grid-template-columns:minmax(0,1fr);min-width:0;margin:0;padding:14px;background:transparent}
+.pnApp .pnDecision .psRiskDesk label{min-width:0}
+.pnApp .pnDecision .psRiskDesk label>span{font-size:11px;color:#425063;letter-spacing:normal;line-height:1.5}
+.pnApp .pnDecision .psRiskDesk label>div{min-width:0;gap:0;background:#fff;border-color:#9a9f9e;border-radius:4px}
+.pnApp .pnDecision .psRiskDesk :is(input,select){background:#fff;color:#172232;border:0;border-radius:0;font-size:14px;min-height:44px}
+.pnApp .pnDecision .psRiskDesk input{flex:1 1 0;width:0;min-width:0}
+.pnApp .pnDecision .psRiskDesk select{flex:0 0 78px;width:78px;padding:8px}
+.pnApp .pnDecision .psRiskDesk label b{flex-shrink:0;color:#425063;font-size:10px}
+.pnApp .pnDecision .psRiskDesk form>button{grid-column:1;white-space:normal;overflow-wrap:anywhere;background:#172232;color:#faf8f3;font-size:11px;letter-spacing:normal}
+.pnApp .pnDecision .psRiskReadout{grid-template-columns:minmax(0,1fr);margin:0;padding:0 14px 14px;background:transparent}
+.pnApp .pnDecision .psRiskReadout article{min-width:0;min-height:0;background:#ece9e1;border:1px solid #b6b1a7;padding:14px}
+.pnApp .pnDecision .psRiskReadout article :is(small,span){color:#425063;font-size:12px;letter-spacing:normal;overflow-wrap:anywhere}
+.pnApp .pnDecision .psRiskReadout article strong{color:#172232;font-size:26px;overflow-wrap:anywhere}
+.pnApp .pnDecision .psRiskDesk>footer{grid-template-columns:minmax(0,1fr);background:#ece9e1;border-color:#b6b1a7}
+.pnApp .pnDecision .psRiskDesk>footer :is(b,span){color:#425063;font-size:12px;letter-spacing:normal}
+.pnApp .pnDecision .psRiskStatus{color:#21563b;font-size:12px;letter-spacing:normal}
+.pnApp .pnDecision .psRiskDesk :is(input,select,button):focus-visible{outline:2px solid #84652f;outline-offset:-3px}
