@@ -1,0 +1,14 @@
+-- READ ONLY. Intended project: pxlqvaddvghjjhenqmdh (nashaimarkets-staging).
+-- Management-plane project identity must be checked separately; current_database alone is insufficient.
+SELECT jsonb_build_object(
+ 'observed_at',clock_timestamp(),
+ 'server_version',current_setting('server_version'),
+ 'rows',jsonb_build_object('sessions',(SELECT count(*) FROM ig_demo_private.sessions),'credentials',(SELECT count(*) FROM ig_demo_private.credentials),'requests',(SELECT count(*) FROM ig_demo_private.requests),'chart_provenance',(SELECT count(*) FROM ig_demo_private.chart_provenance)),
+ 'tables',(SELECT jsonb_agg(jsonb_build_object('name',c.relname,'rls',c.relrowsecurity,'force_rls',c.relforcerowsecurity) ORDER BY c.relname) FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname='ig_demo_private' AND c.relkind='r'),
+ 'runtime_role',(SELECT jsonb_build_object('login',rolcanlogin,'superuser',rolsuper,'createdb',rolcreatedb,'createrole',rolcreaterole,'inherit',rolinherit,'replication',rolreplication,'bypass_rls',rolbypassrls,'connection_limit',rolconnlimit) FROM pg_roles WHERE rolname='ig_demo_runtime'),
+ 'memberships',(SELECT jsonb_agg(jsonb_build_object('role',pg_get_userbyid(roleid),'member',pg_get_userbyid(member),'grantor',pg_get_userbyid(grantor),'admin',admin_option,'inherit',inherit_option,'set',set_option)) FROM pg_auth_members WHERE roleid=(SELECT oid FROM pg_roles WHERE rolname='ig_demo_runtime') OR member=(SELECT oid FROM pg_roles WHERE rolname='ig_demo_runtime')),
+ 'active_runtime_sessions',(SELECT count(*) FROM pg_stat_activity WHERE usename='ig_demo_runtime'),
+ 'installed_migrations',(SELECT jsonb_agg(jsonb_build_object('version',version,'name',name,'statement_count',cardinality(statements),'sql_sha256',encode(sha256(convert_to(array_to_string(statements,E'\n'),'UTF8')),'hex')) ORDER BY version) FROM supabase_migrations.schema_migrations WHERE name IN ('ntp_ig_demo_staging_storage','ntp_ig_demo_staging_isolation_acceptance')),
+ 'outside_table_access',(SELECT count(*) FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname NOT IN ('pg_catalog','information_schema','ig_demo_private') AND n.nspname NOT LIKE 'pg_toast%' AND n.nspname NOT LIKE 'pg_temp%' AND c.relkind IN ('r','p','v','m') AND has_schema_privilege('ig_demo_runtime',n.oid,'USAGE') AND has_table_privilege('ig_demo_runtime',c.oid,'SELECT,INSERT,UPDATE,DELETE,TRUNCATE')),
+ 'outside_callable_definers',(SELECT coalesce(jsonb_agg(jsonb_build_object('schema',n.nspname,'name',p.proname,'arguments',pg_get_function_identity_arguments(p.oid))),'[]'::jsonb) FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace WHERE p.prosecdef AND n.nspname NOT IN ('pg_catalog','information_schema','ig_demo_private') AND has_schema_privilege('ig_demo_runtime',n.oid,'USAGE') AND has_function_privilege('ig_demo_runtime',p.oid,'EXECUTE'))
+) AS staging_storage_verification;
