@@ -9,13 +9,14 @@ export type AppleAccessDependencies = {
   verifyRenewal: (jws: string) => Promise<JWSRenewalInfoDecodedPayload>;
   getStatuses: (transactionId: string) => Promise<StatusResponse>;
   isLegacyOwner?: (originalTransactionId: string, userId: string) => Promise<boolean>;
+  getOwnedTransactionIds?: (userId: string) => Promise<string[]>;
 };
 
 /** Never decode unsigned claims. Both proof and fresh status must come from Apple
  * and belong to the authenticated account. A restore is the same verification,
  * not a client override. Pre-binding legacy purchases need a separate migration. */
 export async function verifyPocketAppleAccess(userId: string, proof: string, deps: AppleAccessDependencies): Promise<boolean> {
-  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(userId) || !proof || proof.length > 16000) return false;
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(userId) || proof.length > 16000) return false;
   const matches = async (tx: JWSTransactionDecodedPayload) => {
     const valid = tx.bundleId === POCKET_APPLE_BUNDLE_ID
     && tx.productId === POCKET_APPLE_PRODUCT_ID && tx.environment === deps.environment
@@ -25,22 +26,40 @@ export async function verifyPocketAppleAccess(userId: string, proof: string, dep
     if (tx.appAccountToken != null) return tx.appAccountToken.toLowerCase() === userId.toLowerCase();
     return deps.isLegacyOwner ? deps.isLegacyOwner(tx.originalTransactionId!, userId) : false;
   };
-  const supplied = await deps.verifyTransaction(proof);
-  if (!await matches(supplied)) return false;
-  const response = await deps.getStatuses(supplied.originalTransactionId!);
+  let originals: string[];
+  if (proof) {
+    const supplied = await deps.verifyTransaction(proof);
+    if (!await matches(supplied)) return false;
+    originals = [supplied.originalTransactionId!];
+  } else {
+    // TestFlight may have no production transaction. Only a separately recorded,
+    // UUID-bound ownership mapping can select an original transaction to refresh.
+    // Never infer this mapping from email, events, receipt possession or client ID.
+    if (!deps.getOwnedTransactionIds) return false;
+    originals = await deps.getOwnedTransactionIds(userId);
+    if (!Array.isArray(originals) || originals.length > 5 ||
+      originals.some(id => typeof id !== 'string' || !/^[0-9]{1,64}$/.test(id)) ||
+      new Set(originals).size !== originals.length) throw Error('Invalid Apple ownership records');
+    for (const original of originals) {
+      if (!deps.isLegacyOwner || !await deps.isLegacyOwner(original, userId)) return false;
+    }
+  }
+  for (const original of originals) {
+  const response = await deps.getStatuses(original);
   if (response.bundleId !== POCKET_APPLE_BUNDLE_ID || response.environment !== deps.environment) return false;
   for (const group of response.data ?? []) for (const current of group.lastTransactions ?? []) {
-    if (current.originalTransactionId !== supplied.originalTransactionId || !current.signedTransactionInfo || ![1, 4].includes(current.status ?? 0)) continue;
+    if (current.originalTransactionId !== original || !current.signedTransactionInfo || ![1, 4].includes(current.status ?? 0)) continue;
     const tx = await deps.verifyTransaction(current.signedTransactionInfo);
-    if (!await matches(tx) || tx.originalTransactionId !== supplied.originalTransactionId) continue;
+    if (!await matches(tx) || tx.originalTransactionId !== original) continue;
     if (current.status === 1 && typeof tx.expiresDate === "number" && Number.isFinite(tx.expiresDate) && tx.expiresDate > deps.now()) return true;
     if (current.status === 4 && current.signedRenewalInfo) {
       const renewal = await deps.verifyRenewal(current.signedRenewalInfo);
-      if (renewal.originalTransactionId === supplied.originalTransactionId && renewal.environment === deps.environment
+      if (renewal.originalTransactionId === original && renewal.environment === deps.environment
           && renewal.productId === POCKET_APPLE_PRODUCT_ID
           && (renewal.appAccountToken == null || renewal.appAccountToken.toLowerCase() === userId.toLowerCase())
           && typeof renewal.gracePeriodExpiresDate === "number" && Number.isFinite(renewal.gracePeriodExpiresDate) && renewal.gracePeriodExpiresDate > deps.now()) return true;
     }
+  }
   }
   return false;
 }
@@ -60,8 +79,15 @@ export async function createPocketAppleVerifier() {
   const rootConfig = process.env.POCKET_APPLE_ROOT_CERTIFICATES_BASE64;
   const appId = Number(process.env.POCKET_APPLE_APP_ID);
   if (!key || !keyId || !issuer || !rootConfig || !Number.isSafeInteger(appId) || appId <= 0) throw new Error("Apple verifier configuration unavailable");
+  const {createPrivateKey, X509Certificate} = await import('node:crypto');
+  const signingKey = createPrivateKey(key);
+  if (signingKey.asymmetricKeyType !== 'ec' || signingKey.asymmetricKeyDetails?.namedCurve !== 'prime256v1') throw Error('Apple signing key invalid');
   const roots: unknown = JSON.parse(rootConfig);
   if (!Array.isArray(roots) || roots.length === 0 || roots.some(root => typeof root !== "string" || !root)) throw new Error("Pinned Apple roots unavailable");
+  for (const root of roots) {
+    const cert = new X509Certificate(Buffer.from(root, 'base64'));
+    if (!cert.ca || Date.parse(cert.validFrom) > Date.now() || Date.parse(cert.validTo) <= Date.now()) throw Error('Apple root certificate invalid');
+  }
   const verifier = new SignedDataVerifier(roots.map(root => Buffer.from(root, "base64")), true, environment, POCKET_APPLE_BUNDLE_ID, appId);
   const client = new AppStoreServerAPIClient(key, keyId, issuer, POCKET_APPLE_BUNDLE_ID, environment);
   return { verifier, client, environment, appId };
@@ -80,6 +106,14 @@ export async function hasPocketAppleSubscription(userId: string, proof: string):
     },
     verifyRenewal: jws => verifier.verifyAndDecodeRenewalInfo(jws),
     getStatuses: id => client.getAllSubscriptionStatuses(id),
+    getOwnedTransactionIds: async id => {
+      const {createAdminClient} = await import('../../../utils/supabase/admin.ts');
+      const {data,error} = await createAdminClient().rpc('get_pocket_apple_owned_transactions', {
+        p_environment:environment, p_user_id:id,
+      });
+      if (error || !Array.isArray(data)) throw Object.assign(Error('Apple ownership lookup unavailable'), {code:'POCKET_APPLE_OWNERSHIP_UNAVAILABLE'});
+      return data;
+    },
     isLegacyOwner: async (originalTransactionId, id) => {
       const { createAdminClient } = await import("../../../utils/supabase/admin.ts");
       const { data, error } = await createAdminClient().rpc("is_pocket_apple_legacy_owner", {

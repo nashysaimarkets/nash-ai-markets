@@ -11,6 +11,8 @@ export async function middleware(request: NextRequest) {
   // The native PKCE relay must not read/refresh a Safari session. The app
   // exchanges the code using its own pending verifier after the return.
   if (request.nextUrl.pathname === "/auth/native-return") return NextResponse.next();
+  // Public candidate diagnostics must not read or refresh a customer's session.
+  if (request.nextUrl.pathname === "/api/pocket/native-readiness") return NextResponse.next();
   let response = NextResponse.next({
     request: {
       headers: request.headers,

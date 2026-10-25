@@ -1,0 +1,42 @@
+{
+  "status": "OFFLINE_REPAIR_ACCEPTED_LIVE_SETUP_REQUIRED",
+  "base": "b0b43975206fbc74ab92e55f7d1716318f24fb9e",
+  "branch": "monaco-build53-runtime-184930",
+  "targetedTests": 101,
+  "newDefaultNodeTests": 46,
+  "independentTests": 85,
+  "disposableSqlChecks": 15,
+  "sqlEngine": "PGlite 0.3.14",
+  "sqlConcurrencyAcceptance": false,
+  "typecheck": "PASS",
+  "lint": "PASS",
+  "webpackBuild": "PASS_OFFLINE_CONFIG",
+  "secretScan": "PASS",
+  "appleIapKeysObserved": 0,
+  "appleVerifierEnvObserved": 0,
+  "liveRpcPresent": false,
+  "appleApiAcceptance": false,
+  "ownerRestoreAcceptance": false,
+  "deviceAcceptance": false,
+  "deployed": false,
+  "uploaded": false,
+  "productionWrites": false,
+  "databaseInstallPlan": [
+    {
+      "path": "supabase/migrations/20261010173440_pocket_scan_entitlements.sql",
+      "sha256": "e14451c535823208d0e3d13a7f33bdbd0ed998d9146c21577cfc59c3cde6d006"
+    },
+    {
+      "path": "supabase/migrations/20261011165326_pocket_apple_ownership_events.sql",
+      "sha256": "9adce93b670cc374bb7a4df64f473e3e8c604f05d08ccf08bf5e16fa8474cf8f"
+    },
+    {
+      "path": "supabase/migrations/20261014143000_bind_pocket_web_subscription_identity.sql",
+      "sha256": "251bf85a9ebaa8497679e13871ddb14c93cb492b08622ea921ef38d6910a37d2"
+    },
+    {
+      "path": "supabase/proposed/pocket-apple-owner-recovery.sql",
+      "sha256": "96adad1ae94a5f41cc34fff2c7af47a6cc8c5184fe1e8aa94980dec4621dd7a4"
+    }
+  ]
+}
