@@ -1,6 +1,6 @@
 workflows:
   pocket-bullseye-ios-testflight:
-    name: NTP 2.0 — signed candidate, manual upload
+    name: NTP 2.0 — verified internal TestFlight upload
     instance_type: mac_mini_m2
     max_build_duration: 30
     integrations:
@@ -15,8 +15,8 @@ workflows:
         bundle_identifier: com.nashaimarkets.pocketbullseye
       vars:
         NTP_VERSION: '2.0.0'
-        NTP_BUILD: '49'
-    # Manual only. No automatic trigger, upload, review submission or release.
+        NTP_BUILD: '50'
+    # Manual trigger only. Upload after verification; no beta/App Store review or release.
     # Supply EXPECTED_NATIVE_REVISION, CAPACITOR_SERVER_URL and
     # CAPACITOR_SERVER_REVISION only after exact-source/backend acceptance.
     scripts:
@@ -91,3 +91,9 @@ workflows:
     artifacts:
       - build/ios/ipa/*.ipa
       - build/ios/receipt.json
+
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: false
+        submit_to_app_store: false
