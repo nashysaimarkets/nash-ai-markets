@@ -1,0 +1,97 @@
+name: NTP Apple native unsigned acceptance
+on:
+  push:
+    branches: [monaco-ntp-integration-20261025-ad6]
+    paths: ['.github/workflows/monaco-apple-native.yml']
+permissions:
+  contents: read
+jobs:
+  native-compile:
+    if: github.event.repository.private == false && github.repository == 'nashysaimarkets/nash-ai-markets'
+    runs-on: macos-15
+    timeout-minutes: 20
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.3.app/Contents/Developer
+      NEXT_TELEMETRY_DISABLED: '1'
+      CAPACITOR_SERVER_URL: https://native-compile.invalid/pocket
+      CAPACITOR_SERVER_REVISION: ${{ github.sha }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with: {persist-credentials: false}
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with: {node-version: '24'}
+      - name: Identify exact native source and compiler
+        run: |
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          test -d "$DEVELOPER_DIR"
+          xcodebuild -version
+          xcrun --sdk iphoneos --show-sdk-version
+          xcrun --sdk iphonesimulator --show-sdk-version
+          echo "NTP_NATIVE_SOURCE=$GITHUB_SHA"
+      - name: Locked native dependencies and non-routable configuration
+        run: |
+          npm ci --ignore-scripts --no-audit --no-fund
+          node node_modules/@capacitor/cli/bin/capacitor sync ios
+          python3 - <<'PY'
+          import json, pathlib
+          p = pathlib.Path('ios/App/App/capacitor.config.json')
+          config = json.loads(p.read_text())
+          assert config['appId'] == 'com.nashaimarkets.pocketbullseye'
+          assert config['server']['url'] == 'https://native-compile.invalid/pocket'
+          assert config['server']['cleartext'] is False
+          assert config['server']['allowNavigation'] == ['native-compile.invalid']
+          print('NTP_NATIVE_CONFIG: synthetic non-routable backend; no live acceptance')
+          PY
+      - name: Compile actual iPhone Simulator application without signing
+        run: |
+          set -euo pipefail
+          log="$RUNNER_TEMP/ntp-simulator-build.log"
+          xcodebuild -project ios/App/App.xcodeproj -scheme App -configuration Release \
+            -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath "$RUNNER_TEMP/ntp-native-simulator" \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY= \
+            build > "$log" 2>&1 || { tail -n 100 "$log"; exit 1; }
+          grep -F '** BUILD SUCCEEDED **' "$log"
+      - name: Compile actual iPhone device application without signing
+        run: |
+          set -euo pipefail
+          log="$RUNNER_TEMP/ntp-device-build.log"
+          xcodebuild -project ios/App/App.xcodeproj -scheme App -configuration Release \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath "$RUNNER_TEMP/ntp-native-device" \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY= \
+            build > "$log" 2>&1 || { tail -n 100 "$log"; exit 1; }
+          grep -F '** BUILD SUCCEEDED **' "$log"
+      - name: Verify both compiled packages and preserve sanitized evidence
+        run: |
+          python3 - <<'PY'
+          import hashlib, json, os, pathlib, plistlib, subprocess
+          root = pathlib.Path(os.environ['RUNNER_TEMP'])
+          reports = []
+          for kind, sdk in [('simulator', 'iphonesimulator'), ('device', 'iphoneos')]:
+              app = root / ('ntp-native-' + kind) / 'Build' / 'Products' / ('Release-' + sdk) / 'App.app'
+              info = plistlib.loads((app / 'Info.plist').read_bytes())
+              assert info['CFBundleIdentifier'] == 'com.nashaimarkets.pocketbullseye'
+              assert info['DTPlatformName'] == sdk
+              config = json.loads((app / 'capacitor.config.json').read_text())
+              assert config['server']['url'] == 'https://native-compile.invalid/pocket'
+              assert config['appId'] == info['CFBundleIdentifier']
+              assert not (app / 'embedded.mobileprovision').exists()
+              privacy = plistlib.loads((app / 'PrivacyInfo.xcprivacy').read_bytes())
+              assert isinstance(privacy, dict)
+              executable = app / info['CFBundleExecutable']
+              assert executable.is_file() and executable.stat().st_size > 0
+              reports.append({'target': kind, 'sdk': info.get('DTSDKName'),
+                  'bundle': info['CFBundleIdentifier'], 'version': info['CFBundleShortVersionString'],
+                  'build': info['CFBundleVersion'], 'executable_sha256': hashlib.sha256(executable.read_bytes()).hexdigest(),
+                  'architectures': subprocess.check_output(['xcrun', 'lipo', '-archs', str(executable)], text=True).strip(),
+                  'privacy_manifest': True, 'distribution_profile': False, 'package_checks': 7})
+          print('NTP_APPLE_COMPILE_RECEIPT ' + json.dumps({'source': os.environ['GITHUB_SHA'],
+              'status': 'PASS', 'packages': reports, 'signed_release': False,
+              'device_or_storekit_executed': False, 'real_backend_tested': False,
+              'broker_or_model_calls': 0, 'uploaded_to_apple': False}, sort_keys=True))
+          PY
+      - name: Remove temporary unsigned products
+        if: always()
+        run: |
+          rm -rf "$RUNNER_TEMP/ntp-native-simulator" "$RUNNER_TEMP/ntp-native-device"
