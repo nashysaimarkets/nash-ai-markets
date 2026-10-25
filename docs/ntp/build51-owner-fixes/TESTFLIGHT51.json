@@ -1,0 +1,23 @@
+{
+  "nativeRevision": "a800e4beb3ede21e05859366cb765b6c3ef5351f",
+  "backendRevision": "a800e4beb3ede21e05859366cb765b6c3ef5351f",
+  "deploymentId": "dpl_TuTUpFSote5qDhKe2CvQfvLQBWKr",
+  "backendUrl": "https://nash-ai-markets-hnhnubfyf-nash-ai-markets.vercel.app/pocket",
+  "build": "51",
+  "version": "2.0.0",
+  "upload": "VERIFIED",
+  "deliveryUUID": "b238b737-acd7-4231-99d1-2cf3603b32db",
+  "uploadedAtUtc": "2026-10-25T14:38:46Z",
+  "codemagicBuild": "6ade13774a72334e32e5064b",
+  "codemagicDuration": "4m2s",
+  "ipaSha256": "d708671e027f1ee746f6020d04da6d5a39237ffd58267ca056751e7820602405",
+  "appleProcessing": "COMPLETE",
+  "signedDeviceAcceptance": "UNTESTED",
+  "appleRestore": "UNVERIFIED",
+  "externalBetaReviewSubmitted": false,
+  "publicRelease": false,
+  "appleBuildStatus": "Ready to Submit",
+  "internalGroup": "Pocket Bullseye Internal Testers",
+  "internalInvites": 1,
+  "internalGroupAssignment": "VERIFIED"
+}
