@@ -35,15 +35,21 @@ test("the real shared comparison transport adds fresh native JWS and preserves c
   const source = await readFile(new URL("../app/pocket/apple-storekit.ts", import.meta.url), "utf8");
   const code = stripTypeScriptTypes(source.slice(source.indexOf("export async function pocketAuthenticatedFetch")).replace(/^export /, ""));
   let proof = "signed-synthetic-one";
+  let lastError = "";
   const calls: { url: string; init: RequestInit }[] = [];
-  const authenticated = new Function("isAppleNativeApp", "native", "APPLE_MONTHLY_PRODUCT_ID", "fetch", code + ";return pocketAuthenticatedFetch;")(
+  // The shared bridge now checks Android first. Supply the actual iOS platform
+  // fixture instead of silently catching a missing isGoogleNativeApp binding.
+  const authenticated = new Function("isAppleNativeApp", "native", "APPLE_MONTHLY_PRODUCT_ID", "fetch", "isGoogleNativeApp", "playAuthenticatedFetch", code + ";return pocketAuthenticatedFetch;")(
     () => true, { getStatus: async () => ({ signedTransactionInfo: proof, entitled: true, freeUseConsumed: false }) }, "existing-product",
     async (url: string, init: RequestInit) => { calls.push({ url, init }); return Response.json({ result: { symbol: "AAPL" } }); },
+    () => false, () => { throw new Error("The iOS fixture must not dispatch a Google request."); },
   ) as (url: string, init: RequestInit) => Promise<Response>;
   const session = createScreenshotComparison<{ symbol: string }>({ endpoint: "/api/pocket/options-wall", failureMessage: "Unavailable", fetch: authenticated,
-    publish: () => {}, read: async () => "data:image/png;base64,test", validate: (raw): raw is { symbol: string } => Boolean(raw && typeof raw === "object" && "symbol" in raw) });
+    publish: state => { lastError = state.error; }, read: async () => "data:image/png;base64,test", validate: (raw): raw is { symbol: string } => Boolean(raw && typeof raw === "object" && "symbol" in raw) });
   await session.attach({ name: "chart", size: 1, type: "image/png" }); await session.check({ ticker: "AAPL" });
+  assert.equal(lastError, "", "the actual native transport must complete, not swallow a fixture error");
   proof = "signed-synthetic-two"; await session.check({ ticker: "AAPL" });
+  assert.equal(lastError, "", "fresh signed evidence must pass on the second request");
   assert.equal(calls.length, 2);
   assert.equal(new Headers(calls[0].init.headers).get("x-pocket-apple-transaction"), "signed-synthetic-one");
   assert.equal(new Headers(calls[1].init.headers).get("x-pocket-apple-transaction"), "signed-synthetic-two");
