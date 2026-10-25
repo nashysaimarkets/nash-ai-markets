@@ -1,0 +1,36 @@
+Independent signature follow-up — 25 October 2026
+Reviewer: /root/independent_review. No repository edits or commits.
+
+Compared against executable90ccb1c6d682a37b5aebfd53af23afd63c72d1cb.
+The repair is exactly three changed code/test lines:
+- IG POST(request?:Request) becomes POST(request:Request).
+- Two tests now pass actual POST Request objects instead of calling POST().
+
+ACCEPTED: this corrects the Next route type contract without changing runtime
+logic. Independently compared type-erased before/after JavaScript using Node's
+stripTypeScriptTypes; identical after whitespace normalization. The first
+comparison attempt hit the environment's child-process EPERM restriction; a
+shell read of the same git blob followed by in-process comparison passed.
+
+Two affected default-disabled tests independently PASS, zero failures/skips:
+node --test --test-isolation=none --test-name-pattern='disabled actual customer route|unconfigured actual route' tests/ig-demo-http.test.ts tests/pocket-ig-demo-binding.test.ts
+They retain HTTP503 and IG_DEMO_NOT_CONFIGURED; browser/environment flags do
+not activate the route. Other tests were not selected or rerun for this repair.
+
+Google notification route already declares POST(request:Request), explicit .ts
+server import, nodejs runtime, force-dynamic and maxDuration30. No corresponding
+optional-Request defect or signature edit is needed there.
+
+README review: no misleading claim of launch or real-provider acceptance found.
+It explicitly records the failed separate Next build and distinguishes the
+Vinext/Sites Worker build from a Next/Vercel build and native/backend identity.
+Its124-check local total is supported by retained LOCAL-NODE.txt. Runtime,
+broker, scanner semantics, signed devices, hosting cost, name and commercial
+gates remain expressly unresolved. Installed app/store changes are not claimed.
+
+Before final checkpoint, update the interim verification paragraph: error
+retrieval/repair is no longer pending; the optional Request signature is the
+identified and repaired issue. Replace90ccb1c and the old CI reference only with
+the final exact source/tree and observed CI results; keep the original failure
+receipt. Android and Next success must remain unclaimed until observed. This
+signature review is not itself proof that either build or a deployment passed.

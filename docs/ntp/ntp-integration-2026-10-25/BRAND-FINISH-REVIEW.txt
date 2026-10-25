@@ -1,0 +1,47 @@
+Independent brand-finish review — 25 October 2026
+
+Reviewer: /root/independent_review
+Repository: /workspace/scratch/ad6b05572965/monaco-ntp
+Base: d3b06a88ad9d4111a71b7df0268a13cd74ed8e5d
+Reviewed commit: 743257448ce0dfdbaf7c887d5e389ba5c72c1f82
+App diff: 17 files, 45 insertions, 32 deletions.
+App diff SHA-256: 2f43effdbfa652a6d9faf6ba34d0e90e9e00eff88540053726b951d3e56cffc8
+
+RESULT: No blocking defect found in this bounded copy-only change.
+
+Read the complete app diff and checked the affected call sites. Changes are
+brand imports, rendered/account/error text, accessibility labels, join metadata,
+privacy/terms display wording, and the downloaded plan filename (ntp-plan.txt).
+The central display constant remains NTP / Nash Trading Platform. Report sharing
+and exported report content already use that constant; the remaining affected
+account/report labels now do as well.
+
+All provider/model prompt literals, model configuration, request envelopes and
+request payloads are unchanged by this diff. In particular the deliberately
+retained Pocket Bullseye / Ask Bullseye provider instructions remain verbatim.
+The API edits change only returned human-readable error messages. HTTP statuses,
+machine-readable error codes, entitlement decisions, cancellation behavior and
+provider dispatch are unchanged.
+
+No routes, package/bundle IDs, storage keys/schema/version, plugin registration,
+commerce IDs, prices, purchase/restore parameters, or auth redirect behavior
+change. Checked examples include the existing billing-portal/account routes,
+bullseye-decision-vault version 2, PocketStoreKit registration, and
+com.nashaimarkets.pocketbullseye.monthly. The historical Apple product display
+name "Pocket Bullseye Monthly" is preserved. This does not rename an existing
+store listing or represent a signed native release.
+
+Verification: complete source diff review, focused source reads, and
+git diff --check against the pinned base. No broad or additional runtime tests
+were run or added; there are no new test counts to aggregate. Root committed
+the reviewed app changes during review; the final app working tree is clean
+relative to 743257448ce0dfdbaf7c887d5e389ba5c72c1f82. A later executable change
+would need its own review and exact-source verification.
+
+Evidence wording: the current README still contains the superseded 90ccb1c
+Next-build failure/pending-repair paragraph. Root has already assigned its
+replacement with observed final exact-source results. Preserve the historical
+failure and keep Worker build, Next build, offline fixtures, live provider
+acceptance, native release, and name clearance distinct. This review makes no
+public launch, live broker/Google, database, device, signing, or brand-clearance
+claim.

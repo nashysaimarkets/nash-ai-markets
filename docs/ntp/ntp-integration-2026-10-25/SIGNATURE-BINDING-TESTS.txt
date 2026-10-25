@@ -1,0 +1,24 @@
+✔ unconfigured actual route remains503 despite browser and environment flags (39.113766ms)
+✔ serialized or forged structural binding cannot install or enable the route (1.990189ms)
+✔ factory performs no IO and page availability does not read credentials or broker (6.149583ms)
+✔ composed route uses real lifecycle, cipher, SQL adapter and fixed DEMO transport with canonical UUID (54.937982ms)
+✔ page availability ignores forwarded-host and rejects absent/foreign actual Host (1.429248ms)
+✔ missing rights or availability never enables connect but authenticated disconnect still revokes (37.606552ms)
+✔ withdrawn or unavailable paid access still allows authenticated local revocation (41.910843ms)
+✔ source, auth, storage, key, namespace or restricted-role mismatch denies before SQL/provider (5.905198ms)
+✔ anonymous, unconfirmed or malformed identities cannot query shared storage (4.409229ms)
+✔ wrong-owner and malformed truthy grants deny before shared state or provider work (2.183763ms)
+✔ host/origin injection, browser credentials and unsupported actions cannot dispatch (3.296747ms)
+✔ constructor rejects non-DEMO, noncanonical origin, malformed rights and quota expansion (0.871044ms)
+✔ configuration snapshot cannot later be toggled by mutable objects (1.405724ms)
+✔ cancellation while trusted identity inspection stalls cannot dispatch late auth/SQL/provider (1.491835ms)
+✔ quota exhaustion in existing shared SQL adapter prevents provider request (2.344786ms)
+✔ actual mounted POST delegates once to trusted composed binding and cannot be rebound (14.383205ms)
+ℹ tests 16
+ℹ suites 0
+ℹ pass 16
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 248.715878

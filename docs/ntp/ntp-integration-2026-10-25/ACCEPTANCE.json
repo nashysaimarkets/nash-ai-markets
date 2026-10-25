@@ -1,0 +1,98 @@
+{
+  "asOfUtc": "2026-10-25T08:40:08.027606+00:00",
+  "status": "PASS_OFFLINE_IMPLEMENTATION_ONLY_NOT_LAUNCHED",
+  "source": "743257448ce0dfdbaf7c887d5e389ba5c72c1f82",
+  "tree": "a909510f539e9bd04aa291ae9eff01516bd45855",
+  "branch": "monaco-ntp-integration-20261025-ad6",
+  "ci": {
+    "runId": 40177167084,
+    "jobId": 121120252310,
+    "attempt": 1,
+    "conclusion": "success",
+    "url": "https://github.com/nashysaimarkets/nash-ai-markets/actions/runs/40177167084"
+  },
+  "verification": {
+    "distinctNodeHttpSsrChecks": 134,
+    "nodeIntegrationChecks": 124,
+    "realLoopbackHttpChecks": 10,
+    "phoneBrowserChecks": 13,
+    "browser": "155.0.8059.39",
+    "automatedAccessibilityViolations": {
+      "intake": 0,
+      "report": 0
+    },
+    "pageErrors": 0,
+    "syntheticScannerRequests": 2,
+    "modelOrBrokerOrGoogleServiceCalls": 0,
+    "typeScript": "PASS",
+    "secretScan": "PASS_1714_CANDIDATES",
+    "sitesWorkerBuild": "PASS_ESM_ARTIFACT_VERIFIED",
+    "separateNextBuild": "PASS_EXTERNAL_SERVICES_BLOCKED",
+    "androidBuild": "PASS_DEBUG_SYNTHETIC_NONROUTABLE_BACKEND_PIN",
+    "iOSArchive": "NOT_BUILT",
+    "signedDeviceAcceptance": "NOT_PERFORMED"
+  },
+  "preview": {
+    "file": "NTP-Premium-7432574-Offline.html",
+    "bytes": 1365144,
+    "source": "743257448ce0dfdbaf7c887d5e389ba5c72c1f82",
+    "tree": "a909510f539e9bd04aa291ae9eff01516bd45855",
+    "sha256": "6e7540bf74ff4866f368864630264a22c1a747b1053f95a5f290992c07a567b8",
+    "deployment": "DISABLED",
+    "services": "OFFLINE_DISABLED",
+    "entry": "actual PocketNext and complete /pocket stylesheet stack"
+  },
+  "captures": [
+    {
+      "path": "browser/phone-workspace.jpg",
+      "bytes": 68503,
+      "sha256": "fb35c716abec86eb00ee5b03f20f15059f5031ead1c8c7e339ce237642720745",
+      "scope": "Actual Chromium component with synthetic responses, not native device/live service"
+    },
+    {
+      "path": "browser/phone-report.jpg",
+      "bytes": 89983,
+      "sha256": "625578a199f3067b9952f046b75245cfc531bb3cf983c5dbc438017cf42e102d",
+      "scope": "Actual Chromium component with synthetic responses, not native device/live service"
+    }
+  ],
+  "independentReview": [
+    "INDEPENDENT-REVIEW.txt",
+    "SIGNATURE-REVIEW.txt",
+    "BRAND-FINISH-REVIEW.txt"
+  ],
+  "name": {
+    "candidate": "NTP \u2014 Nash Trading Platform",
+    "chosenByOwner": true,
+    "publicClearance": "NOT_ESTABLISHED_ASX_NTP_TRADING_PLATFORM_OVERLAP"
+  },
+  "activation": {
+    "igDemoRuntime": "UNCONFIGURED_503",
+    "googleAcknowledgement": "SANDBOX_OPT_IN_DEFAULT_OFF",
+    "googleNotifications": "UNCONFIGURED_503",
+    "newDeployment": "NONE",
+    "productionAlias": "UNCHANGED",
+    "main": "UNCHANGED",
+    "storeRelease": "NONE",
+    "modelPromptOrDispatchChangesInRename": "NONE"
+  },
+  "protected": {
+    "heldOutCases": 44,
+    "heldOutCasesAccessed": 0,
+    "schedules": "UNCHANGED",
+    "newPaidProviderActivity": 0,
+    "latestPriorConservativeHeldUsd": "2.1664",
+    "aggregateExistingUsdLimit": "5",
+    "actualBilledUsd": "UNKNOWN",
+    "priorAccountingReference": "Issue126/6388549581"
+  },
+  "remainingGates": [
+    "Existing IG DEMO API access, credentials/permissions and genuine read-only provider acceptance",
+    "Selected host zero-additional-cost/no-overage condition",
+    "Real runtime source/origin/auth/storage identities, trusted account mapping, OAuth, shared DB and key installation",
+    "Authoritative chart provenance and scanner semantic acceptance",
+    "Signed native archive, accepted backend pin and signed-device/provider acceptance",
+    "Candidate public name decision/clearance and commercial data/store rights"
+  ],
+  "rollback": "No live change; candidate-only parent190bb0a1a879f3f863e4d4b187dd74b201d99890 retained"
+}

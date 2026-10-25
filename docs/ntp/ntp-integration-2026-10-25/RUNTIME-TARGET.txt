@@ -1,0 +1,68 @@
+SANITIZED RUNTIME TARGET REVIEW — 25 OCTOBER 2026
+
+Recorded at: 2026-10-25T08:23:19Z (clock__curr_time).
+Scope: read-only metadata reconciliation of the existing Vercel main project and saved native/source records. No hosting/billing reinvestigation, settings, deployment, login, provider requests, credential changes or value inspection.
+Retrieval timing: Vercel/GitHub metadata was collected earlier in this same active audit, before the recorded-at time above. Individual tool-call timestamps were not separately retained and the metadata responses did not supply observation timestamps; no exact request timestamp is invented here. Resource creation/update timestamps below are provider-returned metadata, not observation times.
+
+OBSERVED EXISTING TARGET
+Team: team_MqvsF0keYeNxyWRJPASkmFQ4
+Project: nash-ai-markets / prj_cSvZGGsWRUSLQ6TNMZ3JCuqjZlOw
+Framework: nextjs
+Node version: 24.x
+Project response omitted buildCommand. Deployment and filtered list-projects responses also omitted it.
+
+PRODUCTION IDENTITY
+Deployment: dpl_F3vk77Y7yPL9BWjBzrvmNgHGKSoQ
+Status/target: READY / production
+Source: git; nashysaimarkets/nash-ai-markets; main
+Source SHA: 1d3d6ef7e19259e9ced7090a2dbb9cc07e39ca9b
+Created: 2026-10-05T16:16:09.103Z
+Immutable hostname: nash-ai-markets-i71srdw21-nash-ai-markets.vercel.app
+Deployment aliases: www.nashaimarkets.com; nash-ai-markets.vercel.app; nashaimarkets.com; nash-ai-markets-nash-ai-markets.vercel.app; nash-ai-markets-git-main-nash-ai-markets.vercel.app
+These metadata records do not establish that the signed installed native app uses this deployment.
+
+LATEST RECORDED PREVIEW IN PROJECT RESPONSE
+Deployment: dpl_Hic9eH9ZnfFCf2tetSXrorzmCS2J
+Status: READY; target null (not the recorded production deployment)
+Hostname: nash-ai-markets-8jebwivt4-nash-ai-markets.vercel.app
+Source SHA: 9ddadfd7bbf05b022ff6d26cf2931f2948768dd7
+Branch: monaco-evidence-126-20261019
+Alias: nash-ai-markets-git-monaco-evidence-126-0e4f98-nash-ai-markets.vercel.app
+This is not accepted premium source15141db or the new NTP integration candidate.
+
+ENVIRONMENT METADATA ONLY
+Query explicitly used decrypt=false. Returned28environment records; hiddenProductionEnvCount=0. No plaintext/encrypted values are included in this report. Only names, scope, branch and provider metadata timestamps were inspected/output.
+
+Relevant existing names:
+OPENAI_API_KEY — preview+production; created/updated2026-07-28T16:31:59.512Z.
+NEXT_PUBLIC_SUPABASE_URL — production; created/updated2026-07-22T20:20:22.388Z.
+NEXT_PUBLIC_SUPABASE_URL — preview; created/updated2026-07-22T20:19:25.095Z.
+SUPABASE_SERVICE_ROLE_KEY — production+preview; created2026-07-14T17:41:19.569Z; updated2026-07-18T07:30:43.318Z.
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY — production+preview; created2026-07-14T17:16:42.849Z; updated2026-07-22T19:37:46.971Z.
+NEXT_PUBLIC_SUPABASE_URL — preview branch bullseye-customer-terminal-overhaul; created2026-07-14T17:13:12.943Z; updated2026-07-22T20:18:31.889Z.
+Existing Stripe/mail/market-data variable names also returned. Their values were not inspected; they are unrelated to proving an IG/Google bootstrap binding.
+
+No returned names matched IG, GOOGLE, PLAY, ANDROID, VAULT, OAUTH, POSTGRES, DATABASE or CAPACITOR configuration categories. This is scoped to the returned inventory of this exact project. It is not a claim that no credentials exist anywhere or that an external service could not supply bindings.
+
+BUILD-TARGET FINDING
+Current production SHA1d3d6ef package.json has build="bash scripts/build-verified.sh", start="WRANGLER_LOG_PATH=.wrangler/wrangler.log vinext start", dev="WRANGLER_LOG_PATH=.wrangler/wrangler.log vite", and next dependency16.2.12.
+The current integration repository's npm build compiles Vinext/Sites Worker output. scripts/validate-artifact.sh checks an ESM default.fetch and packaged Sites manifest. next.config.ts and prior scanner/release workflows separately define direct Next build acceptance.
+Effective Vercel buildCommand remains UNVERIFIED because the connected metadata tools omit it. A historic override may exist, but none was observed and none is inferred. Framework=nextjs alone does not prove which build command executed or will execute for the candidate.
+No Worker-compatible PostgreSQL pool/runtime binding was established by this audit. A Worker build and runtime='nodejs' declaration are not provider/transport acceptance.
+
+CONFIGURATION/ENGINEERING GAPS
+Repository search finds createPocketIgDemoBinding/bindPocketIgDemoRuntime and Google equivalents declared, with no production bootstrap invocation. Existing generic Supabase/OpenAI/Stripe environment names do not constitute missing IG/Google pool/key/identity/auth/consent/provider adapters. New route/page wiring remains unconfigured by default.
+docs/monaco-126/native-acceptance-current.md records historical native Supabase referenceopmgzchnmcgnsfwpmysc and explicitly leaves current signed-binary/backend binding unverified. The actual Supabase URL value was not read, so variable-name metadata does not establish backend identity.
+Existing Vercel project identity can be reused. The evidence does not establish an approved isolated target, configured IG/Google runtime, matching native web pin or release acceptance.
+
+TOOLS OBSERVED (ALL READ-ONLY; NO REPEAT CALLS FOR THIS REPORT)
+mcp__codex_apps__vercel_get_project — exact project/team; project framework/Node/current reference metadata.
+mcp__codex_apps__vercel_filter_project_envs — exact project/team, decrypt=false;28records, hiddenProductionEnvCount0; only metadata selected for output.
+mcp__codex_apps__vercel_list_deployments — exact project/team, production filter, limit3; latest production/source identities.
+mcp__codex_apps__vercel_get_deployment — exact latest preview and production IDs, withGitRepoInfo=true; source metadata and aliases.
+mcp__codex_apps__vercel_list_projects — exact-name search, limit1, same team; buildCommand absent here too.
+mcp__codex_apps__github_fetch — package.json at exact production SHA1d3d6ef7e19259e9ced7090a2dbb9cc07e39ca9b; selected scripts/Next dependency only.
+exec_command — local saved native identity/build/source reads, filenames-only .env inventory and bootstrap invocation search; no actual .env files existed beyond examples.
+clock__curr_time — report recording timestamp above.
+
+No Vercel plan/usage/allowance/billing endpoint was queried. No settings, environment, production, deployment, domain, native package, credentials or schedules were changed.

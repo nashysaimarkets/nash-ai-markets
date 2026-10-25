@@ -1,36 +1,42 @@
 {
   "currentContinuation": {
-    "asOfUtc": "2026-10-25T08:19:37.380819+00:00",
-    "status": "NTP_INTEGRATION_SOURCE_PREPARATION_ACCEPTANCE_PENDING",
+    "asOfUtc": "2026-10-25T08:40:08.027606+00:00",
+    "status": "NTP_INTEGRATION_OFFLINE_ACCEPTED_NOT_LAUNCHED",
     "branch": "monaco-ntp-integration-20261025-ad6",
     "checkpoint": "docs/ntp/ntp-integration-2026-10-25/README.md",
     "baseCommit": "190bb0a1a879f3f863e4d4b187dd74b201d99890",
     "acceptedParentSource": "15141db6899b53834d9e3f2984e8b4e5d78531f2",
-    "sourceCommitResolution": "Use the enclosing source publication and latest Issue126 receipt; exact source acceptance still pending.",
+    "sourceCommitResolution": "Pinned executable source above; evidence-only enclosing commit and final Issue126 receipt record publication.",
     "writerClaim": 6395191597,
-    "writerStatus": "ACTIVE",
+    "writerStatus": "RELEASED",
     "selectedCandidateName": "NTP \u2014 Nash Trading Platform",
     "publicNameClearance": "UNRESOLVED_ASX_NTP_SECTOR_COLLISION",
     "paidExecution": "NONE_IN_THIS_SESSION_DO_NOT_REPEAT_PRIOR_CASES",
     "heldOutCases": "44_UNTOUCHED",
     "schedules": "UNCHANGED",
     "deployment": "NONE",
-    "historicalFieldsBelow": "Prior track snapshots are retained as history; currentContinuation and latest Issue126 receipt control resumption."
+    "historicalFieldsBelow": "Prior track snapshots are retained as history; currentContinuation and latest Issue126 receipt control resumption.",
+    "sourceCommit": "743257448ce0dfdbaf7c887d5e389ba5c72c1f82",
+    "sourceTree": "a909510f539e9bd04aa291ae9eff01516bd45855",
+    "ciRun": 40177167084,
+    "ciJob": 121120252310,
+    "ciConclusion": "success",
+    "offlinePreviewSha256": "6e7540bf74ff4866f368864630264a22c1a747b1053f95a5f290992c07a567b8"
   },
   "schemaVersion": 1,
   "programmeIssue": "https://github.com/nashysaimarkets/nash-ai-markets/issues/126",
-  "savedAtUtc": "2026-10-25T08:19:37.380819+00:00",
+  "savedAtUtc": "2026-10-25T08:40:08.027606+00:00",
   "worker": {
     "id": "root-ntp-ad6",
-    "status": "ACTIVE",
-    "activeTask": "Combine candidate branding with real IG and Google adapter wiring, then exact-source acceptance. Live config/provider/device/semantic/hosting/name gates remain.",
-    "lastVerifiedActivityAtUtc": "2026-10-25T08:19:37.380819+00:00"
+    "status": "RELEASED",
+    "activeTask": "Offline candidate acceptance complete. Real runtime/provider, signed-device, scanner semantic, hosting cost and public name/commercial gates remain; no background continuation.",
+    "lastVerifiedActivityAtUtc": "2026-10-25T08:40:08.027606+00:00"
   },
   "ownership": {
     "branch": "monaco-ntp-integration-20261025-ad6",
     "writer": "root-ntp-ad6",
     "claimReference": "https://github.com/nashysaimarkets/nash-ai-markets/issues/126#issuecomment-6395191597",
-    "status": "ACTIVE",
+    "status": "RELEASED",
     "baseCheckpoint": "190bb0a1a879f3f863e4d4b187dd74b201d99890",
     "expectedHeadResolution": "Read latest Issue126 source publication and compare exact remote branch head before writing.",
     "otherBranchesUntouched": true,
@@ -41,14 +47,18 @@
       "affected tests/isolated workflow",
       "docs/ntp/ntp-integration-2026-10-25",
       "recovery manifest/runbook"
-    ]
+    ],
+    "sourceHeadAtRelease": "743257448ce0dfdbaf7c887d5e389ba5c72c1f82"
   },
   "checkpoint": {
     "branch": "monaco-ntp-integration-20261025-ad6",
     "parentEvidence": "190bb0a1a879f3f863e4d4b187dd74b201d99890",
     "acceptedParentSource": "15141db6899b53834d9e3f2984e8b4e5d78531f2",
     "path": "docs/ntp/ntp-integration-2026-10-25/README.md",
-    "identityResolution": "Source commit is supplied by enclosing publication; final evidence commit will pin source/tree and exact CI."
+    "identityResolution": "This pinned source passed exact-source CI. Enclosing evidence commit changes only docs; verify its tree/path diff and latest Issue126 receipt before resuming.",
+    "executableSource": "743257448ce0dfdbaf7c887d5e389ba5c72c1f82",
+    "executableTree": "a909510f539e9bd04aa291ae9eff01516bd45855",
+    "ciRun": 40177167084
   },
   "tracks": {
     "core": {

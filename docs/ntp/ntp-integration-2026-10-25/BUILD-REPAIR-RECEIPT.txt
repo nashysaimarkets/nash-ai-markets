@@ -1,0 +1,35 @@
+Historical failed build, preserved for traceability
+Source: 90ccb1c6d682a37b5aebfd53af23afd63c72d1cb
+Run: 40176483071
+Job: 121118152247
+Overall conclusion: failure
+Sites Worker and Android debug build passed; separate Next build failed.
+
+
+Prepared same-origin OCR worker, WebAssembly cores and English model.
+✓ Compiled successfully in 15.5s
+  Running TypeScript ...
+##[error].next/types/app/api/pocket/ig-demo/route.ts(161,7): error TS2344: Type '{ __tag__: "POST"; __param_position__: "first"; __param_type__: Request | undefined; }' does not satisfy the constraint 'ParamCheck<Request | NextRequest>'.
+  Types of property '__param_type__' are incompatible.
+    Type 'Request | undefined' is not assignable to type 'Request | NextRequest'.
+      Type 'undefined' is not assignable to type 'Request | NextRequest'.
+Failed to type check.
+
+##[error]Process completed with exit code 1.
+##[group]Run export JAVA_HOME="$JAVA_HOME_21_X64"
+export JAVA_HOME="$JAVA_HOME_21_X64"
+npx cap sync android
+cd android
+chmod +x gradlew
+./gradlew assembleDebug --no-daemon
+shell: /usr/bin/bash -e {0}
+env:
+  NEXT_TELEMETRY_DISABLED: 1
+  NODE_OPTIONS: --max-old-space-size=4096
+  CAPACITOR_SERVER_URL: https://offline-acceptance.invalid/pocket
+  CAPACITOR_SERVER_REVISION: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+##[endgroup]
+✔ Copying web assets from NativeWeb to android/app/src/main/assets/public in 2.67ms
+
+Repair d3b06a88ad9d4111a71b7df0268a13cd74ed8e5d: required POST(request:Request), and two tests supply Request objects. No runtime logic change.
+Repair run40176922113/job121119484136: success; 134 Node/HTTP/SSR checks, 13 phone-browser checks, Worker, Next and Android debug all pass. Follow-up brand-only source has a separate exact-source final gate.

@@ -1,0 +1,28 @@
+✖ explicit sandbox bootstrap acknowledgement reaches real adapter and rechecks current purchase (47.445617ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 569.979963
+
+✖ failing tests:
+
+test at ../native-ack-evidence/baseline.test.mts:1:4438
+✖ explicit sandbox bootstrap acknowledgement reaches real adapter and rechecks current purchase (47.445617ms)
+  AssertionError [ERR_ASSERTION]: {"r":{"allowed":false,"entitled":false,"status":"HOLD","reason":"ACKNOWLEDGEMENT_REQUIRED","ownershipRecorded":true},"calls":["GET"]}
+
+  false !== true
+
+      at TestContext.<anonymous> (/workspace/scratch/ad6b05572965/native-ack-evidence/baseline.test.mts:33:9)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

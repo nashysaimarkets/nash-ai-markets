@@ -1,0 +1,1077 @@
+﻿2026-10-25T08:34:39.3904542Z Current runner version: '2.338.0'
+##[group]Runner Image Provisioner
+Hosted Compute Agent
+Version: 20261021.618
+Commit: 21505ad2541d5be6135ed84fc33697146cf75b8e
+Build Date: 2026-10-21T00:45:21Z
+Worker ID: {a89fdad6-2e87-457a-8033-b059b9b32fdc}
+Region: centralus
+Cloud: Azure
+##[endgroup]
+##[group]Operating System
+Ubuntu
+24.04.5
+LTS
+##[endgroup]
+##[group]Runner Image
+Image: ubuntu-24.04
+Version: 20261012.334.1
+Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261012.334/images/ubuntu/Ubuntu2404-Readme.md
+Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261012.334
+##[endgroup]
+##[group]GITHUB_TOKEN Permissions
+Contents: read
+Metadata: read
+##[endgroup]
+Secret source: Actions
+Cache mode: write
+Prepare workflow directory
+Prepare all required actions
+Getting action download info
+Download action repository 'actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683' (SHA:11bd71901bbe5b1630ceea73d27597364c9af683)
+Download action repository 'actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020' (SHA:49933ea5288caeca8642d1e84afbd3f7d6820020)
+Complete job name: acceptance
+##[group]Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+with:
+  persist-credentials: false
+  repository: nashysaimarkets/nash-ai-markets
+  token: ***
+  ssh-strict: true
+  ssh-user: git
+  clean: true
+  sparse-checkout-cone-mode: true
+  fetch-depth: 1
+  fetch-tags: false
+  show-progress: true
+  lfs: false
+  submodules: false
+  set-safe-directory: true
+env:
+  NEXT_TELEMETRY_DISABLED: 1
+  NODE_OPTIONS: --max-old-space-size=4096
+##[endgroup]
+Syncing repository: nashysaimarkets/nash-ai-markets
+##[group]Getting Git version info
+Working directory is '/home/runner/work/nash-ai-markets/nash-ai-markets'
+[command]/usr/bin/git version
+git version 2.55.0
+##[endgroup]
+Temporarily overriding HOME='/home/runner/work/_temp/71712c63-3fc0-4e7d-bb3d-9244dac4273a' before making global git config changes
+Adding repository directory to the temporary git global config as a safe directory
+[command]/usr/bin/git config --global --add safe.directory /home/runner/work/nash-ai-markets/nash-ai-markets
+Deleting the contents of '/home/runner/work/nash-ai-markets/nash-ai-markets'
+##[group]Initializing the repository
+[command]/usr/bin/git init /home/runner/work/nash-ai-markets/nash-ai-markets
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: will change to "main" in Git 3.0. To configure the initial branch name
+hint: to use in all of your new repositories, which will suppress this warning,
+hint: call:
+hint:
+hint: 	git config --global init.defaultBranch <name>
+hint:
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint:
+hint: 	git branch -m <name>
+hint:
+hint: Disable this message with "git config set advice.defaultBranchName false"
+Initialized empty Git repository in /home/runner/work/nash-ai-markets/nash-ai-markets/.git/
+[command]/usr/bin/git remote add origin https://github.com/nashysaimarkets/nash-ai-markets
+##[endgroup]
+##[group]Disabling automatic garbage collection
+[command]/usr/bin/git config --local gc.auto 0
+##[endgroup]
+##[group]Setting up auth
+[command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+[command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+[command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+[command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+[command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+##[endgroup]
+##[group]Fetching the repository
+[command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +743257448ce0dfdbaf7c887d5e389ba5c72c1f82:refs/remotes/origin/monaco-ntp-integration-20261025-ad6
+From https://github.com/nashysaimarkets/nash-ai-markets
+ * [new ref]         743257448ce0dfdbaf7c887d5e389ba5c72c1f82 -> origin/monaco-ntp-integration-20261025-ad6
+##[endgroup]
+##[group]Determining the checkout info
+##[endgroup]
+[command]/usr/bin/git sparse-checkout disable
+[command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+##[group]Checking out the ref
+[command]/usr/bin/git checkout --progress --force -B monaco-ntp-integration-20261025-ad6 refs/remotes/origin/monaco-ntp-integration-20261025-ad6
+Switched to a new branch 'monaco-ntp-integration-20261025-ad6'
+branch 'monaco-ntp-integration-20261025-ad6' set up to track 'origin/monaco-ntp-integration-20261025-ad6'.
+##[endgroup]
+[command]/usr/bin/git log -1 --format=%H
+743257448ce0dfdbaf7c887d5e389ba5c72c1f82
+##[group]Removing auth
+[command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+[command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+[command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+http.https://github.com/.extraheader
+[command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+[command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+##[endgroup]
+##[group]Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+with:
+  node-version: 24
+  always-auth: false
+  check-latest: false
+  token: ***
+env:
+  NEXT_TELEMETRY_DISABLED: 1
+  NODE_OPTIONS: --max-old-space-size=4096
+##[endgroup]
+Found in cache @ /opt/hostedtoolcache/node/24.21.0/x64
+(node:2084) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+##[group]Environment details
+node: v24.21.0
+npm: 11.19.0
+yarn: 1.22.22
+##[endgroup]
+##[group]Run npm ci --ignore-scripts --no-audit --no-fund
+npm ci --ignore-scripts --no-audit --no-fund
+shell: /usr/bin/bash -e {0}
+env:
+  NEXT_TELEMETRY_DISABLED: 1
+  NODE_OPTIONS: --max-old-space-size=4096
+##[endgroup]
+npm warn deprecated jsrsasign@11.1.5: This package is no longer maintained.
+npm warn deprecated @esbuild-kit/esm-loader@2.6.5: Merged into tsx: https://tsx.is
+npm warn deprecated @esbuild-kit/core-utils@3.3.2: Merged into tsx: https://tsx.is
+npm warn deprecated uuid@7.0.3: uuid@10 and below is no longer supported.  For ESM codebases, update to uuid@latest.  For CommonJS codebases, use uuid@11 (but be aware this version will likely be deprecated in 2028).
+
+added 660 packages in 15s
+##[group]Run node --import tsx --test --test-isolation=none tests/pocket-ig-demo-binding.test.ts tests/render/ig-demo-workspace.test.ts tests/ig-demo-workspace.test.ts tests/ig-demo-client.test.ts tests/pocket-google-acknowledgement.test.mjs tests/pocket-google-notification-adapters.test.mjs tests/pocket-google-notification-route.test.ts tests/pocket-google-finish.test.ts tests/pocket-google-runtime.test.mjs tests/pocket-next-integration.test.ts tests/pocket-workflow-plan.test.ts tests/launch-email-readiness.test.ts tests/resend-launch-email.test.ts tests/pocket-native-manifest.test.mjs
+node --import tsx --test --test-isolation=none tests/pocket-ig-demo-binding.test.ts tests/render/ig-demo-workspace.test.ts tests/ig-demo-workspace.test.ts tests/ig-demo-client.test.ts tests/pocket-google-acknowledgement.test.mjs tests/pocket-google-notification-adapters.test.mjs tests/pocket-google-notification-route.test.ts tests/pocket-google-finish.test.ts tests/pocket-google-runtime.test.mjs tests/pocket-next-integration.test.ts tests/pocket-workflow-plan.test.ts tests/launch-email-readiness.test.ts tests/resend-launch-email.test.ts tests/pocket-native-manifest.test.mjs
+shell: /usr/bin/bash -e {0}
+env:
+  NEXT_TELEMETRY_DISABLED: 1
+  NODE_OPTIONS: --max-old-space-size=4096
+##[endgroup]
+✔ browser bridge forwards opaque reference only through fixed local route (15.845455ms)
+✔ malformed JSON/media type and advertised/streamed oversize fail closed (1.605879ms)
+✔ cancellation bounds stalled response body and cancels stream (4.91455ms)
+✔ late response after cancellation cannot resurrect or keep body open (2.496019ms)
+✔ 429 remains rate-limited and other upstream details remain redacted (0.790582ms)
+✔ invalid reference or already cancelled request cannot reach transport (0.308258ms)
+✔ rejected header or HTTP status cancels noncooperative body before reading (0.722695ms)
+✔ fixed browser deadline bounds noncooperative transport (0.653458ms)
+✔ strict view rejects LIVE, tokens, malformed numbers, duplicates and expired data (0.834073ms)
+✔ connect/refresh/disconnect use one state and remove account data (0.62858ms)
+✔ late response cannot resurrect chart-change, logout or cancellation state (0.294449ms)
+✔ newer disconnect wins over delayed connect (0.205476ms)
+✔ noncooperative timeout and hostile failure remove old data (4.801097ms)
+✔ expiry clears snapshot without polling (50.695486ms)
+✔ launch email readiness fails closed until Resend provider, sender and credential are all configured (0.300413ms)
+✔ unsupported providers never report launch email ready (0.088158ms)
+✔ construction is inert and requires explicit sandbox enablement and trusted ports (0.670224ms)
+✔ one encoded fixed-origin POST uses trusted OAuth and cannot grant entitlement (0.710088ms)
+✔ wrong scope, invalid token/signal and pre-cancellation never obtain OAuth or dispatch (0.424052ms)
+✔ invalid or failed OAuth is sanitized without dispatch (0.602913ms)
+✔ OAuth timeout aborts its own signal and cannot dispatch after late resolution (10.45012ms)
+✔ HTTP rejection redirects and nonempty success bodies remain uncertain and unread bodies close (2.765403ms)
+✔ foreign response origin and redirected success are refused and closed (0.48923ms)
+✔ stalled empty response stream reaches deadline and closes its reader (10.529056ms)
+✔ dispatch timeout stays uncertain with one attempt and cancels a late body (10.614298ms)
+✔ caller cancellation during dispatch is uncertain and no retry occurs (0.311995ms)
+✔ configuration ports and token are frozen across awaited OAuth (0.385301ms)
+✔ empty streamed HTTP200 receipt is accepted and transport failures stay sanitized (0.653335ms)
+✔ bootstrap requires explicit sandbox identity without reads or activation (0.650063ms)
+✔ configured auth and storage identity mismatch denies before purchase query (0.866701ms)
+✔ request-scoped runtime reauthenticates owner and does not consume scanner body (1.633427ms)
+✔ bootstrap snapshots configuration and selected ports (0.316477ms)
+✔ explicit sandbox bootstrap acknowledgement reaches real adapter and rechecks current purchase (3.387349ms)
+✔ bootstrap acknowledgement remains OFF when omitted or explicitly false (2.118062ms)
+✔ real acknowledgement receipt cannot admit a purchase still pending at fresh Google read (1.739056ms)
+✔ ownership revocation during acknowledgement is denied by the existing fresh recheck (1.617806ms)
+✔ account change during acknowledgement cannot admit the original account (1.355454ms)
+✔ ambiguous acknowledgement through factory stays HOLD with one POST and no retry (1.749793ms)
+✔ trusted event plus authoritative current voiding reconciles without granting entitlement (0.77962ms)
+✔ wrong issuer/audience/scope and stale deliveries cannot write (0.786373ms)
+✔ unknown token is unresolved and never reported revoked (0.287188ms)
+✔ notification cannot grant or revoke from an active/expired/unconfirmed read (0.700832ms)
+✔ verification timeout and pre-cancellation cause no commit (10.566789ms)
+✔ ambiguous post-dispatch timeout stays UNCERTAIN with no retry (10.524127ms)
+✔ adapter construction is inert and rejects missing identity or production scope (0.833446ms)
+✔ actual RS256 signature and current ownership derive sandbox scope from fixed JWKS (3.385762ms)
+✔ tampered signature is rejected before authoritative ownership lookup (1.394613ms)
+✔ issuer audience verified email lifetime and algorithm constraints reject before key fetch (8.559713ms)
+✔ duplicate missing or non-signing JWKS keys cannot verify a delivery (3.294893ms)
+✔ RTDN cannot declare sandbox or override unknown production or replaced token ownership (4.395221ms)
+✔ wrong subscription stale event unsupported message and mixed event kinds remain unverified (6.894849ms)
+✔ full subscription void delivery is accepted while partial and one-time messages are not (2.953808ms)
+✔ oversized malformed base64 and malformed JSON delivery bodies are bounded and rejected (3.50803ms)
+✔ pre-cancel and stalled JWKS abort without late verification or ownership work (12.192998ms)
+✔ JWT expiry during authoritative ownership read invalidates the completed delivery (1.181875ms)
+✔ current matching sandbox order and full void yield only read-only VOIDED proof (1.441758ms)
+✔ EXPIRED or RTDN state alone and a historical refunded renewal cannot prove current voiding (3.334309ms)
+✔ authoritative testPurchase account product plan order and expired state are mandatory (2.191702ms)
+✔ notification full-void order must match the current authoritative order (0.563191ms)
+✔ final provider state account and order changes invalidate earlier void evidence (1.486434ms)
+✔ final local ownership or obfuscation change prevents revocation proof (0.861696ms)
+✔ wrong token hash stale delivery unknown ownership and cancellation perform no Google work (0.499142ms)
+✔ provider errors malformed bodies and redirects cannot become a revocation result (1.181041ms)
+✔ stalled provider body is canceled with one request and no inferred result (10.515758ms)
+✔ actual crypto and concrete read adapters compose with existing reconciler without granting access (2.627246ms)
+✔ mounted route defaults to503 without reading credentials or binding services (0.589386ms)
+✔ trusted factory is inert and rejects live origin mismatched audience and production scope (0.594164ms)
+✔ configured factory composes real signature and provider adapters with fixed SQL revocation (6.385795ms)
+✔ wrong source production deployment and route origin cannot reach Google or SQL (1.759907ms)
+✔ auth or storage identity mismatch prevents provider and ownership reads (1.706056ms)
+✔ invalid signature and missing authoritative sandbox proof return503 without acknowledging delivery (3.65673ms)
+✔ ambiguous revocation write staysUNCERTAIN503 with one attempt and no sensitive response (2.73435ms)
+✔ identity timeout aborts without provider reads or writes (11.076021ms)
+✔ factory snapshots trusted identity and service choices (2.405414ms)
+✔ one-time binding accepts only prepared server factory and activates mounted dispatch (2.263034ms)
+✔ actual verifier and recorder compose into uncached single-request admission (1.42195ms)
+✔ pending acknowledgement holds by default without side effects (0.689141ms)
+✔ opt-in trusted acknowledgement is followed by authoritative re-verification (1.339114ms)
+✔ ack response alone cannot admit an unchanged pending purchase (1.023806ms)
+✔ ambiguous or stalled acknowledgement holds for reconciliation without retry (27.056493ms)
+✔ cancellation during acknowledgement cannot admit or trigger retry (0.790302ms)
+✔ unknown commit never reaches acknowledgement or admission (26.11909ms)
+✔ every scanner admission rechecks revocation instead of caching successful access (0.841555ms)
+✔ revocation during final account await is observed before admission (0.655269ms)
+✔ cross-app or environment binding cannot authorize a scan (1.449847ms)
+✔ expired malformed wrong-product and denied subscriptions cannot reach commit (1.316073ms)
+✔ malformed signal and pre-cancellation perform no provider work (0.260162ms)
+✔ configuration and trusted services are captured before asynchronous work (0.792024ms)
+✔ unconfigured actual route remains503 despite browser and environment flags (0.776522ms)
+✔ serialized or forged structural binding cannot install or enable the route (0.352989ms)
+✔ factory performs no IO and page availability does not read credentials or broker (2.803449ms)
+✔ composed route uses real lifecycle, cipher, SQL adapter and fixed DEMO transport with canonical UUID (17.198514ms)
+✔ page availability ignores forwarded-host and rejects absent/foreign actual Host (0.645674ms)
+✔ missing rights or availability never enables connect but authenticated disconnect still revokes (15.791396ms)
+✔ withdrawn or unavailable paid access still allows authenticated local revocation (15.372501ms)
+✔ source, auth, storage, key, namespace or restricted-role mismatch denies before SQL/provider (2.531404ms)
+✔ anonymous, unconfirmed or malformed identities cannot query shared storage (1.382116ms)
+✔ wrong-owner and malformed truthy grants deny before shared state or provider work (1.146235ms)
+✔ host/origin injection, browser credentials and unsupported actions cannot dispatch (1.17673ms)
+✔ constructor rejects non-DEMO, noncanonical origin, malformed rights and quota expansion (0.500468ms)
+✔ configuration snapshot cannot later be toggled by mutable objects (0.522318ms)
+✔ cancellation while trusted identity inspection stalls cannot dispatch late auth/SQL/provider (0.709387ms)
+✔ quota exhaustion in existing shared SQL adapter prevents provider request (1.325118ms)
+✔ actual mounted POST delegates once to trusted composed binding and cannot be rebound (3.605126ms)
+✔ bounded manifest verifies exact revision and rejects mismatch/invalid JSON (0.802229ms)
+✔ noncooperative pending fetch and body both terminate on deadline (20.674992ms)
+✔ streamed oversized payload stops and cancels before full consumption (0.358012ms)
+✔ redirect/credential/production/branch URLs denied before transport (0.284917ms)
+✔ late fetch response is cancelled after timeout; request forbids redirects (10.520618ms)
+✔ redesign analysis retains image-bound confirmation, cancellation and server entitlement transport (0.851753ms)
+✔ redesign never overlays another chart's report or automatically runs the unqualified device scanner (0.482675ms)
+✔ actual redesign handler blocks unconfirmed charts and abandons cancelled crop work before transport (36.39274ms)
+(node:2136) ExperimentalWarning: stripTypeScriptTypes is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ professional preview exposes guarded existing cross-check and native subscription tools without dispatching them in demos (4.297655ms)
+✔ redesign workflows are isolated to a confirmed real source report; candidate customer entrypoint mounts accepted premium workflow (0.741459ms)
+✔ user prices require valid direction and exact correctly ordered positive values (0.402049ms)
+✔ company event eligibility rejects indices, uncertain identity and malformed ticker (0.320398ms)
+✔ export distinguishes user-defined prices from source evidence and omits invalid price plans (0.249968ms)
+✔ customer panel is absent without availability and trusted owner scope (2.441288ms)
+✔ configured private panel still requires explicit browser opt-in and contains no credential form (2.757936ms)
+✔ trusted revocation-only availability renders no connect, refresh or account assertion (0.700909ms)
+✔ Resend transport stays disabled until provider, sender and credential are configured (0.33736ms)
+✔ Resend transport validates recipient and idempotency before network access (0.185203ms)
+✔ Resend transport sends plain-text branded email with idempotency (0.379481ms)
+✔ Resend transport fails closed on provider errors (0.188028ms)
+ℹ tests 124
+ℹ suites 0
+ℹ pass 124
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 966.691095
+##[group]Run node --import tsx --test --test-isolation=none tests/ig-demo-http.test.ts
+node --import tsx --test --test-isolation=none tests/ig-demo-http.test.ts
+shell: /usr/bin/bash -e {0}
+env:
+  NEXT_TELEMETRY_DISABLED: 1
+  NODE_OPTIONS: --max-old-space-size=4096
+##[endgroup]
+✔ real lifecycle through HTTP boundary projects redacted account positions then revokes (27.636874ms)
+✔ CSRF, injected owner/credentials, untrusted chart proof and invalid actions dispatch zero requests (1.62249ms)
+✔ anonymous/unpaid/wrong-owner cannot connect, revoked entitlement can disconnect (2.832602ms)
+✔ disabled actual customer route cannot be enabled by request (0.921134ms)
+✔ cancelled slow authorisation settles without vault or transport (2.418333ms)
+✔ server-owned provenance enables exact matching; mismatch stays HOLD (2.597629ms)
+✔ streamed oversize request stops before consuming entire hostile body (0.804528ms)
+✔ loopback HTTP POST exercises boundary with lifecycle fixtures and same-origin denial (32.107943ms)
+✔ revoked identity while connection resolves must not read managed vault (0.405386ms)
+✔ identity changes during vault resolution must not start broker login (0.429374ms)
+ℹ tests 10
+ℹ suites 0
+ℹ pass 10
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 213.809288
+##[group]Run npm run typecheck
+npm run typecheck
+node scripts/check-secrets.mjs
+git diff --check
+shell: /usr/bin/bash -e {0}
+env:
+  NEXT_TELEMETRY_DISABLED: 1
+  NODE_OPTIONS: --max-old-space-size=4096
+##[endgroup]
+
+> nash-ai-markets-bullseye@1.0.0-rc.2 typecheck
+> tsc --noEmit --incremental false
+
+Secret-pattern scan passed across 1714 version-control candidates.
+##[group]Run node tests/run-pocket-iphone-finish.mjs
+node tests/run-pocket-iphone-finish.mjs
+shell: /usr/bin/bash -e {0}
+env:
+  NEXT_TELEMETRY_DISABLED: 1
+  NODE_OPTIONS: --max-old-space-size=4096
+  POCKET_QA_BROWSER_EXECUTABLE_PATH: /usr/bin/google-chrome
+  POCKET_QA_EVIDENCE_DIR: docs/ntp/ntp-integration-2026-10-25/browser
+##[endgroup]
+AXE []
+AXE_DEMO []
+IPHONE_RESULT {"status":"PASS","source":"743257448ce0dfdbaf7c887d5e389ba5c72c1f82","tree":"a909510f539e9bd04aa291ae9eff01516bd45855","checks":["iPhone-sized intake WCAG A/AA automated scan: zero violations","five actual uploads retained","invalid replacement preserves previous image","valid replacement clears confirmation and holds scan","pending analysis can be cancelled and controls recover","late cancelled result cannot mount a report","server error retains source and allows deliberate retry","synthetic overlay and unverified safeguards visible","keyboard Escape closes focused chart","iPhone-sized report WCAG A/AA automated scan: zero violations","390px viewport has no horizontal page overflow","withdrawn IG reading rights retain only revocation control, dispatch one disconnect and report provider uncertainty","exported exact-source offline HTML runs under its CSP and blocks services"],"browser":"155.0.8059.39","errors":[],"syntheticScanRequests":2,"providerCalls":0,"scope":"Chromium iPhone-sized emulation, not Safari or native device"}
+##[group]Run node --input-type=module <<'JS'
+node --input-type=module <<'JS'
+import {readFile} from 'node:fs/promises';
+for(const name of ['phone-workspace.jpg','phone-report.jpg'])console.log(JSON.stringify({kind:'NTP_CAPTURE',name,base64:(await readFile('docs/ntp/ntp-integration-2026-10-25/browser/'+name)).toString('base64')}));
+console.log('NTP_PREVIEW_MANIFEST '+await readFile('dist/premium-preview/manifest.json','utf8'));
+JS
+shell: /usr/bin/bash -e {0}
+env:
+  NEXT_TELEMETRY_DISABLED: 1
+  NODE_OPTIONS: --max-old-space-size=4096
+##[endgroup]
+NTP_PREVIEW_MANIFEST {
+  "source": "743257448ce0dfdbaf7c887d5e389ba5c72c1f82",
+  "tree": "a909510f539e9bd04aa291ae9eff01516bd45855",
+  "sha256": "6e7540bf74ff4866f368864630264a22c1a747b1053f95a5f290992c07a567b8",
+  "deployment": "DISABLED",
+  "services": "OFFLINE_DISABLED",
+  "entry": "actual PocketNext and complete /pocket stylesheet stack"
+}
+##[group]Run SITES_ENV_READY=1 SITES_PROJECT_ROOT="$GITHUB_WORKSPACE" npm run build
+SITES_ENV_READY=1 SITES_PROJECT_ROOT="$GITHUB_WORKSPACE" npm run build
+shell: /usr/bin/bash -e {0}
+env:
+  NEXT_TELEMETRY_DISABLED: 1
+  NODE_OPTIONS: --max-old-space-size=4096
+##[endgroup]
+
+> nash-ai-markets-bullseye@1.0.0-rc.2 build
+> bash scripts/build-verified.sh
+
+Prepared same-origin OCR worker, WebAssembly cores and English model.
+Running verified vinext build...
+
+  vinext build  (Vite 8.0.16)
+
+Prepared same-origin OCR worker, WebAssembly cores and English model.
+Prepared same-origin OCR worker, WebAssembly cores and English model.
+[vinext] middleware.ts is deprecated in Next.js 16. Rename to proxy.ts and export a default or named proxy function.
+[1/5] analyze client references...
+[2K
+transforming...✓ 894 modules transformed.
+rendering chunks...
+✓ built in 2.09s
+[2/5] analyze server references...
+[2K
+transforming...✓ 358 modules transformed.
+rendering chunks...
+✓ built in 281ms
+[3/5] build rsc environment...
+[2K
+transforming...✓ 1186 modules transformed.
+rendering chunks...
+computing gzip size...
+✓ built in 1.62s
+[4/5] build client environment...
+[2K
+transforming...✓ 386 modules transformed.
+rendering chunks...
+computing gzip size...
+✓ built in 507ms
+[5/5] build ssr environment...
+[2K
+transforming...✓ 400 modules transformed.
+rendering chunks...
+computing gzip size...
+✓ built in 517ms
+
+  Route (app)
+  ┌ ƒ /
+  ├ ? /about
+  ├ ƒ /admin/commercial
+  ├ ƒ /admin/founding-100
+  ├ ƒ /admin/visual-preview
+  ├ λ /api/auth/redirect-probe
+  ├ λ /api/auth/session
+  ├ λ /api/auth/supabase-config-probe
+  ├ λ /api/founding-member
+  ├ λ /api/ideas
+  ├ λ /api/ideas/:id
+  ├ λ /api/journal
+  ├ λ /api/market/candles
+  ├ λ /api/marketing/visit
+  ├ λ /api/membership/preview
+  ├ λ /api/onboarding
+  ├ λ /api/openai/health
+  ├ λ /api/pocket/analyse
+  ├ λ /api/pocket/apple-account
+  ├ λ /api/pocket/apple-notifications
+  ├ λ /api/pocket/billing-portal
+  ├ λ /api/pocket/build-manifest
+  ├ λ /api/pocket/crypto-derivatives
+  ├ λ /api/pocket/events
+  ├ λ /api/pocket/follow-up
+  ├ λ /api/pocket/google-account
+  ├ λ /api/pocket/google-notifications
+  ├ λ /api/pocket/ig-demo
+  ├ λ /api/pocket/levels
+  ├ λ /api/pocket/options-wall
+  ├ λ /api/pocket/preflight
+  ├ λ /api/pocket/review
+  ├ λ /api/pocket/subscription-access
+  ├ λ /api/pocket/torture
+  ├ λ /api/profile
+  ├ λ /api/second-opinion
+  ├ λ /api/stripe/checkout
+  ├ λ /api/stripe/portal
+  ├ λ /api/stripe/webhook
+  ├ λ /api/waitlist
+  ├ λ /api/youtube/oauth/callback
+  ├ ƒ /archive
+  ├ ƒ /archive/:date
+  ├ ƒ /auth/callback
+  ├ λ /auth/confirm
+  ├ ? /auth/implicit
+  ├ λ /auth/signout
+  ├ ƒ /brief
+  ├ ? /cancelled
+  ├ ? /contact
+  ├ ƒ /dashboard
+  ├ ƒ /dev/logo-concepts
+  ├ ƒ /dev/terminal-chart
+  ├ ƒ /founding-member
+  ├ ? /help
+  ├ ƒ /ideas
+  ├ ƒ /ideas/:id
+  ├ ? /join
+  ├ ƒ /journal
+  ├ ƒ /launch-preview
+  ├ ? /login
+  ├ ƒ /marketing-preview
+  ├ ? /membership-required
+  ├ ƒ /methodology
+  ├ ? /onboarding
+  ├ ƒ /performance
+  ├ ƒ /pocket
+  ├ ? /pocket-next
+  ├ ? /pocket/founding
+  ├ ? /pocket/founding/welcome
+  ├ ? /pocket/login
+  ├ ? /preferences
+  ├ ƒ /pricing
+  ├ ? /privacy
+  ├ ƒ /profile
+  ├ ƒ /replay
+  ├ ƒ /results
+  ├ ƒ /review
+  ├ ƒ /reviews
+  ├ ? /risk-disclaimer
+  ├ ƒ /second-opinion
+  ├ ƒ /terminal
+  ├ ƒ /terminal/diagnostics
+  ├ ? /terms
+  ├ ? /waitlist
+  └ ? /welcome
+
+  λ API  ƒ Dynamic  ? Unknown
+
+  ? Some routes could not be classified. vinext currently uses static analysis
+    and cannot detect dynamic API usage (headers(), cookies(), etc.) at build time.
+    Automatic classification will be improved in a future release.
+
+  Build complete. Run `vinext start` to start the production server.
+
+Validated Sites artifact: ESM Worker default.fetch and hosting manifest are present.
+##[group]Run python3 - <<'PY'
+python3 - <<'PY'
+import os,subprocess
+from pathlib import Path
+root=Path.cwd()
+env={'PATH':os.environ['PATH'],'NEXT_TELEMETRY_DISABLED':'1',
+  'NODE_OPTIONS':'--require='+str(root/'docs/monaco-126/build-auth-2026-10-24/no-network.cjs'),
+  'NEXT_FONT_GOOGLE_MOCKED_RESPONSES':str(root/'scripts/offline-geist-fonts.cjs'),
+  'NEXT_PUBLIC_SUPABASE_URL':'http://127.0.0.1:43211',
+  'NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY':'sb_publishable_offline_fixture',
+  'POCKET_FIRST_FREE_ENABLED':'false','POCKET_BENCHMARK_PILOT_ENABLED':'false',
+  'POCKET_REAL_BENCHMARK_DISPATCH':'false','POCKET_BENCHMARK_RUNTIME_METADATA_ENABLED':'false'}
+raise SystemExit(subprocess.run(['node','node_modules/next/dist/bin/next','build','--webpack'],env=env,cwd=root).returncode)
+PY
+shell: /usr/bin/bash -e {0}
+env:
+  NEXT_TELEMETRY_DISABLED: 1
+  NODE_OPTIONS: --max-old-space-size=4096
+##[endgroup]
+▲ Next.js 16.3.8 (webpack)
+Prepared same-origin OCR worker, WebAssembly cores and English model.
+✓ Running next.config.ts took 181ms
+
+⚠ The "middleware" file convention is deprecated. Please use "proxy" instead.
+
+  To migrate automatically, run:
+  npx @next/codemod@canary middleware-to-proxy .
+
+  Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+  Creating an optimized production build ...
+Prepared same-origin OCR worker, WebAssembly cores and English model.
+Prepared same-origin OCR worker, WebAssembly cores and English model.
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (106kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (253kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+⚠ Compiled with warnings in 1422ms
+
+./node_modules/next/dist/esm/server/app-render/dynamic-rendering.js
+A Node.js API is used (process.cwd at line: 1044) which is not supported in the Edge Runtime.
+Learn more: https://nextjs.org/docs/api-reference/edge-runtime
+
+Import trace for requested module:
+./node_modules/next/dist/esm/server/app-render/dynamic-rendering.js
+./node_modules/next/dist/esm/server/request/connection.js
+./node_modules/next/dist/esm/server/web/exports/index.js
+./node_modules/next/dist/esm/api/server.js
+
+./node_modules/next/dist/esm/server/app-render/dynamic-rendering.js
+A Node.js API is used (process.cwd at line: 1044) which is not supported in the Edge Runtime.
+Learn more: https://nextjs.org/docs/api-reference/edge-runtime
+
+Import trace for requested module:
+./node_modules/next/dist/esm/server/app-render/dynamic-rendering.js
+./node_modules/next/dist/esm/server/request/connection.js
+./node_modules/next/dist/esm/server/web/exports/index.js
+./node_modules/next/dist/esm/api/server.js
+
+./node_modules/@supabase/supabase-js/dist/index.mjs
+A Node.js API is used (process.version at line: 27) which is not supported in the Edge Runtime.
+Learn more: https://nextjs.org/docs/api-reference/edge-runtime
+
+Import trace for requested module:
+./node_modules/@supabase/supabase-js/dist/index.mjs
+./node_modules/@supabase/ssr/dist/module/createBrowserClient.js
+./node_modules/@supabase/ssr/dist/module/index.js
+
+Prepared same-origin OCR worker, WebAssembly cores and English model.
+✓ Compiled successfully in 14.7s
+  Running TypeScript ...
+  Finished TypeScript in 12.9s ...
+  Collecting page data using 3 workers ...
+  Generating static pages using 3 workers (0/39) ...
+  Generating static pages using 3 workers (9/39)
+  Generating static pages using 3 workers (19/39)
+[verified-macro-context] {"route":"/pocket-next","status":"unavailable","observationCount":0,"releaseCount":0,"availableSources":["BEA","BLS","Federal Reserve","New York Fed","Treasury"],"unavailableSources":["Census","SEC"],"durationMs":6}
+  Generating static pages using 3 workers (29/39)
+✓ Generating static pages using 3 workers (39/39) in 485ms
+  Finalizing page optimization ...
+  Collecting build traces ...
+
+Route (app)
+┌ ƒ /
+├ ○ /_not-found
+├ ○ /about
+├ ƒ /admin/commercial
+├ ƒ /admin/founding-100
+├ ƒ /admin/visual-preview
+├ ƒ /api/auth/redirect-probe
+├ ƒ /api/auth/session
+├ ƒ /api/auth/supabase-config-probe
+├ ƒ /api/founding-member
+├ ƒ /api/ideas
+├ ƒ /api/ideas/[id]
+├ ƒ /api/journal
+├ ƒ /api/market/candles
+├ ƒ /api/marketing/visit
+├ ƒ /api/membership/preview
+├ ƒ /api/onboarding
+├ ƒ /api/openai/health
+├ ƒ /api/pocket/analyse
+├ ƒ /api/pocket/apple-account
+├ ƒ /api/pocket/apple-notifications
+├ ƒ /api/pocket/billing-portal
+├ ƒ /api/pocket/build-manifest
+├ ƒ /api/pocket/crypto-derivatives
+├ ƒ /api/pocket/events
+├ ƒ /api/pocket/follow-up
+├ ƒ /api/pocket/google-account
+├ ƒ /api/pocket/google-notifications
+├ ƒ /api/pocket/ig-demo
+├ ƒ /api/pocket/levels
+├ ƒ /api/pocket/options-wall
+├ ƒ /api/pocket/preflight
+├ ƒ /api/pocket/review
+├ ƒ /api/pocket/subscription-access
+├ ƒ /api/pocket/torture
+├ ƒ /api/profile
+├ ƒ /api/second-opinion
+├ ƒ /api/stripe/checkout
+├ ƒ /api/stripe/portal
+├ ƒ /api/stripe/webhook
+├ ƒ /api/waitlist
+├ ƒ /api/youtube/oauth/callback
+├ ƒ /archive
+├ ƒ /archive/[date]
+├ ƒ /auth/callback
+├ ƒ /auth/confirm
+├ ○ /auth/implicit
+├ ƒ /auth/signout
+├ ƒ /brief
+├ ○ /cancelled
+├ ○ /contact
+├ ƒ /dashboard
+├ ƒ /dev/logo-concepts
+├ ƒ /dev/terminal-chart
+├ ƒ /founding-member
+├ ○ /help
+├ ƒ /ideas
+├ ƒ /ideas/[id]
+├ ƒ /join
+├ ƒ /journal
+├ ƒ /launch-preview
+├ ƒ /login
+├ ○ /manifest.webmanifest
+├ ƒ /marketing-preview
+├ ƒ /membership-required
+├ ƒ /methodology
+├ ƒ /onboarding
+├ ƒ /performance
+├ ƒ /pocket
+├ ƒ /pocket-next
+├ ƒ /pocket/founding
+├ ○ /pocket/founding/welcome
+├ ƒ /pocket/login
+├ ƒ /preferences
+├ ƒ /pricing
+├ ○ /privacy
+├ ƒ /profile
+├ ƒ /replay
+├ ƒ /results
+├ ƒ /review
+├ ƒ /reviews
+├ ○ /risk-disclaimer
+├ ○ /robots.txt
+├ ƒ /second-opinion
+├ ○ /sitemap.xml
+├ ƒ /terminal
+├ ƒ /terminal/diagnostics
+├ ○ /terms
+├ ƒ /waitlist
+└ ○ /welcome
+
+
+ƒ Proxy (Middleware)
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+
+##[group]Run export JAVA_HOME="$JAVA_HOME_21_X64"
+export JAVA_HOME="$JAVA_HOME_21_X64"
+npx cap sync android
+cd android
+chmod +x gradlew
+./gradlew assembleDebug --no-daemon
+shell: /usr/bin/bash -e {0}
+env:
+  NEXT_TELEMETRY_DISABLED: 1
+  NODE_OPTIONS: --max-old-space-size=4096
+  CAPACITOR_SERVER_URL: https://offline-acceptance.invalid/pocket
+  CAPACITOR_SERVER_REVISION: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+##[endgroup]
+✔ Copying web assets from NativeWeb to android/app/src/main/assets/public in 2.57ms
+✔ Creating capacitor.config.json in android/app/src/main/assets in 395.58μs
+✔ copy android in 21.99ms
+✔ Updating Android plugins in 5.50ms
+[info] Found 5 Capacitor plugins for android:
+       @capacitor/app@8.1.1
+       @capacitor/camera@8.2.3
+       @capacitor/haptics@8.0.2
+       @capacitor/preferences@8.0.1
+       @capacitor/share@8.0.1
+✔ update android in 36.61ms
+[info] Sync finished in 0.086s
+Downloading https://services.gradle.org/distributions/gradle-8.14.3-all.zip
+.....................10%.....................20%......................30%.....................40%......................50%.....................60%.....................70%......................80%.....................90%......................100%
+
+Welcome to Gradle 8.14.3!
+
+Here are the highlights of this release:
+ - Java 24 support
+ - GraalVM Native Image toolchain selection
+ - Enhancements to test reporting
+ - Build Authoring improvements
+
+For more details see https://docs.gradle.org/8.14.3/release-notes.html
+
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.14.3/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build
+
+> Configure project :app
+WARNING: Using flatDir should be avoided because it doesn't support any meta-data formats.
+
+> Configure project :capacitor-cordova-android-plugins
+WARNING: Using flatDir should be avoided because it doesn't support any meta-data formats.
+
+> Task :app:preBuild UP-TO-DATE
+> Task :app:preDebugBuild UP-TO-DATE
+> Task :app:mergeDebugNativeDebugMetadata NO-SOURCE
+> Task :app:generateDebugBuildConfig
+> Task :capacitor-android:preBuild UP-TO-DATE
+> Task :capacitor-android:preDebugBuild UP-TO-DATE
+> Task :app:javaPreCompileDebug
+> Task :capacitor-app:preBuild UP-TO-DATE
+> Task :capacitor-app:preDebugBuild UP-TO-DATE
+> Task :capacitor-android:writeDebugAarMetadata
+> Task :capacitor-camera:preBuild UP-TO-DATE
+> Task :capacitor-camera:preDebugBuild UP-TO-DATE
+> Task :capacitor-app:writeDebugAarMetadata
+> Task :capacitor-cordova-android-plugins:preBuild UP-TO-DATE
+> Task :capacitor-camera:writeDebugAarMetadata
+> Task :capacitor-cordova-android-plugins:preDebugBuild UP-TO-DATE
+> Task :capacitor-haptics:preBuild UP-TO-DATE
+> Task :capacitor-haptics:preDebugBuild UP-TO-DATE
+> Task :capacitor-cordova-android-plugins:writeDebugAarMetadata
+> Task :capacitor-preferences:preBuild UP-TO-DATE
+> Task :capacitor-preferences:preDebugBuild UP-TO-DATE
+> Task :capacitor-haptics:writeDebugAarMetadata
+> Task :capacitor-share:preBuild UP-TO-DATE
+> Task :capacitor-share:preDebugBuild UP-TO-DATE
+> Task :capacitor-preferences:writeDebugAarMetadata
+> Task :capacitor-share:writeDebugAarMetadata
+> Task :capacitor-android:processDebugNavigationResources
+> Task :capacitor-app:processDebugNavigationResources
+> Task :capacitor-camera:processDebugNavigationResources
+> Task :app:checkDebugAarMetadata
+> Task :capacitor-cordova-android-plugins:processDebugNavigationResources
+> Task :capacitor-haptics:processDebugNavigationResources
+> Task :capacitor-preferences:processDebugNavigationResources
+> Task :capacitor-share:processDebugNavigationResources
+> Task :app:processDebugNavigationResources
+> Task :app:generateDebugResValues
+> Task :capacitor-android:generateDebugResValues
+> Task :app:compileDebugNavigationResources
+> Task :capacitor-android:generateDebugResources
+> Task :capacitor-android:packageDebugResources
+> Task :capacitor-app:generateDebugResValues
+> Task :capacitor-app:generateDebugResources
+> Task :capacitor-app:packageDebugResources
+> Task :capacitor-camera:generateDebugResValues
+> Task :capacitor-camera:generateDebugResources
+> Task :capacitor-camera:packageDebugResources
+> Task :capacitor-cordova-android-plugins:generateDebugResValues
+> Task :capacitor-cordova-android-plugins:generateDebugResources
+> Task :capacitor-cordova-android-plugins:packageDebugResources
+> Task :capacitor-haptics:generateDebugResValues
+> Task :capacitor-haptics:generateDebugResources
+> Task :capacitor-haptics:packageDebugResources
+> Task :capacitor-preferences:generateDebugResValues
+> Task :capacitor-preferences:generateDebugResources
+> Task :capacitor-preferences:packageDebugResources
+> Task :capacitor-share:generateDebugResValues
+> Task :capacitor-share:generateDebugResources
+> Task :capacitor-share:packageDebugResources
+> Task :app:mapDebugSourceSetPaths
+> Task :app:generateDebugResources
+> Task :app:packageDebugResources
+> Task :app:mergeDebugResources
+> Task :app:createDebugCompatibleScreenManifests
+> Task :app:extractDeepLinksDebug
+> Task :capacitor-android:extractDeepLinksDebug
+> Task :capacitor-app:extractDeepLinksDebug
+> Task :capacitor-camera:extractDeepLinksDebug
+> Task :app:parseDebugLocalResources
+> Task :capacitor-cordova-android-plugins:extractDeepLinksDebug
+> Task :capacitor-android:processDebugManifest
+> Task :capacitor-app:processDebugManifest
+> Task :capacitor-cordova-android-plugins:processDebugManifest
+> Task :capacitor-haptics:extractDeepLinksDebug
+> Task :capacitor-camera:processDebugManifest
+> Task :capacitor-preferences:extractDeepLinksDebug
+> Task :capacitor-haptics:processDebugManifest
+> Task :capacitor-preferences:processDebugManifest
+> Task :capacitor-share:extractDeepLinksDebug
+> Task :capacitor-share:processDebugManifest
+> Task :capacitor-android:compileDebugLibraryResources
+> Task :app:processDebugMainManifest
+> Task :app:processDebugManifest
+> Task :capacitor-app:compileDebugLibraryResources
+> Task :app:processDebugManifestForPackage
+> Task :capacitor-android:parseDebugLocalResources
+> Task :capacitor-app:parseDebugLocalResources
+> Task :capacitor-camera:compileDebugLibraryResources
+> Task :capacitor-camera:parseDebugLocalResources
+> Task :capacitor-cordova-android-plugins:compileDebugLibraryResources
+> Task :capacitor-camera:generateDebugRFile
+> Task :capacitor-app:generateDebugRFile
+> Task :capacitor-cordova-android-plugins:parseDebugLocalResources
+> Task :capacitor-android:generateDebugRFile
+> Task :capacitor-haptics:compileDebugLibraryResources
+> Task :capacitor-cordova-android-plugins:generateDebugRFile
+> Task :capacitor-preferences:compileDebugLibraryResources
+> Task :capacitor-haptics:parseDebugLocalResources
+> Task :capacitor-preferences:parseDebugLocalResources
+> Task :capacitor-share:compileDebugLibraryResources
+> Task :capacitor-haptics:generateDebugRFile
+> Task :capacitor-preferences:generateDebugRFile
+> Task :capacitor-share:parseDebugLocalResources
+> Task :capacitor-android:javaPreCompileDebug
+> Task :capacitor-app:javaPreCompileDebug
+> Task :capacitor-share:generateDebugRFile
+
+Note: Some input files use unchecked or unsafe operations.
+> Task :capacitor-android:compileDebugJavaWithJavac
+Note: Recompile with -Xlint:unchecked for details.
+
+> Task :capacitor-camera:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :capacitor-camera:javaPreCompileDebug
+> Task :capacitor-cordova-android-plugins:javaPreCompileDebug
+> Task :capacitor-haptics:javaPreCompileDebug
+> Task :capacitor-cordova-android-plugins:compileDebugJavaWithJavac NO-SOURCE
+> Task :capacitor-cordova-android-plugins:bundleLibCompileToJarDebug
+> Task :capacitor-preferences:javaPreCompileDebug
+> Task :capacitor-android:bundleLibCompileToJarDebug
+> Task :capacitor-share:javaPreCompileDebug
+> Task :app:mergeDebugShaders
+> Task :capacitor-app:compileDebugJavaWithJavac
+> Task :capacitor-app:bundleLibCompileToJarDebug
+> Task :app:processDebugResources
+> Task :capacitor-haptics:compileDebugJavaWithJavac
+> Task :capacitor-haptics:bundleLibCompileToJarDebug
+> Task :capacitor-preferences:compileDebugJavaWithJavac
+> Task :capacitor-preferences:bundleLibCompileToJarDebug
+> Task :capacitor-share:compileDebugJavaWithJavac
+> Task :capacitor-share:bundleLibCompileToJarDebug
+> Task :app:compileDebugShaders NO-SOURCE
+> Task :app:generateDebugAssets UP-TO-DATE
+> Task :capacitor-android:mergeDebugShaders
+> Task :capacitor-android:compileDebugShaders NO-SOURCE
+> Task :capacitor-android:generateDebugAssets UP-TO-DATE
+> Task :capacitor-android:mergeDebugAssets
+> Task :capacitor-app:mergeDebugShaders
+> Task :capacitor-app:compileDebugShaders NO-SOURCE
+> Task :capacitor-app:generateDebugAssets UP-TO-DATE
+> Task :capacitor-app:mergeDebugAssets
+> Task :capacitor-camera:mergeDebugShaders
+> Task :capacitor-camera:compileDebugShaders NO-SOURCE
+> Task :capacitor-camera:generateDebugAssets UP-TO-DATE
+> Task :capacitor-camera:mergeDebugAssets
+> Task :capacitor-cordova-android-plugins:mergeDebugShaders
+> Task :capacitor-cordova-android-plugins:compileDebugShaders NO-SOURCE
+> Task :capacitor-cordova-android-plugins:generateDebugAssets UP-TO-DATE
+> Task :capacitor-cordova-android-plugins:mergeDebugAssets
+> Task :capacitor-haptics:mergeDebugShaders
+> Task :capacitor-haptics:compileDebugShaders NO-SOURCE
+> Task :capacitor-haptics:generateDebugAssets UP-TO-DATE
+> Task :capacitor-haptics:mergeDebugAssets
+> Task :capacitor-preferences:mergeDebugShaders
+> Task :capacitor-preferences:compileDebugShaders NO-SOURCE
+> Task :capacitor-preferences:generateDebugAssets UP-TO-DATE
+> Task :capacitor-preferences:mergeDebugAssets
+> Task :capacitor-share:mergeDebugShaders
+> Task :capacitor-share:compileDebugShaders NO-SOURCE
+> Task :capacitor-share:generateDebugAssets UP-TO-DATE
+> Task :capacitor-share:mergeDebugAssets
+> Task :app:mergeDebugAssets
+> Task :app:compressDebugAssets
+> Task :capacitor-haptics:bundleLibRuntimeToJarDebug
+> Task :capacitor-app:bundleLibRuntimeToJarDebug
+> Task :capacitor-preferences:bundleLibRuntimeToJarDebug
+> Task :capacitor-share:bundleLibRuntimeToJarDebug
+> Task :capacitor-cordova-android-plugins:bundleLibRuntimeToJarDebug
+> Task :capacitor-android:bundleLibRuntimeToJarDebug
+> Task :app:desugarDebugFileDependencies
+> Task :app:processDebugJavaRes NO-SOURCE
+> Task :capacitor-android:processDebugJavaRes NO-SOURCE
+> Task :capacitor-app:processDebugJavaRes NO-SOURCE
+> Task :capacitor-cordova-android-plugins:processDebugJavaRes NO-SOURCE
+> Task :capacitor-haptics:processDebugJavaRes NO-SOURCE
+> Task :capacitor-preferences:processDebugJavaRes NO-SOURCE
+> Task :capacitor-share:processDebugJavaRes NO-SOURCE
+> Task :capacitor-app:bundleLibRuntimeToDirDebug
+> Task :app:checkDebugDuplicateClasses
+
+> Task :capacitor-camera:compileDebugKotlin
+w: file:///home/runner/work/nash-ai-markets/nash-ai-markets/node_modules/@capacitor/camera/android/src/main/java/com/capacitorjs/plugins/camera/IonCameraFlow.kt:864:13 Condition is always 'false'.
+Note: /home/runner/work/nash-ai-markets/nash-ai-markets/node_modules/@capacitor/camera/android/src/main/java/com/capacitorjs/plugins/camera/CameraBottomSheetDialogFragment.java uses unchecked or unsafe operations.
+
+Note: Recompile with -Xlint:unchecked for details.
+> Task :capacitor-camera:compileDebugJavaWithJavac
+
+> Task :capacitor-camera:bundleLibCompileToJarDebug
+> Task :capacitor-camera:bundleLibRuntimeToJarDebug
+> Task :app:compileDebugJavaWithJavac
+> Task :app:dexBuilderDebug
+> Task :app:mergeDebugGlobalSynthetics
+> Task :capacitor-camera:processDebugJavaRes
+> Task :app:mergeExtDexDebug
+> Task :capacitor-haptics:bundleLibRuntimeToDirDebug
+> Task :capacitor-preferences:bundleLibRuntimeToDirDebug
+> Task :capacitor-camera:bundleLibRuntimeToDirDebug
+> Task :capacitor-share:bundleLibRuntimeToDirDebug
+> Task :capacitor-android:bundleLibRuntimeToDirDebug
+> Task :capacitor-cordova-android-plugins:bundleLibRuntimeToDirDebug
+> Task :app:mergeDebugJniLibFolders
+> Task :capacitor-android:mergeDebugJniLibFolders
+> Task :capacitor-android:mergeDebugNativeLibs NO-SOURCE
+> Task :app:mergeProjectDexDebug
+> Task :capacitor-app:mergeDebugJniLibFolders
+> Task :capacitor-android:copyDebugJniLibsProjectOnly
+> Task :capacitor-app:mergeDebugNativeLibs NO-SOURCE
+> Task :capacitor-app:copyDebugJniLibsProjectOnly
+> Task :capacitor-camera:mergeDebugJniLibFolders
+> Task :capacitor-camera:mergeDebugNativeLibs NO-SOURCE
+> Task :capacitor-camera:copyDebugJniLibsProjectOnly
+> Task :capacitor-cordova-android-plugins:mergeDebugJniLibFolders
+> Task :capacitor-cordova-android-plugins:mergeDebugNativeLibs NO-SOURCE
+> Task :capacitor-cordova-android-plugins:copyDebugJniLibsProjectOnly
+> Task :capacitor-haptics:mergeDebugJniLibFolders
+> Task :capacitor-haptics:mergeDebugNativeLibs NO-SOURCE
+> Task :capacitor-haptics:copyDebugJniLibsProjectOnly
+> Task :capacitor-preferences:mergeDebugJniLibFolders
+> Task :capacitor-preferences:mergeDebugNativeLibs NO-SOURCE
+> Task :capacitor-preferences:copyDebugJniLibsProjectOnly
+> Task :capacitor-share:mergeDebugJniLibFolders
+> Task :capacitor-share:mergeDebugNativeLibs NO-SOURCE
+> Task :capacitor-share:copyDebugJniLibsProjectOnly
+> Task :app:mergeDebugJavaResource
+> Task :app:validateSigningDebug
+> Task :app:mergeLibDexDebug
+> Task :app:writeDebugAppMetadata
+> Task :app:mergeDebugNativeLibs
+> Task :app:writeDebugSigningConfigVersions
+
+> Task :app:stripDebugDebugSymbols
+Unable to strip the following libraries, packaging them as they are: libimage_processing_util_jni.so, libsurface_util_jni.so. Run with --info option to learn more.
+
+> Task :capacitor-android:checkDebugAarMetadata
+> Task :capacitor-android:stripDebugDebugSymbols NO-SOURCE
+> Task :capacitor-android:copyDebugJniLibsProjectAndLocalJars
+> Task :capacitor-android:extractDebugAnnotations
+> Task :capacitor-android:extractDeepLinksForAarDebug
+> Task :capacitor-android:mergeDebugGeneratedProguardFiles
+> Task :capacitor-android:mergeDebugConsumerProguardFiles
+> Task :capacitor-android:prepareDebugArtProfile
+> Task :capacitor-android:prepareLintJarForPublish
+> Task :app:packageDebug
+> Task :app:createDebugApkListingFileRedirect
+> Task :app:assembleDebug
+> Task :capacitor-android:mergeDebugJavaResource
+> Task :capacitor-app:checkDebugAarMetadata
+> Task :capacitor-android:syncDebugLibJars
+> Task :capacitor-android:bundleDebugAar
+> Task :capacitor-android:assembleDebug
+> Task :capacitor-app:stripDebugDebugSymbols NO-SOURCE
+> Task :capacitor-app:copyDebugJniLibsProjectAndLocalJars
+> Task :capacitor-app:extractDebugAnnotations
+> Task :capacitor-app:extractDeepLinksForAarDebug
+> Task :capacitor-app:mergeDebugGeneratedProguardFiles
+> Task :capacitor-app:mergeDebugConsumerProguardFiles
+> Task :capacitor-app:prepareDebugArtProfile
+> Task :capacitor-app:prepareLintJarForPublish
+> Task :capacitor-app:mergeDebugJavaResource
+> Task :capacitor-camera:checkDebugAarMetadata
+> Task :capacitor-app:syncDebugLibJars
+> Task :capacitor-app:bundleDebugAar
+> Task :capacitor-app:assembleDebug
+> Task :capacitor-camera:stripDebugDebugSymbols NO-SOURCE
+> Task :capacitor-camera:copyDebugJniLibsProjectAndLocalJars
+> Task :capacitor-camera:extractDebugAnnotations
+> Task :capacitor-camera:extractDeepLinksForAarDebug
+> Task :capacitor-camera:mergeDebugGeneratedProguardFiles
+> Task :capacitor-camera:mergeDebugConsumerProguardFiles
+> Task :capacitor-camera:prepareDebugArtProfile
+> Task :capacitor-camera:prepareLintJarForPublish
+> Task :capacitor-camera:mergeDebugJavaResource
+> Task :capacitor-cordova-android-plugins:checkDebugAarMetadata
+> Task :capacitor-camera:syncDebugLibJars
+> Task :capacitor-camera:bundleDebugAar
+> Task :capacitor-camera:assembleDebug
+> Task :capacitor-cordova-android-plugins:stripDebugDebugSymbols NO-SOURCE
+> Task :capacitor-cordova-android-plugins:copyDebugJniLibsProjectAndLocalJars
+> Task :capacitor-cordova-android-plugins:extractDebugAnnotations
+> Task :capacitor-cordova-android-plugins:extractDeepLinksForAarDebug
+> Task :capacitor-cordova-android-plugins:mergeDebugGeneratedProguardFiles
+> Task :capacitor-cordova-android-plugins:mergeDebugConsumerProguardFiles
+> Task :capacitor-cordova-android-plugins:prepareDebugArtProfile
+> Task :capacitor-cordova-android-plugins:prepareLintJarForPublish
+> Task :capacitor-cordova-android-plugins:mergeDebugJavaResource
+> Task :capacitor-haptics:checkDebugAarMetadata
+> Task :capacitor-cordova-android-plugins:syncDebugLibJars
+> Task :capacitor-cordova-android-plugins:bundleDebugAar
+> Task :capacitor-cordova-android-plugins:assembleDebug
+> Task :capacitor-haptics:stripDebugDebugSymbols NO-SOURCE
+> Task :capacitor-haptics:copyDebugJniLibsProjectAndLocalJars
+> Task :capacitor-haptics:extractDebugAnnotations
+> Task :capacitor-haptics:extractDeepLinksForAarDebug
+> Task :capacitor-haptics:mergeDebugGeneratedProguardFiles
+> Task :capacitor-haptics:mergeDebugConsumerProguardFiles
+> Task :capacitor-haptics:prepareDebugArtProfile
+> Task :capacitor-haptics:prepareLintJarForPublish
+> Task :capacitor-haptics:mergeDebugJavaResource
+> Task :capacitor-preferences:checkDebugAarMetadata
+> Task :capacitor-haptics:syncDebugLibJars
+> Task :capacitor-haptics:bundleDebugAar
+> Task :capacitor-haptics:assembleDebug
+> Task :capacitor-preferences:stripDebugDebugSymbols NO-SOURCE
+> Task :capacitor-preferences:copyDebugJniLibsProjectAndLocalJars
+> Task :capacitor-preferences:extractDebugAnnotations
+> Task :capacitor-preferences:extractDeepLinksForAarDebug
+> Task :capacitor-preferences:mergeDebugGeneratedProguardFiles
+> Task :capacitor-preferences:mergeDebugConsumerProguardFiles
+> Task :capacitor-preferences:prepareDebugArtProfile
+> Task :capacitor-preferences:prepareLintJarForPublish
+> Task :capacitor-preferences:mergeDebugJavaResource
+> Task :capacitor-share:checkDebugAarMetadata
+> Task :capacitor-preferences:syncDebugLibJars
+> Task :capacitor-preferences:bundleDebugAar
+> Task :capacitor-preferences:assembleDebug
+> Task :capacitor-share:stripDebugDebugSymbols NO-SOURCE
+> Task :capacitor-share:copyDebugJniLibsProjectAndLocalJars
+> Task :capacitor-share:extractDebugAnnotations
+> Task :capacitor-share:extractDeepLinksForAarDebug
+> Task :capacitor-share:mergeDebugGeneratedProguardFiles
+> Task :capacitor-share:mergeDebugConsumerProguardFiles
+> Task :capacitor-share:prepareDebugArtProfile
+> Task :capacitor-share:prepareLintJarForPublish
+> Task :capacitor-share:mergeDebugJavaResource
+> Task :capacitor-share:syncDebugLibJars
+> Task :capacitor-share:bundleDebugAar
+> Task :capacitor-share:assembleDebug
+
+[Incubating] Problems report is available at: file:///home/runner/work/nash-ai-markets/nash-ai-markets/android/build/reports/problems/problems-report.html
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 9.0.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/8.14.3/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD SUCCESSFUL in 1m 57s
+248 actionable tasks: 248 executed
+Post job cleanup.
+(node:3168) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+Post job cleanup.
+[command]/usr/bin/git version
+git version 2.55.0
+Temporarily overriding HOME='/home/runner/work/_temp/0d17da57-dd9d-4ce0-87af-f7ad8525e860' before making global git config changes
+Adding repository directory to the temporary git global config as a safe directory
+[command]/usr/bin/git config --global --add safe.directory /home/runner/work/nash-ai-markets/nash-ai-markets
+[command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+[command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+[command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+[command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+Cleaning up orphan processes
+Terminate orphan process: pid (3103) (java)
+##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683, actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

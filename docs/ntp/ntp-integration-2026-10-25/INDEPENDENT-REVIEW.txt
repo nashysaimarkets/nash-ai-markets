@@ -1,0 +1,88 @@
+Independent review — NTP integration — 25 October 2026
+Reviewer: /root/independent_review. Read-only source review; no source edits,
+provider calls, database connections, production changes or deployment.
+
+Reviewed baseline: 190bb0a1a879f3f863e4d4b187dd74b201d99890, accepted executable
+15141db6899b53834d9e3f2984e8b4e5d78531f2. Final commit binding is pending root's
+source freeze. This review approves the bounded OFFLINE candidate scope only.
+
+CONFIRMED DEFECTS FOUND AND FIXED
+1. workflow-plan.ts's new extensionless product-brand import failed the native
+   Node test runner with ERR_MODULE_NOT_FOUND. Root fixed it to explicit .ts;
+   root rechecked the existing 1/1 workflow test.
+2. The newly configured IG availability initially hid the whole panel after
+   paid access/consent/rights withdrawal, losing the owner's disconnect UI.
+   Repaired with a distinct authenticated revoke-only availability flag, owner
+   scope, no connect/refresh controls, client action guard and truthful status.
+3. Current Google revocation reader initially coerced timestamp arrays/numbers
+   into valid timestamps. Reviewer reproduced actual VOIDED from malformed
+   array fields using controlled responses. Both fields now require primitive
+   strings; negative regressions pass. Provider-defined default time windows
+   also replace a local-clock lower boundary susceptible to transit/skew.
+4. New Google notification route initially imported its server module without
+   .ts, failing native Node before any tests. Explicit .ts repaired; reviewer
+   reran the complete 10 route cases successfully.
+
+INDEPENDENT EXECUTION (overlaps implementer/root runs; do not add twice)
+- IG binding / real shared lifecycle + SQL-port simulation: 16/16 PASS.
+- IG React SSR: 3/3 PASS (two existing, one new revoke-only assertion).
+- Google acknowledgement adapter: 12/12 PASS.
+- Google bootstrap/reconciliation: 16/16 PASS (includes existing cases).
+- Google notification/current-void adapters: 21/21 PASS.
+- Mounted Google notification binding/route: 10/10 PASS with native Node.
+Total 78 distinct targeted cases independently executed; zero failures/skips
+in the final runs. Tests use controlled transports/SQL ports. Locally generated
+test RSA signatures are real cryptographic operations, not real Google delivery.
+Root owns combined exact-source build/browser/CI acceptance separately.
+
+REVIEW FINDINGS
+IG uses factory-branded immutable binding, strict DEMO origin and existing
+shared encrypted sessions/quota/owner fencing. Authenticated UUIDs canonicalize
+before storage/AAD use. Identity/source/storage/key/role mismatch denies early.
+Missing configuration stays503. Rights withdrawal blocks reads but retains
+authenticated local revocation. Page is dynamic and uses the same authority.
+
+Acknowledgement is explicit sandbox opt-in, fixed-origin single POST, bounded
+OAuth/response body, redirect-refusing, cancellable, late-response-cleaning.
+Uncertain side effects cannot become success or retry. Acknowledgement alone
+never grants entitlement; fresh provider/account/ownership checks follow.
+
+Notifications require real RS256 verification using a fixed Google JWKS URL,
+exact issuer/audience/verified service-account email/subscription, bounded
+delivery freshness, and existing authoritative known-token sandbox ownership.
+Current revocation proof independently requires Google testPurchase, exact
+product/base-plan/obfuscated owner and expired current successful order, one
+matching full void, then a fresh provider/order/account/ownership recheck.
+Expired state or notification assertions alone cannot prove VOIDED. Unknown
+tokens, old renewal refunds, partial refunds, active state, incomplete paging,
+missing or malformed evidence remain HOLD. Mounted notification route has
+prepared-only one-time binding, exact source/origin/nonproduction guard,
+backend identity inspection, fixed SQL and default503. HOLD/UNCERTAIN remains
+503; only completed REVOKED returns200. No raw tokens/credentials in replies.
+
+Candidate brand changes preserve account/product/bundle/package/storage/route
+identities. iOS icon1024x1024RGB is opaque, PWA512RGB opaque, Android432RGBA
+foreground content bbox(107,155)-(332,277) is safely inset. The name remains an
+uncleared candidate: existing NTP sector use is documented. Installed/store
+builds are not changed by this source review.
+
+FINAL REVIEWED SECURITY FILE SHA256
+acknowledgement a5c15b48db8e256666e14c85681e6b64be25fba6388e9739d7ae58942c215769
+google-bootstrap f719cc78597bb9a740a9baccaaa6a9d22c4ab19dfeb1eaa6bb02b43c0c392a41
+ig-route 162cc6cd2fe4422c807034fa2b5ce5f6c16bc5713a3603f3e97e689ca2d810dc
+ig-access ae44a038a44023c677dc3da6c3d3faad6aaa49ede053d15d6aaafa94c96509b4
+current-revocation 7f572296149384e007d4b5d971efa4c00e558b3b40ae6454ec9003497255a0b7
+notification-delivery f1bc0ba440d9d8eb857897ff835dc0d5022e03ecd9cdb5679e78053d5313193d
+notification-binding 47040d3b86274aa27c471d33cdb2893980667ed16c5054247e8a8c645201471d
+notification-route f71d476027a85fc2efc5883f03215701868ddfc8b015c8e582f61f7a57a6e663
+
+EXPLICIT LIMITS
+No genuine IG connect/account/disconnect or Google OAuth/JWKS/purchase/RTDN
+acceptance; no hosted SQL/runtime/vault installation, signed devices, store
+submission, public name clearance, commercial rights, deployed preview,
+remaining zero-cost allowance guarantee or scanner semantic release acceptance.
+Factory preparation and passing controlled tests do not establish those gates.
+
+Primary API references checked directly during review:
+https://developers.google.com/android-publisher/api-ref/rest/v3/purchases.voidedpurchases/list
+https://developers.google.com/android-publisher/api-ref/rest/v3/purchases.subscriptionsv2
