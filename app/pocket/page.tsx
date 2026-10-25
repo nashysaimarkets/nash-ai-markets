@@ -1,6 +1,4 @@
 import { POCKET_PRODUCT } from "../lib/product-brand";
-import { headers } from "next/headers";
-import { readPocketIgDemoAvailability } from "../lib/server/pocket-ig-demo-access";
 import type { Metadata, Viewport } from "next";
 import PocketNext from "../pocket-next/PocketNext";
 import "../pocket-next/pocket-next.css";
@@ -72,9 +70,8 @@ export const viewport: Viewport = {
 export const dynamic = "force-dynamic";
 
 export default async function PocketPage() {
-  const [macroContext, igDemo] = await Promise.all([
-    getVerifiedMacroContext({ route: "/pocket" }).catch(() => createUnavailableMacroContext()),
-    headers().then(value => readPocketIgDemoAvailability(new Headers(value))),
-  ]);
-  return <PocketNext macroContext={macroContext} {...igDemo} />;
+  // Apple-first release: broker integration is deferred, not a page dependency.
+  const macroContext = await getVerifiedMacroContext({ route: "/pocket" })
+    .catch(() => createUnavailableMacroContext());
+  return <PocketNext macroContext={macroContext} />;
 }

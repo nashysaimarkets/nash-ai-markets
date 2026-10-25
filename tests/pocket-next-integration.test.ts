@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
+import "./apple-first-scope.test.mjs";
 
 test("redesign analysis retains image-bound confirmation, cancellation and server entitlement transport", async () => {
   const source = await readFile(new URL("../app/pocket-next/PocketNext.tsx", import.meta.url), "utf8");
