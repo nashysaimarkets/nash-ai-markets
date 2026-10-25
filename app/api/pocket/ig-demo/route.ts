@@ -2,4 +2,4 @@ import {handlePocketIgDemoRequest} from '../../../lib/server/pocket-ig-demo-acce
 export const runtime='nodejs';
 export const dynamic='force-dynamic';
 /** Default remains OFF. Only an approved trusted server binding can supply the existing DEMO bridge. */
-export async function POST(request?:Request) {return handlePocketIgDemoRequest(request);}
+export async function POST(request:Request) {return handlePocketIgDemoRequest(request);}

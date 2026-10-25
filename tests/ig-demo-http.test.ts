@@ -28,7 +28,7 @@ test('anonymous/unpaid/wrong-owner cannot connect, revoked entitlement can disco
  for(const u of [null,{ownerId:owner,permitted:false},{ownerId:other,permitted:true}]){const h=harness();h.user(u);assert.ok((await h.handle(req({action:'connect'}))).status>=400);assert.equal(h.calls.length,0);}
  const h=harness();await h.handle(req({action:'connect'}));h.user({ownerId:owner,permitted:false});assert.equal((await h.handle(req({action:'disconnect'}))).status,200);assert.equal(h.connection.state().status,'REVOKED');
 });
-test('disabled actual customer route cannot be enabled by request',async()=>{const r=await POST();assert.equal(r.status,503);assert.deepEqual(await r.json(),{error:'IG_DEMO_NOT_CONFIGURED'});const h=harness();assert.equal((await createIgDemoHttp({...h.deps,enabled:false})(req({action:'connect'}))).status,503);assert.equal(h.calls.length,0);});
+test('disabled actual customer route cannot be enabled by request',async()=>{const r=await POST(req({action:'connect'}));assert.equal(r.status,503);assert.deepEqual(await r.json(),{error:'IG_DEMO_NOT_CONFIGURED'});const h=harness();assert.equal((await createIgDemoHttp({...h.deps,enabled:false})(req({action:'connect'}))).status,503);assert.equal(h.calls.length,0);});
 test('cancelled slow authorisation settles without vault or transport',async()=>{
  const h=harness();const abort=new AbortController();const r=new Request(req({action:'connect'}),{signal:abort.signal});const p=createIgDemoHttp({...h.deps,authorise:()=>new Promise(()=>{})})(r);abort.abort();assert.equal((await p).status,503);assert.equal(h.calls.length,0);assert.equal(h.vaultReads(),0);
 });

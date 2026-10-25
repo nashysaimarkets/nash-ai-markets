@@ -75,7 +75,7 @@ function fixture(){
 test('unconfigured actual route remains503 despite browser and environment flags',async()=>{
   const previous=process.env.IG_DEMO_ENABLED;process.env.IG_DEMO_ENABLED='true';
   try {
-    assert.equal((await POST()).status,503);
+    assert.equal((await POST(request('connect'))).status,503);
     const response=await POST(request('connect',{enabled:true,commercialApproval:true,ownerId:owner}));
     assert.equal(response.status,503);assert.deepEqual(await response.json(),{error:'IG_DEMO_NOT_CONFIGURED'});
     assert.deepEqual(await readPocketIgDemoAvailability(new Headers({host:'ntp-preview.invalid'})),{igDemoAvailable:false});
