@@ -1,3 +1,4 @@
+import { POCKET_PRODUCT } from "./product-brand.ts";
 export type LaunchEmailTemplate = {
   template: "waitlist-confirmation" | "founding-member-welcome" | "pocket-founding-welcome" | "pocket-subscription-alert" | "membership-welcome" | "payment-successful" | "founding-100-confirmation" | "annual-renewal-reminder" | "subscription-cancellation";
   subject: string;
@@ -32,15 +33,15 @@ const brandFooter = "NASH AI Markets provides educational market commentary, not
 export function buildPocketFoundingWelcomeEmail(pocketUrl: string): LaunchEmailTemplate {
   return {
     template: "pocket-founding-welcome",
-    subject: "Welcome to Pocket Bullseye — start with your first chart",
+    subject: `Welcome to ${POCKET_PRODUCT.displayName} — start with your first chart`,
     text: [
-      "Welcome to Pocket Bullseye. Your Founding 650 subscription has been confirmed.",
-      `OPEN POCKET\n${pocketUrl}`,
-      "SAVE POCKET TO YOUR PHONE\niPhone: open Pocket in Safari, tap Share, then Add to Home Screen.\nAndroid: open Pocket in Chrome, tap the menu, then Add to Home screen or Install app.\nDesktop: use the install icon in the browser address bar, or bookmark Pocket.",
-      "UPLOAD YOUR FIRST CHART\n1. Tap LOAD CHART.\n2. Choose a clear screenshot showing the instrument, timeframe and price scale.\n3. Remove your name, account number, balance and notifications before uploading.\n4. Choose LONG, SHORT or JUST ANALYSE, confirm the Privacy Shield, then tap CHALLENGE MY SETUP.",
-      "SEND FEEDBACK\nTap the green FEEDBACK button at the bottom-right of Pocket. Choose REPORT A PROBLEM if something is not working, or SHARE AN IDEA to help shape the product. You can also email hello@nashaimarkets.com.",
+      `Welcome to ${POCKET_PRODUCT.displayName}. Your Founding 650 subscription has been confirmed.`,
+      `OPEN ${POCKET_PRODUCT.shortName}\n${pocketUrl}`,
+      "SAVE THE APP TO YOUR PHONE\niPhone: open the app in Safari, tap Share, then Add to Home Screen.\nAndroid: open the app in Chrome, tap the menu, then Add to Home screen or Install app.\nDesktop: use the install icon in the browser address bar, or bookmark the app.",
+      "UPLOAD YOUR FIRST CHART\n1. Tap Add a source chart.\n2. Choose a clear screenshot showing the instrument, timeframe and price scale.\n3. Remove your name, account number, balance and notifications before uploading.\n4. Choose LONG, SHORT or NO BIAS, confirm privacy and the source chart facts, then tap ANALYSE CHART.",
+      "SEND FEEDBACK\nEmail hello@nashaimarkets.com with the problem or suggestion. Never include passwords, payment details or trading-account information.",
       "Your £4.99 Founding 650 price remains locked while this subscription stays continuously active.",
-      "Pocket Bullseye provides educational chart analysis only. It does not provide personalised financial advice, execute trades or guarantee outcomes.",
+      `${POCKET_PRODUCT.displayName} provides educational chart analysis only. It does not provide personalised financial advice, execute trades or guarantee outcomes.`,
     ].join("\n\n"),
   };
 }
@@ -48,9 +49,9 @@ export function buildPocketFoundingWelcomeEmail(pocketUrl: string): LaunchEmailT
 export function buildPocketSubscriptionAlertEmail(customerEmail: string, dashboardUrl: string): LaunchEmailTemplate {
   return {
     template: "pocket-subscription-alert",
-    subject: "New Pocket Bullseye subscription \uD83C\uDFAF",
+    subject: `New ${POCKET_PRODUCT.displayName} subscription \uD83C\uDFAF`,
     text: [
-      "A new Pocket Bullseye Founding 650 subscription has been verified by Stripe.",
+      `A new ${POCKET_PRODUCT.displayName} Founding 650 subscription has been verified by Stripe.`,
       `Customer: ${customerEmail}`,
       "Price: \u00A34.99 per month",
       `OPEN LAUNCH CONTROL\n${dashboardUrl}`,

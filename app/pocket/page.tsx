@@ -1,3 +1,6 @@
+import { POCKET_PRODUCT } from "../lib/product-brand";
+import { headers } from "next/headers";
+import { readPocketIgDemoAvailability } from "../lib/server/pocket-ig-demo-access";
 import type { Metadata, Viewport } from "next";
 import PocketNext from "../pocket-next/PocketNext";
 import "../pocket-next/pocket-next.css";
@@ -39,22 +42,22 @@ import "./pocket-liquidity-guard.css";
 import "./pocket-professional.css";
 
 export const metadata: Metadata = {
-  title: "Pocket Bullseye AI Chart Analysis",
+  title: `${POCKET_PRODUCT.displayName} — Chart Analysis`,
   description: "Upload a trading chart for an AI-assisted second opinion. Review market structure, support and resistance, timeframe context, invalidation and risk before deciding.",
-  applicationName: "Pocket Bullseye",
+  applicationName: POCKET_PRODUCT.displayName,
   keywords: ["AI chart analysis", "trading chart analyser", "trading second opinion", "support and resistance", "pre-trade analysis"],
   alternates: { canonical: "/pocket" },
   robots: { index: true, follow: true },
   openGraph: {
-    title: "Pocket Bullseye — AI Chart Analysis for Traders",
+    title: `${POCKET_PRODUCT.displayName} — Chart Analysis for Traders`,
     description: "Get an evidence-led second opinion on your trading chart before deciding.",
     type: "website",
     url: "/pocket",
-    siteName: "Pocket Bullseye",
+    siteName: POCKET_PRODUCT.displayName,
   },
   twitter: {
     card: "summary_large_image",
-    title: "Pocket Bullseye — AI Chart Analysis for Traders",
+    title: `${POCKET_PRODUCT.displayName} — Chart Analysis for Traders`,
     description: "Get an evidence-led second opinion on your trading chart before deciding.",
   },
 };
@@ -66,7 +69,12 @@ export const viewport: Viewport = {
   themeColor: "#0a0e13",
 };
 
+export const dynamic = "force-dynamic";
+
 export default async function PocketPage() {
-  const macroContext = await getVerifiedMacroContext({ route: "/pocket" }).catch(() => createUnavailableMacroContext());
-  return <PocketNext macroContext={macroContext} />;
+  const [macroContext, igDemo] = await Promise.all([
+    getVerifiedMacroContext({ route: "/pocket" }).catch(() => createUnavailableMacroContext()),
+    headers().then(value => readPocketIgDemoAvailability(new Headers(value))),
+  ]);
+  return <PocketNext macroContext={macroContext} {...igDemo} />;
 }

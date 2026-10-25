@@ -1,3 +1,4 @@
+import { POCKET_PRODUCT } from "../lib/product-brand";
 import type { Metadata } from "next";
 import Link from "next/link";
 
@@ -39,9 +40,9 @@ export default function Privacy() {
           personal information.
         </p>
 
-        <h2>Pocket Bullseye page measurement</h2>
+        <h2>{POCKET_PRODUCT.name} page measurement</h2>
         <p>
-          On the Pocket Bullseye Founding page, we count page views, offer and app
+          On the {POCKET_PRODUCT.name} Founding page, we count page views, offer and app
           clicks, checkout starts, checkout cancellations, and checkout-unavailable
           outcomes. The report stores daily totals with a limited source and campaign
           label from UTM parameters or, when they are absent, the referring site’s host.
@@ -53,9 +54,9 @@ export default function Privacy() {
           security logs are processed separately.
         </p>
 
-        <h2>Pocket Bullseye chart audits</h2>
+        <h2>{POCKET_PRODUCT.name} chart audits</h2>
         <p>
-          When you choose to run a Pocket Bullseye audit, the chart image and any optional
+          When you choose to run a {POCKET_PRODUCT.name} audit, the chart image and any optional
           supporting image are sent to our configured AI provider so the requested audit can be
           produced. Remove names, account numbers, balances, notifications and any other personal
           information before uploading. Pocket requests that the provider does not store the AI

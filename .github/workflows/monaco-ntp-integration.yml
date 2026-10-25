@@ -1,0 +1,76 @@
+name: NTP isolated integration acceptance
+on:
+  push:
+    branches: [monaco-ntp-integration-20261025-ad6]
+    paths: ['app/**', 'public/**', 'ios/**', 'android/**', 'capacitor.config.ts', 'package*.json', 'scripts/**', 'tests/**', '.github/workflows/monaco-ntp-integration.yml']
+permissions:
+  contents: read
+jobs:
+  acceptance:
+    if: github.event.repository.private == false
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    env:
+      NEXT_TELEMETRY_DISABLED: '1'
+      NODE_OPTIONS: --max-old-space-size=4096
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with: {persist-credentials: false}
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with: {node-version: '24'}
+      - name: Locked dependencies, no cache or artifact uploads
+        id: dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Affected integration and security cases, synthetic ports only
+        run: |
+          node --import tsx --test --test-isolation=none tests/pocket-ig-demo-binding.test.ts tests/render/ig-demo-workspace.test.ts tests/ig-demo-workspace.test.ts tests/ig-demo-client.test.ts tests/pocket-google-acknowledgement.test.mjs tests/pocket-google-notification-adapters.test.mjs tests/pocket-google-notification-route.test.ts tests/pocket-google-finish.test.ts tests/pocket-google-runtime.test.mjs tests/pocket-next-integration.test.ts tests/pocket-workflow-plan.test.ts tests/launch-email-readiness.test.ts tests/resend-launch-email.test.ts tests/pocket-native-manifest.test.mjs
+      - name: Existing affected HTTP boundary, real loopback only
+        run: node --import tsx --test --test-isolation=none tests/ig-demo-http.test.ts
+      - name: TypeScript, source hygiene and credential exclusion
+        run: |
+          npm run typecheck
+          node scripts/check-secrets.mjs
+          git diff --check
+      - name: Actual phone-sized component, interaction and accessibility
+        env:
+          POCKET_QA_BROWSER_EXECUTABLE_PATH: /usr/bin/google-chrome
+          POCKET_QA_EVIDENCE_DIR: docs/ntp/ntp-integration-2026-10-25/browser
+        run: node tests/run-pocket-iphone-finish.mjs
+      - name: Retain synthetic visual and preview identities in job receipt
+        run: |
+          node --input-type=module <<'JS'
+          import {readFile} from 'node:fs/promises';
+          for(const name of ['phone-workspace.jpg','phone-report.jpg'])console.log(JSON.stringify({kind:'NTP_CAPTURE',name,base64:(await readFile('docs/ntp/ntp-integration-2026-10-25/browser/'+name)).toString('base64')}));
+          console.log('NTP_PREVIEW_MANIFEST '+await readFile('dist/premium-preview/manifest.json','utf8'));
+          JS
+      - name: Sites Worker build and artifact validation
+        if: ${{ !cancelled() && steps.dependencies.outcome == 'success' }}
+        run: |
+          SITES_ENV_READY=1 SITES_PROJECT_ROOT="$GITHUB_WORKSPACE" npm run build
+      - name: Separate Vercel Next build, external services blocked
+        if: ${{ !cancelled() && steps.dependencies.outcome == 'success' }}
+        run: |
+          python3 - <<'PY'
+          import os,subprocess
+          from pathlib import Path
+          root=Path.cwd()
+          env={'PATH':os.environ['PATH'],'NEXT_TELEMETRY_DISABLED':'1',
+            'NODE_OPTIONS':'--require='+str(root/'docs/monaco-126/build-auth-2026-10-24/no-network.cjs'),
+            'NEXT_FONT_GOOGLE_MOCKED_RESPONSES':str(root/'scripts/offline-geist-fonts.cjs'),
+            'NEXT_PUBLIC_SUPABASE_URL':'http://127.0.0.1:43211',
+            'NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY':'sb_publishable_offline_fixture',
+            'POCKET_FIRST_FREE_ENABLED':'false','POCKET_BENCHMARK_PILOT_ENABLED':'false',
+            'POCKET_REAL_BENCHMARK_DISPATCH':'false','POCKET_BENCHMARK_RUNTIME_METADATA_ENABLED':'false'}
+          raise SystemExit(subprocess.run(['node','node_modules/next/dist/bin/next','build','--webpack'],env=env,cwd=root).returncode)
+          PY
+      - name: Debug Android compile, synthetic non-routable backend pin
+        if: ${{ !cancelled() && steps.dependencies.outcome == 'success' }}
+        env:
+          CAPACITOR_SERVER_URL: https://offline-acceptance.invalid/pocket
+          CAPACITOR_SERVER_REVISION: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+        run: |
+          export JAVA_HOME="$JAVA_HOME_21_X64"
+          npx cap sync android
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon

@@ -36,4 +36,6 @@ import "../../app/pocket/pocket-liquidity-guard.css";
 import "../../app/pocket/pocket-professional.css";
 import React from 'react';import {createRoot} from 'react-dom/client';
 import PocketNext from '../../app/pocket-next/PocketNext';
-createRoot(document.getElementById('root')!).render(<PocketNext igDemoAvailable igDemoOwnerScope="synthetic-browser-owner"/>);
+// Test-only view switch: production availability is supplied by the trusted server.
+const revokeOnly = new URLSearchParams(window.location.search).has('revoke-only');
+createRoot(document.getElementById('root')!).render(<PocketNext igDemoAvailable={!revokeOnly} igDemoDisconnectAvailable igDemoOwnerScope="synthetic-browser-owner"/>);

@@ -1,3 +1,7 @@
+## Latest continuation — 25 October 2026
+
+Read `docs/ntp/ntp-integration-2026-10-25/README.md` and the latest Issue126 receipt first. Isolated branch `monaco-ntp-integration-20261025-ad6`; claim6395191597; source/acceptance currently pending. Owner selected NTP — Nash Trading Platform for the candidate; known ASX NTP overlap and public clearance remain unresolved. Do not repeat paid scans, credential setup or hosting billing investigation. Current runtime and native release gates remain explicit; screenshots/offline checks do not close them. Earlier sections below are historical and cannot override the new continuation.
+
 ## Latest premium finish — 25 October 2026
 
 Resume monaco-premium-finish-20261025-baf/source15141db6899b53834d9e3f2984e8b4e5d78531f2/tree69d4923664823175f8eadf073a16a001de171e9e. Final evidence SHA is in newest Issue126 receipt.44 Node+5realPG+12iPhone-sized checks PASS; Axe0violations both views, exact-source TS/build PASS in40141817082. Independent acceptance and downloadable source-bound offline preview saved. Prior108+18/debug/concurrency evidence preserved. Actual trusted service adapters/configuration, unknown-token/manual policy, IG, signed device/Safari and rights remain distinct. Smallest owner decision: authorise isolated exact-source preview hosting for phone inspection. No deployment performed. See docs/ntp/premium-finish-2026-10-25/README.md. Writer released after publication.

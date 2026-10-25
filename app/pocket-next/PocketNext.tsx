@@ -1,4 +1,5 @@
 "use client";
+import { POCKET_PRODUCT } from "../lib/product-brand";
 import {createPrecisionReadingCrop as precisionCrop} from "../pocket/precision-reading-crop";
 /* Private uploads and synthetic inline demos stay local; next/image provides no benefit. */
 /* eslint-disable @next/next/no-img-element */
@@ -205,7 +206,7 @@ function statusOf(analysis: Analysis, kind: "levels" | "patterns" | "liquidity" 
 function statusLabel(value: string) { return value === "NONE" ? "NO EVIDENCE" : value; }
 
 const UNAVAILABLE_MACRO: VerifiedMacroContext = {generatedAt:"",status:"unavailable",observations:[],releases:[],filings:[],availableSources:[],unavailableSources:[]};
-export default function PocketNext({macroContext=UNAVAILABLE_MACRO,igDemoAvailable=false,igDemoOwnerScope,igDemoChartBinding}:{macroContext?:VerifiedMacroContext;igDemoAvailable?:boolean;igDemoOwnerScope?:string;igDemoChartBinding?:IgDemoChartBinding} = {}) {
+export default function PocketNext({macroContext=UNAVAILABLE_MACRO,igDemoAvailable=false,igDemoDisconnectAvailable=false,igDemoOwnerScope,igDemoChartBinding}:{macroContext?:VerifiedMacroContext;igDemoAvailable?:boolean;igDemoDisconnectAvailable?:boolean;igDemoOwnerScope?:string;igDemoChartBinding?:IgDemoChartBinding} = {}) {
   const [charts, setCharts] = useState<ChartSlot[]>(emptyChartSlots);
   const [activeChart, setActiveChart] = useState(0);
   const activeChartRef = useRef(activeChart);
@@ -426,9 +427,9 @@ export default function PocketNext({macroContext=UNAVAILABLE_MACRO,igDemoAvailab
   };
   const share = async () => {
     if (!analysis) return;
-    const text = UNVERIFIED_SCANNER_NOTICE + "\nPocket Bullseye" + (demoMode ? " · SYNTHETIC INTERFACE DEMO" : "") + " · " + analysis.instrument + " · " + analysis.timeframe + "\n" + analysis.verdict + " · " + analysis.setupScore.overall + "/100\n" + analysis.verdictHeadline;
+    const text = UNVERIFIED_SCANNER_NOTICE + "\n" + POCKET_PRODUCT.displayName + (demoMode ? " · SYNTHETIC INTERFACE DEMO" : "") + " · " + analysis.instrument + " · " + analysis.timeframe + "\n" + analysis.verdict + " · " + analysis.setupScore.overall + "/100\n" + analysis.verdictHeadline;
     try {
-      if (navigator.share) await navigator.share({ title: "Pocket Bullseye", text });
+      if (navigator.share) await navigator.share({ title: POCKET_PRODUCT.displayName, text });
       else if (navigator.clipboard) { await navigator.clipboard.writeText(text); setNotice("Decision summary copied."); }
       else setNotice("Sharing is unavailable in this browser.");
     } catch (e) { if (!(e instanceof Error && e.name === "AbortError")) setNotice("The summary could not be shared. Your report is still available."); }
@@ -471,7 +472,7 @@ export default function PocketNext({macroContext=UNAVAILABLE_MACRO,igDemoAvailab
   if (!analysis) return <main className="pnApp pnStartApp" aria-busy={busy || uploading}>
     <a className="pnSkip" href="#pn-intake">Skip to chart workspace</a>
     <header className="pnTop">
-      <div className="pnBrand"><span className="pnMark">PB</span><div><strong>POCKET BULLSEYE</strong><small>Intelligence Before Execution.</small></div></div>
+      <div className="pnBrand"><span className="pnMark">{POCKET_PRODUCT.shortName}</span><div><strong>{POCKET_PRODUCT.name.toUpperCase()}</strong><small>{POCKET_PRODUCT.tagline}</small></div></div>
       <div className="pnEngine"><i/> YOUR PRE-TRADE WORKSPACE</div>
     </header>
 
@@ -479,7 +480,7 @@ export default function PocketNext({macroContext=UNAVAILABLE_MACRO,igDemoAvailab
       <article className="pnIntro">
         <p>PRE-TRADE DECISION WORKSPACE</p>
         <h1>Intelligence<br/><em>before execution.</em></h1>
-        <span>Upload the chart you are actually looking at. Pocket separates visible evidence from assumptions, then shows what confirms the idea, what weakens it and when doing nothing is the better decision.</span>
+        <span>Upload the chart you are actually looking at. {POCKET_PRODUCT.shortName} separates visible evidence from assumptions, then shows what confirms the idea, what weakens it and when doing nothing is the better decision.</span>
         <div className="pnPrinciples">
           <div><b>01</b><strong>VERIFY</strong><small>Evidence before precision</small></div>
           <div><b>02</b><strong>CHALLENGE</strong><small>Bias gets tested</small></div>
@@ -509,7 +510,7 @@ export default function PocketNext({macroContext=UNAVAILABLE_MACRO,igDemoAvailab
         </div>
 
         <NativeSubscriptionControls />
-        <IgDemoWorkspace ownerScope={igDemoOwnerScope} available={igDemoAvailable} contextKey={igDemoContextKey} chartToken={igDemoToken} />
+        <IgDemoWorkspace ownerScope={igDemoOwnerScope} available={igDemoAvailable} disconnectAvailable={igDemoDisconnectAvailable} contextKey={igDemoContextKey} chartToken={igDemoToken} />
         <label className="pnPrivacy"><input type="checkbox" checked={privacy} onChange={(e)=>{if(!e.target.checked)invalidate("Privacy confirmation was removed; analysis was cancelled.");setPrivacy(e.target.checked);}}/><span><strong>Privacy check</strong>I removed account numbers, balances and personal notifications from every chart.</span></label>
 
         {image ? <ChartPreflightPanel key={`${activeChart}:${activeSlot.revision}`} image={image} onStatus={status => changePreflight(activeChart,activeSlot.revision,status)} onConfirmation={confirmation => changeConfirmation(activeChart,activeSlot.revision,confirmation)} /> : null}
@@ -527,7 +528,7 @@ export default function PocketNext({macroContext=UNAVAILABLE_MACRO,igDemoAvailab
   return <main className="pnApp pnResultApp" data-tone={stateTone} aria-busy={busy || uploading}>
     <a className="pnSkip" href="#pn-chart-workspace">Skip to chart evidence</a>
     <header className="pnTop pnResultTop">
-      <div className="pnBrand"><span className="pnMark">PB</span><div><strong>POCKET BULLSEYE</strong><small>Intelligence Before Execution. · {analysis.instrument} · {analysis.timeframe}</small></div></div>
+      <div className="pnBrand"><span className="pnMark">{POCKET_PRODUCT.shortName}</span><div><strong>{POCKET_PRODUCT.name.toUpperCase()}</strong><small>{POCKET_PRODUCT.tagline} · {analysis.instrument} · {analysis.timeframe}</small></div></div>
       <div className="pnTopActions"><button type="button" onClick={share}>SHARE</button><button type="button" onClick={reset}>{demoMode ? "RETURN TO YOUR CHARTS" : "CLEAR WORKSPACE"}</button></div>
     </header>
 
@@ -681,7 +682,7 @@ export default function PocketNext({macroContext=UNAVAILABLE_MACRO,igDemoAvailab
             <div className="pnRows">{analysis.riskFlags.map((r,i)=><article key={i}><span>RISK {String(i+1).padStart(2,"0")}</span><strong>{r}</strong></article>)}<article><span>INVALIDATION</span><strong>{analysis.invalidation}</strong></article><article><span>TRADER TRAP</span><strong>{analysis.traderTrap}</strong></article></div>
           </>}
         </> : null}
-        {!demoMode ? <IgDemoWorkspace ownerScope={igDemoOwnerScope} available={igDemoAvailable} contextKey={igDemoContextKey} chartToken={igDemoToken} /> : null}
+        {!demoMode ? <IgDemoWorkspace ownerScope={igDemoOwnerScope} available={igDemoAvailable} disconnectAvailable={igDemoDisconnectAvailable} contextKey={igDemoContextKey} chartToken={igDemoToken} /> : null}
         {!demoMode ? <details className="pnToolDetails pnAccount"><summary>Account & subscription</summary><NativeSubscriptionControls /></details> : null}
       </aside>
     </section>

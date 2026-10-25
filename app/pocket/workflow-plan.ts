@@ -1,3 +1,4 @@
+import { POCKET_PRODUCT } from "../lib/product-brand.ts";
 import {exactAxisPrice} from './axis-verification.ts';
 export type UserPlan={side:'LONG'|'SHORT';entry:string;stop:string;target:string};
 export function calculateUserPlan(input:UserPlan){
@@ -15,7 +16,7 @@ export function isCompanyCalendarEligible(report:WorkflowReport){
 }
 export function exportPocketPlan(report:WorkflowReport,plan:UserPlan){
  const calculation=calculateUserPlan(plan);
- return ['UNVERIFIED MODEL ANALYSIS — verify reported prices and trading conclusions independently.','Pocket Bullseye · '+report.instrument+' · '+report.timeframe,'REPORT: '+report.verdict+' · '+report.setupScore.grade+' ('+report.setupScore.overall+'/100)',report.verdictHeadline,
+ return ['UNVERIFIED MODEL ANALYSIS — verify reported prices and trading conclusions independently.',POCKET_PRODUCT.displayName+' · '+report.instrument+' · '+report.timeframe,'REPORT: '+report.verdict+' · '+report.setupScore.grade+' ('+report.setupScore.overall+'/100)',report.verdictHeadline,
   'CONFIRMATION: '+report.nextSequence.confirmation,'INVALIDATION: '+(report.nextSequence.failure||report.invalidation),'NEXT CHECK: '+report.nextSequence.reassess,
   ...(calculation.valid?['USER-DEFINED '+plan.side+' PLAN: entry '+plan.entry+' / stop '+plan.stop+' / target '+plan.target,'Illustrative reward/risk: '+calculation.ratio.toFixed(2)]:['No validated user-defined price plan.']),
   'Screenshot-based second opinion. Verify prices and execution on your broker.'].join('\n');

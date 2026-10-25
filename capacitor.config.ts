@@ -1,3 +1,4 @@
+import { POCKET_PRODUCT } from "./app/lib/product-brand";
 import type { CapacitorConfig } from "@capacitor/cli";
 
 const rawServerUrl = process.env.CAPACITOR_SERVER_URL?.trim() ?? "";
@@ -23,7 +24,7 @@ if (serverUrl.hostname === "pocket.nashaimarkets.com" || serverUrl.hostname.incl
 
 const config: CapacitorConfig = {
   appId: "com.nashaimarkets.pocketbullseye",
-  appName: "Pocket Bullseye",
+  appName: POCKET_PRODUCT.shortName,
   // A small deterministic fallback is bundled, while the release build is
   // pinned to one separately verified immutable web revision.
   webDir: "ios/NativeWeb",

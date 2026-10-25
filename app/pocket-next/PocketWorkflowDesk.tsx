@@ -1,4 +1,5 @@
 "use client";
+import { POCKET_PRODUCT } from "../lib/product-brand";
 import {prepareLevelLabReport} from "../pocket/scanner-claims";
 /* Private originals remain local data URLs. */
 /* eslint-disable @next/next/no-img-element */
@@ -88,7 +89,7 @@ export default function PocketWorkflowDesk({report,image,intention,macroContext}
   </details>
   <details open><summary>Ask a follow-up</summary>
    <form onSubmit={e=>{e.preventDefault();if(!question.trim())return;setReply(null);void perform('follow-up',{analysis:report,question:question.trim()},payload=>{const result=payload.reply as Reply|undefined;if(!result||typeof result.answer!=='string'||typeof result.caution!=='string'||typeof result.nextCheck!=='string'||!Array.isArray(result.evidence)||result.evidence.some(item=>typeof item!=='string'))throw new Error('Follow-up returned an invalid result.');setReply(result);});}}>
-    <label>Your question<input aria-label="Ask a follow-up question" maxLength={180} value={question} onChange={e=>setQuestion(e.target.value)}/></label><button disabled={Boolean(busy)||reading||!question.trim()}>Ask Bullseye</button>
+    <label>Your question<input aria-label="Ask a follow-up question" maxLength={180} value={question} onChange={e=>setQuestion(e.target.value)}/></label><button disabled={Boolean(busy)||reading||!question.trim()}>Ask {POCKET_PRODUCT.shortName}</button>
    </form>
    {reply?<article aria-label="Follow-up answer"><strong>UNVERIFIED MODEL RESPONSE</strong><p>{reply.answer}</p><ul>{reply.evidence.map((item,i)=><li key={i}>{item}</li>)}</ul><p>{reply.caution}</p><strong>{reply.nextCheck}</strong></article>:null}
   </details>
