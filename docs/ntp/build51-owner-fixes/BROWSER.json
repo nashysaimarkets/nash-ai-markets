@@ -1,0 +1,27 @@
+{
+  "status": "PASS",
+  "checks": [
+    "390:automatic admission, zero manual fields/checkboxes",
+    "390:compact clear-chart check under160px",
+    "390:one discrete correction, no high-confidence fields overwritten",
+    "390:unreadable scale holds analysis without manual bypass",
+    "390:unavailable account/preflight cannot deadlock free demo or account navigation",
+    "390:explicit retry recovers",
+    "390:five chart upload and independent auto-checks",
+    "390:replacement cancels stale preflight result",
+    "390:no horizontal overflow",
+    "1440:automatic admission, zero manual fields/checkboxes",
+    "1440:compact clear-chart check under160px",
+    "1440:one discrete correction, no high-confidence fields overwritten",
+    "1440:unreadable scale holds analysis without manual bypass",
+    "1440:unavailable account/preflight cannot deadlock free demo or account navigation",
+    "1440:explicit retry recovers",
+    "1440:five chart upload and independent auto-checks",
+    "1440:replacement cancels stale preflight result",
+    "1440:no horizontal overflow"
+  ],
+  "errors": [],
+  "interceptedApiCalls": 28,
+  "realProviderCalls": 0,
+  "scope": "Actual React/CSS with synthetic intercepted HTTP, not StoreKit/device acceptance"
+}
