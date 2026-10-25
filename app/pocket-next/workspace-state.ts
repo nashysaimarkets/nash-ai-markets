@@ -14,24 +14,56 @@ export type WorkspaceSource<Report = unknown> = {
 
 export const CHART_SLOT_HINTS = ["5m", "30m", "1h", "4h", "Indicators"] as const;
 
-/** Validate a replacement completely before the workspace discards its old source. */
+/** Validate a replacement completely before the workspace discards its old source.
+ * One deadline covers local file reading and decoding; stalled browser callbacks
+ * must not leave every chart slot disabled. No upload or provider call occurs. */
 export async function readWorkspaceImage(file: File): Promise<string> {
   if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) throw new Error("Use a JPEG, PNG or WebP chart.");
   if (file.size === 0 || file.size > 8 * 1024 * 1024) throw new Error("Use a non-empty chart under 8 MB.");
-  const value = await new Promise<string>((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => typeof reader.result === "string" ? resolve(reader.result) : reject(new Error("Could not read that chart."));
-    reader.onerror = reader.onabort = () => reject(new Error("Could not read that chart."));
-    reader.readAsDataURL(file);
+  return new Promise<string>((resolve, reject) => {
+    let reader: FileReader | undefined;
+    let image: HTMLImageElement | undefined;
+    let settled = false;
+    const finish = (error?: Error, value?: string) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      if (reader) {
+        reader.onload = reader.onerror = reader.onabort = null;
+        // Detach callbacks first: abort can synchronously dispatch an event.
+        try { if (reader.readyState === FileReader.LOADING) reader.abort(); } catch { /* Cleanup must not prevent settlement. */ }
+        reader = undefined;
+      }
+      if (image) {
+        image.onload = image.onerror = null;
+        try { image.removeAttribute("src"); } catch { /* Discard the temporary decoder even if cleanup fails. */ }
+        image = undefined;
+      }
+      if (error) reject(error);
+      else resolve(value!);
+    };
+    const timer = setTimeout(() => finish(new Error("Chart upload timed out. Choose the image again.")), 30_000);
+    try {
+      reader = new FileReader();
+      reader.onload = () => {
+        if (settled) return;
+        const value = reader?.result;
+        if (typeof value !== "string") return finish(new Error("Could not read that chart."));
+        try {
+          image = new Image();
+          image.onload = () => {
+            if (settled) return;
+            if (image && image.naturalWidth > 0 && image.naturalHeight > 0 && image.naturalWidth * image.naturalHeight <= 16_000_000) finish(undefined, value);
+            else finish(new Error("Use a readable chart of 16 megapixels or less."));
+          };
+          image.onerror = () => finish(new Error("This image could not be decoded. Choose a fresh chart screenshot."));
+          image.src = value;
+        } catch { finish(new Error("This image could not be decoded. Choose a fresh chart screenshot.")); }
+      };
+      reader.onerror = reader.onabort = () => finish(new Error("Could not read that chart."));
+      reader.readAsDataURL(file);
+    } catch { finish(new Error("Could not read that chart.")); }
   });
-  await new Promise<void>((resolve, reject) => {
-    const image = new Image();
-    image.onload = () => image.naturalWidth > 0 && image.naturalHeight > 0 && image.naturalWidth * image.naturalHeight <= 16_000_000
-      ? resolve() : reject(new Error("Use a readable chart of 16 megapixels or less."));
-    image.onerror = () => reject(new Error("This image could not be decoded. Choose a fresh chart screenshot."));
-    image.src = value;
-  });
-  return value;
 }
 
 export function sameWorkspaceFacts(a: ChartConfirmation | null, b: ChartConfirmation | null) {
