@@ -3,7 +3,7 @@ import { useEffect, useRef, useState, useSyncExternalStore, type FormEvent } fro
 import { isAppleNativeApp } from './apple-storekit';
 import { isAllowedAuthOrigin, isAuthProviderCompatibleWithOrigin } from '../lib/auth/safe-auth-redirect';
 import { nativeAccountOriginMatches, type NativeAccountBinding } from './native-account-policy';
-import { nativeEmailClient,listenNativeEmail,nativeEmailCode,NATIVE_EMAIL_CALLBACK } from './native-email-signin';
+import { nativeEmailClient,listenNativeEmail,nativeEmailCode } from './native-email-signin';
 const subscribePlatform=()=>()=>{};
 const serverPlatform=()=>false;
 export type WorkspaceAuthConfig = {url:string;key:string;binding?:NativeAccountBinding|null};
@@ -50,7 +50,7 @@ export default function WorkspaceSignIn({config,onSignedIn}:{config:WorkspaceAut
       if(!active())return;
       const expiry=setTimeout(()=>{controller.abort();void listener.remove();if(mounted.current){setSent(false);setMessage('This link has expired. Request a new link.');}},600_000);
       cleanup.current=()=>{clearTimeout(expiry);void listener.remove();};
-      const {error}=await wait(client.auth.signInWithOtp({email:email.trim(),options:{shouldCreateUser:false,emailRedirectTo:NATIVE_EMAIL_CALLBACK+'?state='+encodeURIComponent(state)}}));
+      const {error}=await wait(client.auth.signInWithOtp({email:email.trim(),options:{shouldCreateUser:false,emailRedirectTo:origin+'/auth/native-return?state='+encodeURIComponent(state)}}));
       if(!active())return;
       if(error)throw new Error('We could not send the sign-in link. Please try again later.');
       setSent(true);setMessage('Open the sign-in link in your email to return here. Your charts are kept.');

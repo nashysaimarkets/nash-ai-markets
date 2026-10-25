@@ -1,5 +1,5 @@
 import test from 'node:test';import assert from 'node:assert/strict';import {readFile} from 'node:fs/promises';
-import {nativeEmailCode,NATIVE_EMAIL_CALLBACK} from '../app/pocket/native-email-signin.ts';
+import {nativeEmailCode,NATIVE_EMAIL_CALLBACK} from '../app/pocket/native-email-callback.ts';
 const state='local-unpredictable-state',time=1000,code='valid_code_123456789';
 const valid=NATIVE_EMAIL_CALLBACK+'?state='+state+'&code='+code;
 test('native email return accepts only exact pending transaction',()=>assert.equal(nativeEmailCode(valid,state,time,time),code));
@@ -8,3 +8,14 @@ test('expired and future pending transactions rejected',()=>{assert.equal(native
 test('isolated SDK client cannot persist session or share a cookie singleton',async()=>{const s=await readFile(new URL('../app/pocket/native-email-signin.ts',import.meta.url),'utf8');assert.match(s,/persistSession:false/);assert.match(s,/autoRefreshToken:false/);assert.match(s,/detectSessionInUrl:false/);assert.match(s,/storageKey:'ntp-native-email-'\+crypto.randomUUID/);assert.match(s,/AbortSignal.any/);assert.doesNotMatch(s,/createBrowserClient|localStorage|sessionStorage/);});
 test('email flow never creates users, requests passwords or bypasses guarded session bridge',async()=>{const s=await readFile(new URL('../app/pocket/WorkspaceSignIn.tsx',import.meta.url),'utf8');assert.match(s,/shouldCreateUser:false/);assert.match(s,/nativeEmailCode\(url,state,createdAt\)/);assert.match(s,/if\(!active\(\) \|\| consumed \|\| !code\)return/);assert.match(s,/if\(!active\(\)\)return/);assert.doesNotMatch(s,/signInWithPassword|type="password"/);});
 test('native URL scheme is registered and scene forwards incoming links',async()=>{const plist=await readFile(new URL('../ios/App/App/Info.plist',import.meta.url),'utf8'),scene=await readFile(new URL('../ios/App/App/SceneDelegate.swift',import.meta.url),'utf8');assert.match(plist,/<key>CFBundleURLSchemes<\/key><array><string>com.nashaimarkets.pocketbullseye<\/string>/);assert.match(scene,/SceneDelegateProxy.shared.scene\(scene, openURLContexts: URLContexts\)/);});
+
+import {nativeEmailReturn} from '../app/pocket/native-email-return.ts';
+import {GET} from '../app/auth/native-return/route.ts';
+const nonce='00000000-0000-4000-8000-000000000001';
+const relay='https://nash-ai-markets-test-nash-ai-markets.vercel.app/auth/native-return?state='+nonce+'&code='+code;
+test('existing HTTPS redirect relays only to fixed native app and preserves nonce/code',()=>{const target=nativeEmailReturn(relay);assert.equal(nativeEmailCode(target!,nonce,time,time),code);assert.ok(target!.startsWith(NATIVE_EMAIL_CALLBACK));});
+for(const query of ['?next=https://evil.test','?state='+nonce+'&access_token=secret','?state='+nonce+'&code='+code+'&code=duplicate','?state=bad&code='+code])test('relay rejects malformed or token callback '+query,()=>assert.equal(nativeEmailReturn('https://example.test/auth/native-return'+query),null));
+test('relay response has no cache, no referrer, strict CSP and no external resources',async()=>{const r=await GET(new Request(relay)),html=await r.text();assert.equal(r.status,200);assert.equal(r.headers.get('referrer-policy'),'no-referrer');assert.match(r.headers.get('cache-control')!,/no-store/);assert.match(r.headers.get('content-security-policy')!,/default-src 'none'/);assert.match(html,/history.replaceState/);assert.doesNotMatch(html,/<script src=|<link href=|access_token/);});
+
+import {stripTypeScriptTypes} from 'node:module';
+test('exact native relay bypasses auth middleware; neighboring paths do not',async()=>{const source=await readFile(new URL('../middleware.ts',import.meta.url),'utf8');const fn=stripTypeScriptTypes(source.slice(source.indexOf('export async function middleware'),source.indexOf('\nexport const config')).replace('export ',''));let reads=0;const run=new Function('NextResponse','resolveSupabasePublicConfig',fn+';return middleware;')({next:()=>({relay:true})},()=>{reads++;return {url:'',key:''};});await run({nextUrl:{pathname:'/auth/native-return'}});assert.equal(reads,0);await run({nextUrl:{pathname:'/auth/native-return/other'},headers:{}});assert.equal(reads,1);});

@@ -15,7 +15,7 @@ workflows:
         bundle_identifier: com.nashaimarkets.pocketbullseye
       vars:
         NTP_VERSION: '2.0.0'
-        NTP_BUILD: '51'
+        NTP_BUILD: '52'
     # Manual trigger only. Upload after verification; no beta/App Store review or release.
     # Supply EXPECTED_NATIVE_REVISION, CAPACITOR_SERVER_URL and
     # CAPACITOR_SERVER_REVISION only after exact-source/backend acceptance.
