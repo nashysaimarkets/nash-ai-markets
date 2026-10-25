@@ -1,3 +1,23 @@
+# Build 53 approved live setup — owner restoration still blocked
+
+Source SHA `4a43c870d5d8378633b9f266394e7c4a822d2e70`, tree `1ad80e150eae29f0493825a8b4d656f53432ccce` on `monaco-build53-runtime-184930`.
+
+User approved the precise Apple key and missing-schema setup. Created one IAP key, Pocket Apple Verification (ID 335S9J4H84), and stored its private key as a sensitive server-only variable on this preview branch. Official Apple CA roots, issuer/app/key IDs and explicit Production environment installed on that branch only. Production app deployment/main/pricing and existing customer rows unchanged.
+
+Applied atomic migration `monaco_approved_apple_runtime_dependencies` from the four hash-pinned SQL files below after absent-object inspection and disposable rehearsal. This changes live database schema only: new private ledgers remain empty. Browser roles cannot execute the entitlement functions; service_role can. Actual service_role unknown-UUID probes return false/false/empty array. Existing unrelated security warning unchanged; four new RLS-no-policy informational notices are intentional service-only tables.
+
+A real read-only Production App Store Server API getNotificationHistory call accepted the key. Sandbox call failed with FetchError: no Sandbox acceptance claimed. Neither call establishes an active subscription or owner restoration.
+
+Candidate deployment `dpl_9vX7MU7GsawPZy16Qes9zmFrnxsM` is READY at https://nash-ai-markets-radei9ycv-nash-ai-markets.vercel.app. Live native-readiness returns HTTP200, exact source SHA, ready=true and all four dependency checks true. Its separate API/owner/device flags remain deliberately false; API credential evidence is recorded separately. Unsigned apple-account, subscription-access, preflight and analyse all return401 POCKET_LOGIN_REQUIRED, with no paid inference or entitlement grant.
+
+Retained offline evidence:101 targeted tests,46 new default-runner tests,85 independent tests,15 disposable SQL checks; typecheck/lint/secret scan/webpack build passed. Counts overlap and must not be summed. No UI changes in this runtime repair; prior20 browser checks are reused, not new live device evidence. Independent setup review accepts dependency setup and agrees to hold native upload.
+
+BLOCKER: no independently verified original transaction mapped to the authenticated app UUID. Limited existing receipt/access evidence did not establish a current Apple entitlement. Do not infer ownership from an email, create a paid entitlement, or ask for repurchase. Need existing Apple order/transaction evidence plus authenticated app identity, then fresh signed Apple status and account/scanner acceptance. TestFlight may send a nonempty Sandbox JWS; it must remain rejected by the Production verifier, not silently discarded to trigger mapped recovery. Record actual native proof presence/environment and complete signed-device testing.
+
+Build53 has NOT been signed or uploaded. Existing internal Build52 remains unchanged. CI pins are not advanced. No main merge or public release. Automatic deployment remains disabled. Preserve the exact tested source when resuming; an evidence-only commit is not a different tested app binary.
+
+## Historical pre-approval checkpoint (superseded by the live state above)
+
 # Build 52 owner failure → isolated Build 53 runtime repair
 
 Base evidence b0b43975206fbc74ab92e55f7d1716318f24fb9e; original Build52 source2091e1ec4307b414df9f7635935f0d10e45ff3e9. Candidate branch monaco-build53-runtime-184930, automatic deployment OFF. No new internal binary/deployment yet.
