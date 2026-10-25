@@ -1,0 +1,19 @@
+{
+  "scope": "Vercel build-target configuration only; not hosted deployment or application acceptance",
+  "baselineEvidenceCommit": "0f3d1d8c983f6e49d7a267d81fbe435921ad0c45",
+  "unchangedAcceptedAppSource": "743257448ce0dfdbaf7c887d5e389ba5c72c1f82",
+  "baselineConfigGitBlob": "92533d4f6c1ddc56fa8808c3b493a4237b9a24d0",
+  "baselineResult": { "total": 7, "pass": 5, "fail": 2, "skip": 0 },
+  "candidateResult": { "total": 7, "pass": 7, "fail": 0, "skip": 0 },
+  "node": "v22.16.0",
+  "testCommand": "node --test docs/ntp/ntp-integration-2026-10-25/vercel-build-target.test.mjs",
+  "configSha256": "a01fb72bee149c0180fea6d230d62b54c966fcb8cec32799c57c03263fe9b3a3",
+  "testSha256": "20283549400d6400cbe53d7c58beb0f1dcef42b150911b078fe3d4cad8e1dadc",
+  "candidateLogSha256": "2491d5edfba1731531fe92efddb1552541ce65c78a29fbd6340c1a85fd90c86c",
+  "priorDistinctAppChecksReused": 134,
+  "priorPhoneBrowserChecksReused": 13,
+  "newApplicationBuilds": 0,
+  "newProviderCalls": 0,
+  "newDeployments": 0,
+  "limits": ["not a fresh full app build", "not independent review", "not a configured runtime or broker connection", "public release remains held by actual acceptance and cost/rights gates"]
+}
