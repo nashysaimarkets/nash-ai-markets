@@ -103,8 +103,8 @@ export function workspaceSlotLabel(slot: WorkspaceSource) {
   if (slot.runState === "CANCELLED") return "CANCELLED";
   if (slot.analysis) return "REPORT READY";
   if (slot.status === "RETAKE") return "RETAKE";
-  if (slot.status === "CHECKING") return "CHECKING";
-  return preflightAllowsAnalysis(slot.status) && slot.confirmation ? "READY TO SCAN" : "CONFIRM FACTS";
+  if (slot.status === "CHECKING") return "READY";
+  return "READY";
 }
 
 export function workspaceSlotTimeframe(

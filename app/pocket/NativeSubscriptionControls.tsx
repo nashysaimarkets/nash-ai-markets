@@ -12,7 +12,7 @@ import { nativeSubscriptionView, type NativeSubscriptionPhase } from "./native-s
 const subscribePlatform = () => () => {};
 const serverPlatform = (): boolean | null => null;
 
-export default function NativeSubscriptionControls() {
+export default function NativeSubscriptionControls({compact=false,onSignIn}:{compact?:boolean;onSignIn?:()=>void}={}) {
   const android = useSyncExternalStore<boolean | null>(subscribePlatform, isGoogleNativeApp, serverPlatform);
   const [status, setStatus] = useState<AppleAccessStatus | null>(null);
   const native = useSyncExternalStore<boolean | null>(subscribePlatform, isAppleNativeApp, serverPlatform);
@@ -49,8 +49,10 @@ export default function NativeSubscriptionControls() {
     return () => { active = false; mounted.current = false; invalidateRevision(); void subscription.then(listener => listener?.remove()).catch(() => undefined); };
   }, [native, attempt]);
   const view = nativeSubscriptionView(status, phase);
+  const loginRequired = message === "Sign in to your existing account, then retry Restore Purchases.";
   if (android === true) return <AndroidSubscriptionControls />;
-  if (native === false) return <WebSubscriptionControls />;
+  if (native === false) return compact ? null : <WebSubscriptionControls />;
+  if (native === null && compact) return null;
   if (native === null) return <section className="psPreflight" aria-label="Subscription access"><p role="status">Checking subscription options…</p></section>;
   async function run(kind: "purchase" | "restore") {
     if (actionRunning.current || !mounted.current || (kind === "purchase" && !view.showPurchase)) return;
@@ -72,6 +74,12 @@ export default function NativeSubscriptionControls() {
     } finally { actionRunning.current = false; if (mounted.current) setBusy(false); }
   }
   const retry = () => { if (actionRunning.current) return; revision.current++; setPhase("CHECKING"); setMessage(""); setAttempt(value => value + 1); };
+  if (compact) return <section className="pnAccountStatus" aria-label="Account access" aria-busy={busy || phase === "CHECKING"}>
+    {loginRequired ? <><p>Sign in to continue with your existing subscription.</p>{onSignIn?<button type="button" onClick={onSignIn}>Sign in</button>:<a href="/pocket/login">Sign in</a>}</>
+      : phase === "CHECKING" ? <p role="status">Connecting your account…</p>
+      : phase === "READY" && status?.entitled ? <p>Subscription active</p>
+      : <><p role="status">{message || "Your subscription needs attention."}</p><button type="button" disabled={busy} onClick={()=>void run("restore")}>Restore Purchases</button>{view.showRetry?<button type="button" disabled={busy} onClick={retry}>Reconnect</button>:null}{view.showPurchase?<button type="button" disabled={busy} onClick={()=>void run("purchase")}>Subscribe · {status?.displayPrice}</button>:null}</>}
+  </section>;
   return <section className="psPreflight" aria-label="Apple subscription access" aria-busy={busy || phase === "CHECKING"}>
     <header><strong>{view.heading}</strong></header>
     {view.productLabel ? <p>{view.productLabel}</p> : <p role="status">{phase === "READY" && status?.entitled ? "Your existing subscription is active. No new purchase is needed." : phase === "CHECKING" ? `Checking the Apple product and your ${POCKET_PRODUCT.shortName} account. You can restore an existing purchase below.` : "Apple product or access verification is unavailable. Restore an existing purchase or retry; no purchase is offered while this check is unresolved."}</p>}

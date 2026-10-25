@@ -44,7 +44,7 @@ test("unlocking or replacing facts drops the old report and never relabels its e
   const unlocked = updateWorkspacePreflight(completed, 1, "AWAITING_CONFIRMATION");
   assert.equal(unlocked.analysis, null);
   assert.equal(unlocked.confirmation, null);
-  assert.equal(workspaceSlotLabel(unlocked), "CONFIRM FACTS");
+  assert.equal(workspaceSlotLabel(unlocked), "READY");
   const corrected = updateWorkspaceConfirmation(completed, 1, { ...facts, timeframe: "1h" });
   assert.equal(corrected.analysis, null);
   assert.equal(corrected.confirmation?.timeframe, "1h");
@@ -58,12 +58,12 @@ test("callbacks for an obsolete slot revision cannot alter current facts or repo
 
 test("slot status distinguishes checking, ready, cancelled, error and absent evidence", () => {
   assert.equal(workspaceSlotLabel(source({ image: null })), "ADD CHART");
-  assert.equal(workspaceSlotLabel(source({ status: "CHECKING", runState: "IDLE", confirmation: null })), "CHECKING");
-  assert.equal(workspaceSlotLabel(source({ runState: "IDLE" })), "READY TO SCAN");
+  assert.equal(workspaceSlotLabel(source({ status: "CHECKING", runState: "IDLE", confirmation: null })), "READY");
+  assert.equal(workspaceSlotLabel(source({ runState: "IDLE" })), "READY");
   assert.equal(workspaceSlotLabel(source()), "ANALYSING");
   assert.equal(workspaceSlotLabel(source({ runState: "CANCELLED" })), "CANCELLED");
   assert.equal(workspaceSlotLabel(source({ runState: "ERROR" })), "ERROR");
-  assert.equal(workspaceSlotLabel(source({ runState: "IDLE", status: "UNAVAILABLE" })), "CONFIRM FACTS");
+  assert.equal(workspaceSlotLabel(source({ runState: "IDLE", status: "UNAVAILABLE" })), "READY");
   assert.equal(workspaceSlotLabel(source({ runState: "IDLE", status: "RETAKE" })), "RETAKE");
 });
 

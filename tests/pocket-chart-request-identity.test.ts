@@ -81,7 +81,7 @@ test("actual preflight effect ignores a body resolving after cleanup even if fet
   const panel = await readFile(new URL("../app/pocket/ChartPreflightPanel.tsx", import.meta.url), "utf8");
   const controller = panel.indexOf("    const controller = new AbortController();");
   const start = panel.lastIndexOf("  useEffect(() => {", controller) + "  useEffect(() => {".length;
-  const end = panel.indexOf("  }, [image, contextImage]);", controller);
+  const end = panel.indexOf("  }, [image, contextImage, attempt]);", controller);
   const body = deferred(), started = deferred();
   const updates: unknown[] = [];
   let callback!: () => Promise<void>;

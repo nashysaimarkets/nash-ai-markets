@@ -1,5 +1,7 @@
 import { POCKET_PRODUCT } from "../lib/product-brand";
 import type { Metadata, Viewport } from "next";
+import { resolveSupabasePublicConfig } from "../../utils/supabase/config";
+import { nativeAccountBinding } from "./native-account-policy";
 import PocketNext from "../pocket-next/PocketNext";
 import "../pocket-next/pocket-next.css";
 import { createUnavailableMacroContext, getVerifiedMacroContext } from "../lib/verified-macro-context";
@@ -63,6 +65,7 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
+  viewportFit: "cover",
   maximumScale: 5,
   themeColor: "#0a0e13",
 };
@@ -73,5 +76,6 @@ export default async function PocketPage() {
   // Apple-first release: broker integration is deferred, not a page dependency.
   const macroContext = await getVerifiedMacroContext({ route: "/pocket" })
     .catch(() => createUnavailableMacroContext());
-  return <PocketNext macroContext={macroContext} />;
+  const config = resolveSupabasePublicConfig();
+  return <PocketNext macroContext={macroContext} authConfig={{url:config.url,key:config.key,binding:nativeAccountBinding(process.env,config.url)}} />;
 }

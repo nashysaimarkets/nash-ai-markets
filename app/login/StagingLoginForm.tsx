@@ -1,4 +1,5 @@
 "use client";
+import { nativeAccountOriginMatches, type NativeAccountBinding } from "../pocket/native-account-policy";
 import { POCKET_PRODUCT } from "../lib/product-brand.ts";
 
 import { FormEvent, useEffect, useRef, useState } from "react";
@@ -59,6 +60,7 @@ function messageForOtpRequestError(error: { code?: string; message?: string; sta
 }
 
 type StagingLoginFormProps = {
+  nativeBinding?: NativeAccountBinding | null;
   defaultNext?: "/pocket";
   existingAccountOnly?: boolean;
   supabaseUrl: string;
@@ -67,6 +69,7 @@ type StagingLoginFormProps = {
 
 export default function StagingLoginForm({
   defaultNext,
+  nativeBinding,
   existingAccountOnly = false,
   supabaseUrl,
   supabasePublishableKey,
@@ -101,7 +104,7 @@ export default function StagingLoginForm({
     const form = formRef.current;
     if (!form) return;
     try {
-      if (!isAuthProviderCompatibleWithOrigin(window.location.origin, supabaseUrl)) {
+      if (!isAuthProviderCompatibleWithOrigin(window.location.origin, supabaseUrl) && !(existingAccountOnly && nativeAccountOriginMatches(nativeBinding, window.location.origin, supabaseUrl))) {
         throw new Error("Private authentication provider mismatch");
       }
       const { emailRedirectTo, next } = resolveLoginRedirectTo(
@@ -128,7 +131,7 @@ export default function StagingLoginForm({
       form.setAttribute("data-auth-redirect-ready", "false");
       form.removeAttribute("data-email-redirect-to");
     }
-  }, [supabaseUrl, defaultNext]);
+  }, [supabaseUrl, defaultNext, existingAccountOnly, nativeBinding]);
 
   async function submit(event: FormEvent) {
     event.preventDefault();
@@ -143,7 +146,7 @@ export default function StagingLoginForm({
         setMessage("This host is not authorized for member sign-in.");
         return;
       }
-      if (!isAuthProviderCompatibleWithOrigin(origin, supabaseUrl)) {
+      if (!isAuthProviderCompatibleWithOrigin(origin, supabaseUrl) && !(existingAccountOnly && nativeAccountOriginMatches(nativeBinding, origin, supabaseUrl))) {
         setMessageTone("error");
         setMessage("Private test authentication is unavailable. No sign-in email was sent.");
         formRef.current?.setAttribute("data-auth-provider-ready", "false");
