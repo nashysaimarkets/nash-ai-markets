@@ -1,3 +1,4 @@
+import { nativeAccountBinding } from "../native-account-policy";
 import { POCKET_PRODUCT } from "../../lib/product-brand";
 import type { Metadata } from "next";
 import { Suspense } from "react";
@@ -21,7 +22,7 @@ export default async function PocketLogin() {
     <h1>Sign in to {POCKET_PRODUCT.shortName}</h1>
     <p>Use your existing {POCKET_PRODUCT.previousName} account. Your subscription is checked securely after sign-in.</p>
     <Suspense fallback={<p role="status">Preparing secure sign-in…</p>}>
-      <LoginForm supabaseUrl={config.url} supabasePublishableKey={config.key} defaultNext="/pocket" existingAccountOnly />
+      <LoginForm supabaseUrl={config.url} supabasePublishableKey={config.key} defaultNext="/pocket" existingAccountOnly nativeBinding={nativeAccountBinding(process.env,config.url)} />
     </Suspense>
     <a href="/pocket">Return to {POCKET_PRODUCT.shortName}</a>
   </section></main>;

@@ -8,6 +8,9 @@ import { resolveSupabasePublicConfig } from "./utils/supabase/config.ts";
  * sessions established by the browser PKCE callback.
  */
 export async function middleware(request: NextRequest) {
+  // The native PKCE relay must not read/refresh a Safari session. The app
+  // exchanges the code using its own pending verifier after the return.
+  if (request.nextUrl.pathname === "/auth/native-return") return NextResponse.next();
   let response = NextResponse.next({
     request: {
       headers: request.headers,

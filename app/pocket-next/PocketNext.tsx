@@ -6,9 +6,10 @@ import {createPrecisionReadingCrop as precisionCrop} from "../pocket/precision-r
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { DeviceLocalScan, DevicePlotBounds } from "./device-geometry";
-import ChartPreflightPanel from "../pocket/ChartPreflightPanel";
+import { automaticAnalysis, WorkspaceAccessError } from "./automatic-analysis";
 import IgDemoWorkspace from "../components/IgDemoWorkspace";
 import {igDemoChartToken,type IgDemoChartBinding} from "../lib/ig-demo-chart-binding";
+import WorkspaceSignIn, { type WorkspaceAuthConfig } from "../pocket/WorkspaceSignIn";
 import NativeSubscriptionControls from "../pocket/NativeSubscriptionControls";
 import PersonalRiskDesk from "../pocket/PersonalRiskDesk";
 import PocketWorkflowDesk from "./PocketWorkflowDesk";
@@ -19,10 +20,10 @@ import OriginalChartEvidence from "../pocket/OriginalChartEvidence";
 import ScannerClaimStatus from "../pocket/ScannerClaimStatus";
 import {prepareScannerReport, UNVERIFIED_SCANNER_NOTICE} from "../pocket/scanner-claims";
 import {useOriginalChartMeasurement} from "../pocket/use-original-chart-measurement";
-import { preflightAllowsAnalysis, type ChartConfirmation, type PreflightStatus } from "../pocket/chart-preflight";
+import { preflightAllowsAnalysis, type ChartConfirmation } from "../pocket/chart-preflight";
 import { createChartRequestEpoch } from "../pocket/chart-request-identity";
 import { pocketAuthenticatedFetch } from "../pocket/apple-storekit";
-import { acceptWorkspaceReport, CHART_SLOT_HINTS, readWorkspaceImage, sameWorkspaceFacts, updateWorkspaceConfirmation, updateWorkspacePreflight, workspaceContext, workspaceSlotLabel, workspaceSlotTimeframe, type WorkspaceSource } from "./workspace-state";
+import { acceptWorkspaceReport, CHART_SLOT_HINTS, readWorkspaceImage, workspaceContext, workspaceSlotLabel, workspaceSlotTimeframe, type WorkspaceSource } from "./workspace-state";
 
 type Direction = "BULLISH" | "BEARISH" | "NEUTRAL";
 type Intention = "LONG" | "SHORT" | "UNSURE";
@@ -206,13 +207,15 @@ function statusOf(analysis: Analysis, kind: "levels" | "patterns" | "liquidity" 
 function statusLabel(value: string) { return value === "NONE" ? "NO EVIDENCE" : value; }
 
 const UNAVAILABLE_MACRO: VerifiedMacroContext = {generatedAt:"",status:"unavailable",observations:[],releases:[],filings:[],availableSources:[],unavailableSources:[]};
-export default function PocketNext({macroContext=UNAVAILABLE_MACRO,igDemoAvailable=false,igDemoDisconnectAvailable=false,igDemoOwnerScope,igDemoChartBinding}:{macroContext?:VerifiedMacroContext;igDemoAvailable?:boolean;igDemoDisconnectAvailable?:boolean;igDemoOwnerScope?:string;igDemoChartBinding?:IgDemoChartBinding} = {}) {
+export default function PocketNext({macroContext=UNAVAILABLE_MACRO,igDemoAvailable=false,igDemoDisconnectAvailable=false,igDemoOwnerScope,igDemoChartBinding,authConfig}:{authConfig?:WorkspaceAuthConfig;macroContext?:VerifiedMacroContext;igDemoAvailable?:boolean;igDemoDisconnectAvailable?:boolean;igDemoOwnerScope?:string;igDemoChartBinding?:IgDemoChartBinding} = {}) {
   const [charts, setCharts] = useState<ChartSlot[]>(emptyChartSlots);
   const [activeChart, setActiveChart] = useState(0);
   const activeChartRef = useRef(activeChart);
   activeChartRef.current = activeChart;
   const [intention, setIntention] = useState<Intention>("UNSURE");
-  const [privacy, setPrivacy] = useState(false);
+  const [signInRequired, setSignInRequired] = useState(false);
+  const [accountRevision, setAccountRevision] = useState(0);
+  useEffect(()=>{if(signInRequired){const form=document.getElementById("pn-account-signin");form?.scrollIntoView({block:"center"});form?.querySelector<HTMLInputElement>("input")?.focus();}},[signInRequired]);
   const [active, setActive] = useState<Tab>("overview");
   const [busyChart, setBusyChart] = useState<number | null>(null);
   const [chartFocus, setChartFocus] = useState(false);
@@ -222,12 +225,10 @@ export default function PocketNext({macroContext=UNAVAILABLE_MACRO,igDemoAvailab
   const chartEpoch = useRef(createChartRequestEpoch());
   const uploads = useRef([0, 0, 0, 0, 0]);
   const controllerRef = useRef<AbortController | null>(null);
-  const requestSource = useRef<{ index: number; revision: number; confirmation: ChartConfirmation } | null>(null);
-  const chartsRef = useRef(charts);
-  chartsRef.current = charts;
-  const demoSnapshot = useRef<{ charts: ChartSlot[]; activeChart: number; privacy: boolean } | null>(null);
+  const requestSource = useRef<{ index: number; revision: number; confirmation: ChartConfirmation | null } | null>(null);
+  const demoSnapshot = useRef<{ charts: ChartSlot[]; activeChart: number } | null>(null);
   const [demoMode, setDemoMode] = useState(false);
-  const invalidate = (reason = "Analysis cancelled. You can retry after checking the chart.") => {
+  const invalidate = (reason = "Analysis cancelled. Your chart is ready when you are.") => {
     const source = requestSource.current;
     chartEpoch.current.invalidate(); controllerRef.current?.abort(); controllerRef.current = null;
     requestSource.current = null; requestActive.current = false; setBusyChart(null);
@@ -254,9 +255,7 @@ export default function PocketNext({macroContext=UNAVAILABLE_MACRO,igDemoAvailab
   const busy = busyChart !== null;
   const uploading = uploadingSlots.some(Boolean);
   const sourceStatus = uploadingSlots[activeChart] ? "READING IMAGE" : workspaceSlotLabel(activeSlot);
-  const analysisHold = !image ? "Add a source chart to begin." : !privacy ? "Confirm that personal details are removed from every uploaded chart."
-    : !preflightAllowsAnalysis(activeSlot.status) || !activeSlot.confirmation ? "Chart checks are pending. Follow the short guidance below or explore the demo."
-    : busy ? `Chart ${Number(busyChart) + 1} is being analysed. You can cancel it below.` : "Ready for evidence-based analysis.";
+  const analysisHold = !image ? "Add a chart to begin." : busy ? "Analysing your chart…" : "Ready to analyse.";
 
   useEffect(() => {
     const chart = chartRef.current;
@@ -332,8 +331,7 @@ export default function PocketNext({macroContext=UNAVAILABLE_MACRO,igDemoAvailab
     try {
       const nextImage = await readWorkspaceImage(file);
       if (uploads.current[index] !== revision) return;
-      setCharts(current => current.map((slot, i) => i === index ? { image: nextImage, name: file.name, analysis: null, localScan: null, confirmation: null, status: "CHECKING", revision, runState: "IDLE", message: "" } : slot));
-      setPrivacy(false);
+      setCharts(current => current.map((slot, i) => i === index ? { image: nextImage, name: file.name, analysis: null, localScan: null, confirmation: null, status: "IDLE", revision, runState: "IDLE", message: "" } : slot));
       setNotice("");
       setActiveChart(index);
     } catch (e) {
@@ -347,38 +345,26 @@ export default function PocketNext({macroContext=UNAVAILABLE_MACRO,igDemoAvailab
     }
   };
 
-  const changePreflight = (index: number, revision: number, status: PreflightStatus) => {
-    if (chartsRef.current[index]?.revision !== revision) return;
-    if (!preflightAllowsAnalysis(status) && requestSource.current?.index === index) invalidate("Chart facts were unlocked; the previous request was cancelled.");
-    setCharts(current => current.map((slot, i) => i === index ? { ...updateWorkspacePreflight(slot, revision, status), localScan: preflightAllowsAnalysis(status) ? slot.localScan : null } : slot));
-  };
-  const changeConfirmation = (index: number, revision: number, confirmation: ChartConfirmation | null) => {
-    if (chartsRef.current[index]?.revision !== revision) return;
-    const pending = requestSource.current;
-    if (pending?.index === index && !sameWorkspaceFacts(pending.confirmation, confirmation)) invalidate("Chart facts changed; the previous request was cancelled.");
-    setCharts(current => current.map((slot, i) => i === index ? updateWorkspaceConfirmation(slot, revision, confirmation) : slot));
-  };
-
   const analyseChart = async (index: number, switchAfter = false) => {
     const slot = charts[index];
-    if (!slot?.image || !privacy || busy || uploading || requestActive.current || !preflightAllowsAnalysis(slot.status) || !slot.confirmation || demoMode) return;
+    if (!slot?.image || busy || uploading || requestActive.current || demoMode) return;
     const token = chartEpoch.current.snapshot();
     const controller = new AbortController(); controllerRef.current = controller;
-    const confirmation = slot.confirmation;
-    requestSource.current = { index, revision: slot.revision, confirmation };
+    requestSource.current = { index, revision: slot.revision, confirmation: null };
     requestActive.current = true; setBusyChart(index); setNotice("");
-    setCharts(current => current.map((chart, i) => i === index ? { ...chart, runState: "RUNNING", message: "" } : chart));
+    setCharts(current => current.map((chart, i) => i === index ? { ...chart, runState: "RUNNING", message: "", analysis: null, localScan: null } : chart));
     try {
-      const precisionImage = await precisionCrop(slot.image);
-      if (!chartEpoch.current.isCurrent(token) || controller.signal.aborted) return;
-      const response = await pocketAuthenticatedFetch("/api/pocket/analyse", {
-        method: "POST", headers: { "content-type": "application/json" }, signal: controller.signal,
-        body: JSON.stringify({ image: slot.image, precisionImage, intention, chartConfirmation: slot.confirmation }),
+      const {analysis: received, confirmation} = await automaticAnalysis<Analysis>({
+        image: slot.image, intention, signal: controller.signal, fetch: pocketAuthenticatedFetch,
+        precisionCrop, onConfirmation: facts => {
+          if (!chartEpoch.current.isCurrent(token) || controller.signal.aborted) return;
+          requestSource.current = {index, revision: slot.revision, confirmation: facts};
+          setCharts(current => current.map((chart, i) => i === index && chart.revision === slot.revision
+            ? {...chart, confirmation: facts, status: "LOCKED", analysis: null, localScan: null} : chart));
+        },
       });
-      const payload = await response.json() as { analysis?: Analysis; error?: string };
       if (!chartEpoch.current.isCurrent(token) || controller.signal.aborted) return;
-      if (!response.ok || !payload.analysis) throw new Error(payload.error || "Analysis could not complete.");
-      const report = prepareScannerReport(payload.analysis);
+      const report = prepareScannerReport(received);
       setCharts(current => current.map((chart, i) => {
         if (i !== index) return chart;
         const accepted = acceptWorkspaceReport(chart, slot.revision, confirmation, report);
@@ -387,8 +373,9 @@ export default function PocketNext({macroContext=UNAVAILABLE_MACRO,igDemoAvailab
       if (switchAfter) setActiveChart(index);
       if (activeChartRef.current === index || switchAfter) setActive("overview");
     } catch (e) {
+      if (e instanceof WorkspaceAccessError && chartEpoch.current.isCurrent(token) && !controller.signal.aborted) setSignInRequired(true);
       if (chartEpoch.current.isCurrent(token) && !controller.signal.aborted) setCharts(current => current.map((chart, i) => i === index && chart.revision === slot.revision
-        ? { ...chart, runState: "ERROR", message: (e instanceof Error ? e.message : "Analysis could not complete.") + (chart.analysis ? " The previous report is still shown." : " No report was produced; retry only after checking the cause.") } : chart));
+        ? { ...chart, runState: "ERROR", message: (e instanceof Error ? e.message : "Analysis could not complete.") } : chart));
     } finally {
       if (controllerRef.current === controller) { controllerRef.current = null; requestSource.current = null; requestActive.current = false; setBusyChart(null); }
     }
@@ -404,21 +391,19 @@ export default function PocketNext({macroContext=UNAVAILABLE_MACRO,igDemoAvailab
 
   const openDemo = () => {
     if (busy || uploading) return;
-    demoSnapshot.current = { charts, activeChart, privacy };
+    demoSnapshot.current = { charts, activeChart };
     invalidate(); setDemoMode(true); uploads.current = uploads.current.map(n => n + 1);
     const demo = emptyChartSlots();
     demo[0] = { ...demo[0], image: demoChart(), name: "Interface demo", analysis: DEMO_ANALYSIS };
     setCharts(demo);
     setActiveChart(0);
     setActive("overview");
-    setPrivacy(false);
     setNotice("");
   };
   const reset = () => {
     invalidate(); setDemoMode(false); uploads.current = uploads.current.map(n => n + 1);
     setCharts(demoSnapshot.current?.charts ?? emptyChartSlots());
     setActiveChart(demoSnapshot.current?.activeChart ?? 0);
-    setPrivacy(demoSnapshot.current?.privacy ?? false);
     demoSnapshot.current = null;
     setUploadingSlots(Array(5).fill(false));
     setActive("overview");
@@ -426,7 +411,7 @@ export default function PocketNext({macroContext=UNAVAILABLE_MACRO,igDemoAvailab
     setNotice("");
   };
   const share = async () => {
-    if (!analysis) return;
+      if (!analysis) return;
     const text = UNVERIFIED_SCANNER_NOTICE + "\n" + POCKET_PRODUCT.displayName + (demoMode ? " · SYNTHETIC INTERFACE DEMO" : "") + " · " + analysis.instrument + " · " + analysis.timeframe + "\n" + analysis.verdict + " · " + analysis.setupScore.overall + "/100\n" + analysis.verdictHeadline;
     try {
       if (navigator.share) await navigator.share({ title: POCKET_PRODUCT.displayName, text });
@@ -469,11 +454,13 @@ export default function PocketNext({macroContext=UNAVAILABLE_MACRO,igDemoAvailab
     bottom: "auto",
   } : undefined;
 
+  const accountForm = signInRequired ? authConfig ? <WorkspaceSignIn config={authConfig} onSignedIn={()=>{invalidate("Account changed. Run a new analysis.");setSignInRequired(false);setAccountRevision(value=>value+1);setCharts(current=>current.map(slot=>({...slot,message:""})));}} /> : <a className="pnSignIn" href="/pocket/login">Sign in to continue</a> : null;
+
   if (!analysis) return <main className="pnApp pnStartApp" aria-busy={busy || uploading}>
     <a className="pnSkip" href="#pn-intake">Skip to chart workspace</a>
     <header className="pnTop">
       <div className="pnBrand"><span className="pnMark">{POCKET_PRODUCT.shortName}</span><div><strong>{POCKET_PRODUCT.name.toUpperCase()}</strong><small>{POCKET_PRODUCT.tagline}</small></div></div>
-      <div className="pnEngine"><button type="button" onClick={openDemo}>Explore demo</button><a href="/pocket/login">Account</a></div>
+      <div className="pnEngine"><button type="button" onClick={openDemo}>Explore demo</button><button type="button" onClick={()=>setSignInRequired(value=>!value)}>Account</button></div>
     </header>
 
     <section className="pnStart">
@@ -486,7 +473,7 @@ export default function PocketNext({macroContext=UNAVAILABLE_MACRO,igDemoAvailab
           <div><b>02</b><strong>CHALLENGE</strong><small>Bias gets tested</small></div>
           <div><b>03</b><strong>DECIDE</strong><small>Wait is a valid answer</small></div>
         </div>
-        <section className="pnSession" aria-label="Current workspace"><span>THIS SESSION</span><strong>{multiChart.loaded} / 5 charts</strong><p>{multiChart.ready} reports returned · each source keeps its own confirmation and report.</p><p>{workspaceContext(charts)}</p></section>
+        <section className="pnSession" aria-label="Current workspace"><span>THIS SESSION</span><strong>{multiChart.loaded} / 5 charts</strong><p>{multiChart.ready} reports returned · each chart keeps its own report.</p><p>{workspaceContext(charts)}</p></section>
       </article>
 
       <aside className="pnIntake" id="pn-intake" aria-label="Five-chart workspace">
@@ -502,22 +489,21 @@ export default function PocketNext({macroContext=UNAVAILABLE_MACRO,igDemoAvailab
             <b>{CHART_SLOT_HINTS[index]}</b><small>{uploadingSlots[index] ? "READING" : slot.confirmation?.timeframe || workspaceSlotLabel(slot)}</small>
           </button>)}
         </div>
-        <p className="pnSlotHint">Suggested slots only. Each chart’s printed labels are checked automatically.</p>
+        <p className="pnSlotHint">Add up to five charts. Analyse any chart when ready.</p>
 
         <div className="pnBias">
           <small>BIAS TO CHALLENGE</small>
           <div>{(["LONG","UNSURE","SHORT"] as Intention[]).map(v=><button key={v} type="button" data-active={intention===v} aria-pressed={intention===v} onClick={()=>{invalidate("Your trading bias changed; run a new analysis after checking your inputs.");setIntention(v);}}>{v==="UNSURE"?"NO BIAS":v}</button>)}</div>
         </div>
 
-        <NativeSubscriptionControls />
+        <NativeSubscriptionControls key={accountRevision} compact onSignIn={()=>setSignInRequired(true)} />
         <IgDemoWorkspace ownerScope={igDemoOwnerScope} available={igDemoAvailable} disconnectAvailable={igDemoDisconnectAvailable} contextKey={igDemoContextKey} chartToken={igDemoToken} />
-        <label className="pnPrivacy"><input type="checkbox" checked={privacy} onChange={(e)=>{if(!e.target.checked)invalidate("Privacy confirmation was removed; analysis was cancelled.");setPrivacy(e.target.checked);}}/><span><strong>Privacy check</strong>I removed account numbers, balances and personal notifications from every chart.</span></label>
-
-        {image ? <ChartPreflightPanel key={`${activeChart}:${activeSlot.revision}`} image={image} onStatus={status => changePreflight(activeChart,activeSlot.revision,status)} onConfirmation={confirmation => changeConfirmation(activeChart,activeSlot.revision,confirmation)} /> : null}
-        <p className="pnHold" id="pn-analysis-hold" role="status">{analysisHold}</p>
+        <p className="pnUploadNote">Upload charts only. Avoid including personal or account details.</p>
+        <p className={busy?"pnProgress":"pnVisuallyHidden"} id="pn-analysis-hold" role="status">{analysisHold}</p>
         {busy ? <button className="pnCancel" type="button" onClick={()=>invalidate()}>CANCEL CHART {Number(busyChart)+1} ANALYSIS</button> : null}
-        {activeSlot.message ? <p role={activeSlot.runState==="CANCELLED" ? "status" : "alert"} className="pnError">{activeSlot.message}</p> : null}
-        <button className="pnRun" type="button" aria-describedby="pn-analysis-hold" disabled={!image || !privacy || busy || uploading || !preflightAllowsAnalysis(activeSlot.status) || !activeSlot.confirmation} onClick={run}><span>{busyChart===activeChart ? "ANALYSING…" : "ANALYSE CHART "+(activeChart+1)}</span><b aria-hidden="true">→</b></button>
+        {activeSlot.message && !signInRequired ? <p role={activeSlot.runState==="CANCELLED" ? "status" : "alert"} className="pnError">{activeSlot.message}</p> : null}
+        {accountForm}
+        <button className="pnRun" type="button" aria-describedby="pn-analysis-hold" disabled={!image || busy || uploading} onClick={run}><span>{busyChart===activeChart ? "ANALYSING…" : "ANALYSE CHART "+(activeChart+1)}</span><b aria-hidden="true">→</b></button>
         <button className="pnDemo" type="button" disabled={busy||uploading} onClick={openDemo}>EXPLORE THE NO-CREDIT INTERFACE DEMO</button>
       </aside>
     </section>
@@ -540,12 +526,11 @@ export default function PocketNext({macroContext=UNAVAILABLE_MACRO,igDemoAvailab
 
       <section className="pnCentre" ref={centreRef} id="pn-chart-workspace" aria-label="Chart evidence workspace">
         {demoMode ? <p className="pnDemoBanner" role="status">INTERFACE DEMO · synthetic sample · no uploaded chart analysed · no credits used</p> : <section className="pnSourceControls" aria-label="Source and analysis controls">
-          {activeSlot.confirmation && preflightAllowsAnalysis(activeSlot.status) ? <section className="pnLockedFacts" aria-label="Locked source chart facts"><div><span>SOURCE CHART FACTS</span><strong>{activeSlot.confirmation.instrument} · {activeSlot.confirmation.timeframe} · {activeSlot.confirmation.currentPrice}</strong></div><button type="button" onClick={()=>changePreflight(activeChart,activeSlot.revision,"IDLE")}>Recheck chart facts</button></section> : <ChartPreflightPanel key={`${activeChart}:${activeSlot.revision}`} image={image??""} onStatus={status => changePreflight(activeChart,activeSlot.revision,status)} onConfirmation={confirmation => changeConfirmation(activeChart,activeSlot.revision,confirmation)} />}
-          {!privacy ? <label className="pnPrivacy"><input type="checkbox" checked={privacy} onChange={e=>setPrivacy(e.target.checked)}/><span><strong>Confirm upload privacy</strong>Personal details are removed from every uploaded chart.</span></label> : null}
-          <div className="pnSourceActions"><button type="button" disabled={busy || uploading || !privacy || !activeSlot.confirmation || !preflightAllowsAnalysis(activeSlot.status)} onClick={() => void analyseChart(activeChart)}>{busyChart===activeChart ? "ANALYSING CHART "+(activeChart+1) : "RECHECK THIS CHART"}</button>
+          {accountForm}
+          <div className="pnSourceActions"><button type="button" disabled={busy || uploading} onClick={() => void analyseChart(activeChart)}>{busyChart===activeChart ? "ANALYSING CHART "+(activeChart+1) : "ANALYSE AGAIN"}</button>
           {busy ? <button className="pnCancel" type="button" onClick={()=>invalidate()}>CANCEL CHART {Number(busyChart)+1}</button> : null}
           <label className="pnReplace">Replace source<input type="file" aria-label={`Replace chart ${activeChart+1}`} accept="image/jpeg,image/png,image/webp" onChange={e=>{void loadChart(activeChart,e.target.files?.[0]);e.target.value="";}}/></label></div>
-          {activeSlot.message ? <p role={activeSlot.runState==="CANCELLED"?"status":"alert"} className="pnError">{activeSlot.message}</p> : null}
+          {activeSlot.message && !signInRequired ? <p role={activeSlot.runState==="CANCELLED"?"status":"alert"} className="pnError">{activeSlot.message}</p> : null}
         </section>}
         {notice ? <p className="pnNotice" role="status">{notice}</p> : null}
         <header className="pnChartHeader">
@@ -683,7 +668,7 @@ export default function PocketNext({macroContext=UNAVAILABLE_MACRO,igDemoAvailab
           </>}
         </> : null}
         {!demoMode ? <IgDemoWorkspace ownerScope={igDemoOwnerScope} available={igDemoAvailable} disconnectAvailable={igDemoDisconnectAvailable} contextKey={igDemoContextKey} chartToken={igDemoToken} /> : null}
-        {!demoMode ? <details className="pnToolDetails pnAccount"><summary>Account & subscription</summary><NativeSubscriptionControls /></details> : null}
+        {!demoMode ? <details className="pnToolDetails pnAccount"><summary>Account & subscription</summary><NativeSubscriptionControls key={accountRevision} compact onSignIn={()=>setSignInRequired(true)} /></details> : null}
       </aside>
     </section>
   </main>;

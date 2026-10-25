@@ -1,0 +1,18 @@
+{
+  "build": "52",
+  "version": "2.0.0",
+  "uploaded": true,
+  "deliveryUuid": "dd4e5fc7-bafc-4329-ad1e-2273f63fec2d",
+  "sourceSha": "2091e1ec4307b414df9f7635935f0d10e45ff3e9",
+  "ipaSha256": "e318164092e459da5ec8567715257b58ef16784b88d01ae7bd7f70c370a3e2d8",
+  "codemagicBuild": "6ade222f4a72334e32e50a84",
+  "uploadResult": "UPLOAD SUCCEEDED with no errors",
+  "uploadedAt": "2026-10-25T15:40:27Z",
+  "publicRelease": false,
+  "deviceAcceptance": false,
+  "internalGroup": "Pocket Bullseye Internal Testers",
+  "note": "SIGNED-BUILD52-RECEIPT.json preserves the pre-publication uploaded:false flag; this separate receipt records the later successful upload.",
+  "status": "INTERNAL_TESTFLIGHT_AVAILABLE",
+  "invites": 1,
+  "appleBuildStatus": "Ready to Submit"
+}
