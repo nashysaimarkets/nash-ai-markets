@@ -45,6 +45,7 @@
   },
   "dependencies": {
     "@apple/app-store-server-library": "3.1.0",
+    "@capacitor/android": "8.5.1",
     "@capacitor/app": "8.1.1",
     "@capacitor/camera": "8.2.3",
     "@capacitor/core": "8.5.3",
@@ -59,12 +60,12 @@
     "lightweight-charts": "^5.2.0",
     "next": "16.3.8",
     "openai": "6.48.0",
+    "pg": "8.23.1",
     "react": "19.2.8",
     "react-dom": "19.2.8",
     "sharp": "0.35.5",
     "stripe": "^18.5.0",
-    "tesseract.js": "6.0.1",
-    "@capacitor/android": "8.5.1"
+    "tesseract.js": "6.0.1"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.10.1",
@@ -101,5 +102,5 @@
     }
   },
   "type": "module",
-  "displayName": "NTP \u2014 Nash Trading Platform"
+  "displayName": "NTP — Nash Trading Platform"
 }
